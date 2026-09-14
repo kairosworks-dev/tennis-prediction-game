@@ -25,8 +25,8 @@ The project is built in four sequential steps. **Do not work ahead.** Code that 
 
 | Step | Scope | State |
 |---|---|---|
-| 1 | React frontend against a mocked service layer | **Active** |
-| 2 | `openapi.yaml` derived from the frontend service layer | Not started |
+| 1 | React frontend against a mocked service layer | **Done** |
+| 2 | `openapi.yaml` derived from the frontend service layer | **Active** |
 | 3 | FastAPI backend with in-memory repositories | Not started |
 | 4 | SQLAlchemy and SQLite persistence | Not started |
 

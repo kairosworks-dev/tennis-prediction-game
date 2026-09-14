@@ -11,12 +11,35 @@ import type {
   RankingEntry, RecalculateResult, RegisterRequest, ScoreBreakdown,
   TournamentDetail, TournamentId, TournamentSummary, TypedQuestionKind,
   UpdateBetGroupRequest, UpdateProfileRequest, UpdateQuestionRequest,
-  UpdateTournamentRequest, UpdateUserRequest, User, VerifyEmailRequest,
+  UpdateTournamentRequest, UpdateUserRequest, User, UserId, VerifyEmailRequest,
   BetGroupId, PredictionPayload, BetGroupPoints,
 } from '../types';
 import { conflict, forbidden, notFound, unauthorized, validationFailed } from '../errors';
 import { createDatabase, type CreateDatabaseOptions, type MockDatabase } from './fixtures';
 import { expectedPayloadKind, validatePrediction, type ValidationContext } from './validation';
+
+const SESSION_KEY = 'tpg.mock.session';
+
+/** sessionStorage throws in some privacy modes; a missing session is not fatal. */
+function readStoredSession(): UserId | null {
+  try {
+    return globalThis.sessionStorage.getItem(SESSION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSession(userId: UserId | null): void {
+  try {
+    if (userId === null) {
+      globalThis.sessionStorage.removeItem(SESSION_KEY);
+    } else {
+      globalThis.sessionStorage.setItem(SESSION_KEY, userId);
+    }
+  } catch {
+    // A mock that cannot remember a session is still a usable mock.
+  }
+}
 
 export interface MockApiClientOptions extends CreateDatabaseOptions {
   /** Artificial latency in milliseconds. Set to 0 in tests. */
@@ -39,6 +62,22 @@ export class MockApiClient implements ApiClient {
   constructor(options: MockApiClientOptions = {}) {
     this.db = createDatabase(options);
     this.latencyMs = options.latencyMs ?? 180;
+
+    // The real backend keeps the session in an HTTP-only cookie, which
+    // survives a reload. Without an equivalent here, signing in appears to do
+    // nothing: the fixture database is rebuilt on every page load and the
+    // session snaps back to its default. sessionStorage is the closest
+    // stand-in, and it is session-scoped on purpose — closing the tab signs
+    // you out, which is roughly what the cookie will do.
+    const stored = readStoredSession();
+    if (stored !== null) {
+      this.db.sessionUserId = this.db.users.some((u) => u.id === stored) ? stored : null;
+    }
+  }
+
+  private setSession(userId: UserId | null): void {
+    this.db.sessionUserId = userId;
+    writeStoredSession(userId);
   }
 
   /** Test seam: inspect or arrange fixture state directly. */
@@ -149,7 +188,7 @@ export class MockApiClient implements ApiClient {
       createdAt: new Date().toISOString(),
     };
     this.db.users.push(user);
-    this.db.sessionUserId = user.id;
+    this.setSession(user.id);
     // The console mock stands in for transactional email (decision D8).
     this.db.verificationTokens.set(`verify-${user.id}`, user.id);
     return this.delay({ user, requiresEmailVerification: true });
@@ -163,12 +202,12 @@ export class MockApiClient implements ApiClient {
     if (!user.isActive) {
       throw forbidden('That account has been deactivated.');
     }
-    this.db.sessionUserId = user.id;
+    this.setSession(user.id);
     return this.delay({ user, requiresEmailVerification: user.emailVerifiedAt === null });
   }
 
   async logout(): Promise<void> {
-    this.db.sessionUserId = null;
+    this.setSession(null);
     return this.delay(undefined);
   }
 
@@ -240,7 +279,7 @@ export class MockApiClient implements ApiClient {
       fullName: null,
       isActive: false,
     };
-    this.db.sessionUserId = null;
+    this.setSession(null);
     return this.delay(undefined);
   }
 
