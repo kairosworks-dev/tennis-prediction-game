@@ -22,8 +22,8 @@ the spec, and no step starts before the previous one meets it.
 |---|---|---|
 | 1 | React frontend against a mocked service layer | **Done** |
 | 2 | `openapi.yaml` derived from the frontend service layer | **Done** |
-| 3 | FastAPI backend with in-memory repositories | **Active** |
-| 4 | SQLAlchemy and SQLite persistence | Not started |
+| 3 | FastAPI backend with in-memory repositories | **Done** |
+| 4 | SQLAlchemy and SQLite persistence | **Active** |
 
 ---
 

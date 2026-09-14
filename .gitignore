@@ -64,3 +64,7 @@ playwright/.cache/
 # The seeded bundle is ~2.5 MB of generated editor payload — regenerate it
 # from the artboards instead of committing it.
 docs/design/*-screens.html
+
+# uv
+backend/.venv/
+backend/uv.lock
