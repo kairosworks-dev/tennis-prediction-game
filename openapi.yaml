@@ -1,0 +1,1073 @@
+openapi: 3.1.0
+
+info:
+  title: Tennis Prediction Game
+  version: 0.1.0
+  description: |
+    The agreement between the React frontend and the FastAPI backend.
+
+    This document is derived from the `ApiClient` interface in
+    `frontend/src/services/apiClient.ts`: every method there maps to exactly
+    one operation here, and every operation here has exactly one method there.
+    Changing an endpoint means changing this file first, then both sides. From
+    step 3 a CI check fails on drift between this file and FastAPI's generated
+    schema; when that check fails, fix the cause rather than the check.
+
+    Scope is the first pass (decision D14). Operations for email verification,
+    password reset, profile editing, account deletion, the post-lock comparison
+    view and the wider admin surface are specified in
+    `docs/product-and-technical-spec.md` section 4 and deferred in section 13.1.
+
+    Conventions: JSON throughout, ISO 8601 UTC timestamps, RFC 7807 problem
+    details for every error, offset and limit where lists can grow.
+
+servers:
+  - url: /api
+    description: Same-origin API
+
+security:
+  - sessionCookie: []
+
+tags:
+  - name: auth
+    description: Registration, sign-in and the current session
+  - name: public
+    description: Unauthenticated, for the landing page
+  - name: games
+    description: Finding and joining a game
+  - name: play
+    description: Inside a game — draws, bets, predictions, scores, ranking
+  - name: results
+    description: Organiser results entry. Authorisation is checked server-side.
+
+paths:
+  /auth/register:
+    post:
+      tags: [auth]
+      operationId: register
+      summary: Create an account
+      description: |
+        The account is created unverified: `emailVerifiedAt` is null and joining
+        a game is refused until the address is confirmed.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: Account created and signed in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthenticatedUser' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Sign in
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Signed in; the session cookie is set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthenticatedUser' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Sign out
+      responses:
+        '204': { description: Signed out; the session cookie is cleared }
+
+  /me:
+    get:
+      tags: [auth]
+      operationId: getCurrentUser
+      summary: The signed-in user, or null
+      description: |
+        Returns null rather than 401 for an anonymous visitor, so the landing
+        page can ask who is looking without treating nobody as an error.
+      security: []
+      responses:
+        '200':
+          description: The current user, or null when nobody is signed in
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: 'null'
+
+  /public/next-game:
+    get:
+      tags: [public]
+      operationId: getNextGame
+      summary: The next game open for signup
+      description: |
+        The one live block on the landing page (decision D13). Returns null when
+        nothing is taking signups, which the page renders as a neutral state.
+      security: []
+      responses:
+        '200':
+          description: The next game, or null
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/NextGameTeaser'
+                  - type: 'null'
+
+  /tournaments:
+    get:
+      tags: [games]
+      operationId: listTournaments
+      summary: Games visible to the signed-in user
+      description: |
+        Public games are listed to everyone. A private game appears only to
+        someone who has joined it; a draft only to an organiser.
+      responses:
+        '200':
+          description: The user's games, in three states
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TournamentSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /tournaments/{tournamentId}:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+    get:
+      tags: [games]
+      operationId: getTournament
+      summary: One game with its draws
+      description: A join code is returned only to an organiser.
+      responses:
+        '200':
+          description: The game
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TournamentDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /tournaments/{tournamentId}/join:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+    post:
+      tags: [games]
+      operationId: joinTournament
+      summary: Join a game
+      description: |
+        Refused when the signup deadline has passed, when the email address is
+        unconfirmed, or when a private game's join code does not match.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JoinTournamentRequest' }
+      responses:
+        '201':
+          description: Joined
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Participation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /tournaments/{tournamentId}/draws:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+    get:
+      tags: [play]
+      operationId: listDraws
+      summary: The one or two draws of a game
+      responses:
+        '200':
+          description: The draws
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Draw' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /tournaments/{tournamentId}/draws/{drawId}/entries:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+      - $ref: '#/components/parameters/drawId'
+    get:
+      tags: [play]
+      operationId: listDrawEntries
+      summary: A draw's eight sections with their entrants
+      description: |
+        Each entrant carries its seed and, once the organiser has recorded it,
+        the round it reached. Section membership is all the MVP models: there is
+        no bracket tree (decision D5).
+      responses:
+        '200':
+          description: Eight sections, ordered by index
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DrawSectionWithEntries' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /tournaments/{tournamentId}/bet-groups:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+    get:
+      tags: [play]
+      operationId: listBetGroups
+      summary: Bet groups, ordered by deadline
+      description: A draft group is returned only to an organiser.
+      responses:
+        '200':
+          description: The bet groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BetGroup' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /tournaments/{tournamentId}/bet-groups/{betGroupId}/questions:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+      - $ref: '#/components/parameters/betGroupId'
+    get:
+      tags: [play]
+      operationId: listQuestions
+      summary: The questions in one bet group
+      responses:
+        '200':
+          description: The questions, ordered by position
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Question' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /tournaments/{tournamentId}/predictions:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+    get:
+      tags: [play]
+      operationId: listOwnPredictions
+      summary: The signed-in participant's own predictions
+      responses:
+        '200':
+          description: Own predictions across every group of this game
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Prediction' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /tournaments/{tournamentId}/questions/{questionId}/prediction:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+      - $ref: '#/components/parameters/questionId'
+    put:
+      tags: [play]
+      operationId: putPrediction
+      summary: Submit or update one prediction
+      description: |
+        Idempotent per participant and question: a second call replaces the
+        first rather than adding another. Refused once the question's bet group
+        has locked. A draft saves the answer without holding it to the
+        cross-question rules in spec 5.3; a submission is validated in full.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PutPredictionRequest' }
+      responses:
+        '200':
+          description: The stored prediction
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prediction' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: |
+            The group has closed, has not opened, or the caller has not joined
+            this game.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /tournaments/{tournamentId}/scores:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+    get:
+      tags: [play]
+      operationId: getScoreBreakdown
+      summary: The participant's own scores, by bet group
+      description: |
+        Reads persisted score entries; it never recomputes them (spec 5.4).
+        `points` is null for a question that has not settled, which is not the
+        same as a zero.
+      responses:
+        '200':
+          description: The breakdown
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScoreBreakdown' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /tournaments/{tournamentId}/ranking:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+    get:
+      tags: [play]
+      operationId: getRanking
+      summary: The leaderboard, both draws combined
+      description: |
+        Ties share a position and the next position skips accordingly. Total
+        points is the only criterion; there is no tie-breaker (decision D13).
+      responses:
+        '200':
+          description: The leaderboard, highest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RankingEntry' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/draws/{drawId}/outcomes:
+    parameters:
+      - $ref: '#/components/parameters/drawId'
+    put:
+      tags: [results]
+      operationId: putDrawOutcomes
+      summary: Replace a draw's outcome grid
+      description: |
+        The single grid that settles every typed question (decision D9).
+        Replaces the whole grid for the draw rather than merging, so a removed
+        row means the outcome is gone. Withdrawals and retirements are resolved
+        here by organiser judgement, explained in the row's note (decision D12).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PutDrawOutcomesRequest' }
+      responses:
+        '200':
+          description: The draw's sections with the recorded rounds
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DrawSectionWithEntries' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/questions/{questionId}/outcome:
+    parameters:
+      - $ref: '#/components/parameters/questionId'
+    put:
+      tags: [results]
+      operationId: putQuestionOutcome
+      summary: Settle one generic question
+      description: |
+        The correct answer takes the same shape as a prediction to the same
+        question, which is what keeps scoring a pure comparison.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PutQuestionOutcomeRequest' }
+      responses:
+        '204': { description: Settled }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/tournaments/{tournamentId}/recalculate:
+    parameters:
+      - $ref: '#/components/parameters/tournamentId'
+    post:
+      tags: [results]
+      operationId: recalculateScores
+      summary: Rebuild every score entry for a game
+      description: |
+        Deletes the game's score entries and recomputes them from predictions,
+        the outcome grid and question outcomes. Idempotent and safe to run
+        repeatedly. Editing a scoring profile does not rescore retroactively; it
+        applies from the next recalculation onward (decision D10).
+      responses:
+        '200':
+          description: What the recalculation wrote
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecalculateResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: |
+        HTTP-only session cookie set on sign-in. Mutating requests additionally
+        carry CSRF protection (spec 7.5).
+
+  parameters:
+    tournamentId:
+      name: tournamentId
+      in: path
+      required: true
+      schema: { type: string }
+    drawId:
+      name: drawId
+      in: path
+      required: true
+      schema: { type: string }
+    betGroupId:
+      name: betGroupId
+      in: path
+      required: true
+      schema: { type: string }
+    questionId:
+      name: questionId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Not signed in
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: Signed in, but not allowed to do this
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: No such resource, or not visible to this caller
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: The request contradicts the current state
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ValidationFailed:
+      description: |
+        The request was understood but broke a rule — see spec 5.3. `errors`
+        carries field-level messages keyed by a path into the request body.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+  schemas:
+    Problem:
+      type: object
+      description: RFC 7807 problem details.
+      required: [type, title, status, detail]
+      properties:
+        type: { type: string, format: uri-reference }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    # --- enumerations (spec 6.3) ---
+    TournamentCategory: { type: string, enum: [GRAND_SLAM, ATP, WTA] }
+    Tour: { type: string, enum: [ATP, WTA] }
+    Surface: { type: string, enum: [HARD, CLAY, GRASS, INDOOR_HARD] }
+    RoundReached:
+      type: string
+      description: How far a player advanced, earliest exit first.
+      enum: [R128, R64, R32, R16, QF, SF, F, CHAMPION, WITHDREW]
+    TournamentStatus: { type: string, enum: [DRAFT, PUBLISHED, RUNNING, FINISHED] }
+    TournamentVisibility: { type: string, enum: [PUBLIC, PRIVATE] }
+    BetGroupKind: { type: string, enum: [TOURNAMENT, ROUND] }
+    BetGroupStatus: { type: string, enum: [DRAFT, OPEN, LOCKED, SETTLED] }
+    QuestionFamily: { type: string, enum: [TYPED, GENERIC] }
+    TypedQuestionKind:
+      type: string
+      enum: [QF_PICKS, SF_PICKS, FINALIST_PICKS, CHAMPION, UNDERPERFORMER, BREAKOUT]
+    AnswerType: { type: string, enum: [PLAYER, MATCH_RESULT, INTEGER, CHOICE] }
+    ParticipationStatus: { type: string, enum: [ACTIVE, WITHDRAWN] }
+    MatchFormat:
+      type: integer
+      description: Sets needed to win — 3 for best of five, 2 for best of three.
+      enum: [3, 5]
+    SetScore:
+      type: string
+      description: |
+        Legal results by match format: 2-0 and 2-1 for best of three, 3-0, 3-1
+        and 3-2 for best of five. A score outside its draw's format is rejected.
+      enum: ['2-0', '2-1', '3-0', '3-1', '3-2']
+    GameListState: { type: string, enum: [OPEN_FOR_SIGNUP, RUNNING, FINISHED] }
+
+    # --- prediction payloads, discriminated on `kind` ---
+    SectionPick:
+      type: object
+      required: [sectionIndex, playerId]
+      properties:
+        sectionIndex: { type: integer, minimum: 1, maximum: 8 }
+        playerId: { type: string }
+
+    QuarterFinalPicksPayload:
+      type: object
+      required: [kind, picks]
+      properties:
+        kind: { type: string, const: QF_PICKS }
+        picks:
+          type: array
+          minItems: 8
+          maxItems: 8
+          items: { $ref: '#/components/schemas/SectionPick' }
+
+    SemiFinalPicksPayload:
+      type: object
+      required: [kind, playerIds]
+      properties:
+        kind: { type: string, const: SF_PICKS }
+        playerIds:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: { type: string }
+
+    FinalistPicksPayload:
+      type: object
+      required: [kind, playerIds]
+      properties:
+        kind: { type: string, const: FINALIST_PICKS }
+        playerIds:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { type: string }
+
+    ChampionPayload:
+      type: object
+      required: [kind, playerId]
+      properties:
+        kind: { type: string, const: CHAMPION }
+        playerId: { type: string }
+
+    UnderperformerPayload:
+      type: object
+      required: [kind, playerId]
+      properties:
+        kind: { type: string, const: UNDERPERFORMER }
+        playerId: { type: string }
+
+    BreakoutPayload:
+      type: object
+      required: [kind, playerId]
+      properties:
+        kind: { type: string, const: BREAKOUT }
+        playerId: { type: string }
+
+    GenericPlayerPayload:
+      type: object
+      required: [kind, playerId]
+      properties:
+        kind: { type: string, const: GENERIC_PLAYER }
+        playerId: { type: string }
+
+    GenericMatchResultPayload:
+      type: object
+      required: [kind, winnerId, setScore]
+      properties:
+        kind: { type: string, const: GENERIC_MATCH_RESULT }
+        winnerId: { type: string }
+        setScore: { $ref: '#/components/schemas/SetScore' }
+
+    GenericIntegerPayload:
+      type: object
+      required: [kind, value]
+      properties:
+        kind: { type: string, const: GENERIC_INTEGER }
+        value: { type: integer, minimum: 0 }
+
+    GenericChoicePayload:
+      type: object
+      required: [kind, optionId]
+      properties:
+        kind: { type: string, const: GENERIC_CHOICE }
+        optionId: { type: string }
+
+    PredictionPayload:
+      description: |
+        A discriminated union keyed on question kind. The six typed shapes
+        mirror spec 5.1; the four generic ones mirror the answer types in 4.5.3,
+        one per `AnswerType`. Do not widen this to a permissive object.
+      oneOf:
+        - $ref: '#/components/schemas/QuarterFinalPicksPayload'
+        - $ref: '#/components/schemas/SemiFinalPicksPayload'
+        - $ref: '#/components/schemas/FinalistPicksPayload'
+        - $ref: '#/components/schemas/ChampionPayload'
+        - $ref: '#/components/schemas/UnderperformerPayload'
+        - $ref: '#/components/schemas/BreakoutPayload'
+        - $ref: '#/components/schemas/GenericPlayerPayload'
+        - $ref: '#/components/schemas/GenericMatchResultPayload'
+        - $ref: '#/components/schemas/GenericIntegerPayload'
+        - $ref: '#/components/schemas/GenericChoicePayload'
+      discriminator:
+        propertyName: kind
+        mapping:
+          QF_PICKS: '#/components/schemas/QuarterFinalPicksPayload'
+          SF_PICKS: '#/components/schemas/SemiFinalPicksPayload'
+          FINALIST_PICKS: '#/components/schemas/FinalistPicksPayload'
+          CHAMPION: '#/components/schemas/ChampionPayload'
+          UNDERPERFORMER: '#/components/schemas/UnderperformerPayload'
+          BREAKOUT: '#/components/schemas/BreakoutPayload'
+          GENERIC_PLAYER: '#/components/schemas/GenericPlayerPayload'
+          GENERIC_MATCH_RESULT: '#/components/schemas/GenericMatchResultPayload'
+          GENERIC_INTEGER: '#/components/schemas/GenericIntegerPayload'
+          GENERIC_CHOICE: '#/components/schemas/GenericChoicePayload'
+
+    QuestionOutcomePayload:
+      description: A settled answer takes the same shape as the prediction it is compared against.
+      $ref: '#/components/schemas/PredictionPayload'
+
+    # --- entities (spec 6.1) ---
+    User:
+      type: object
+      required: [id, email, displayName, fullName, isAdmin, isActive, emailVerifiedAt, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        fullName: { type: [string, 'null'] }
+        isAdmin: { type: boolean }
+        isActive: { type: boolean }
+        emailVerifiedAt: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    Player:
+      type: object
+      required: [id, fullName, countryCode, tour]
+      properties:
+        id: { type: string }
+        fullName: { type: string }
+        countryCode: { type: string, minLength: 3, maxLength: 3 }
+        tour: { $ref: '#/components/schemas/Tour' }
+
+    ScoringProfile:
+      type: object
+      description: |
+        Point values for one game, editable per tournament (decision D10).
+        Structure is fixed; values are not.
+      required:
+        [quarterFinalistPoints, semiFinalistPoints, finalistPoints, championPoints,
+         underperformerPoints, breakoutPoints, featuredMatchWinnerPoints,
+         featuredMatchSetScorePoints]
+      properties:
+        quarterFinalistPoints: { type: integer }
+        semiFinalistPoints: { type: integer }
+        finalistPoints: { type: integer }
+        championPoints: { type: integer }
+        underperformerPoints:
+          type: array
+          description: Points for an exit in round 1, 2 and 3 respectively.
+          minItems: 3
+          maxItems: 3
+          items: { type: integer }
+        breakoutPoints:
+          type: array
+          description: Points for reaching R16, QF, SF, F and winning respectively.
+          minItems: 5
+          maxItems: 5
+          items: { type: integer }
+        featuredMatchWinnerPoints: { type: integer }
+        featuredMatchSetScorePoints: { type: integer }
+
+    Tournament:
+      type: object
+      required:
+        [id, name, category, surface, location, startDate, endDate, signupDeadline,
+         visibility, joinCode, status, rulesMarkdown, scoringProfile, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        category: { $ref: '#/components/schemas/TournamentCategory' }
+        surface: { $ref: '#/components/schemas/Surface' }
+        location: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        signupDeadline: { type: string, format: date-time }
+        visibility: { $ref: '#/components/schemas/TournamentVisibility' }
+        joinCode:
+          type: [string, 'null']
+          description: Present only for a private game, and only to an organiser.
+        status: { $ref: '#/components/schemas/TournamentStatus' }
+        rulesMarkdown: { type: string }
+        scoringProfile: { $ref: '#/components/schemas/ScoringProfile' }
+        createdAt: { type: string, format: date-time }
+
+    Draw:
+      type: object
+      required: [id, tournamentId, tour, drawSize, bestOf, officialDrawUrl]
+      properties:
+        id: { type: string }
+        tournamentId: { type: string }
+        tour: { $ref: '#/components/schemas/Tour' }
+        drawSize: { type: integer }
+        bestOf: { $ref: '#/components/schemas/MatchFormat' }
+        officialDrawUrl: { type: [string, 'null'], format: uri }
+
+    DrawSection:
+      type: object
+      required: [id, drawId, index]
+      properties:
+        id: { type: string }
+        drawId: { type: string }
+        index: { type: integer, minimum: 1, maximum: 8 }
+
+    DrawEntry:
+      type: object
+      required: [id, drawId, sectionId, playerId, seed]
+      properties:
+        id: { type: string }
+        drawId: { type: string }
+        sectionId: { type: string }
+        playerId: { type: string }
+        seed: { type: [integer, 'null'] }
+
+    DrawEntryWithPlayer:
+      type: object
+      required: [entry, player, roundReached]
+      properties:
+        entry: { $ref: '#/components/schemas/DrawEntry' }
+        player: { $ref: '#/components/schemas/Player' }
+        roundReached:
+          oneOf:
+            - $ref: '#/components/schemas/RoundReached'
+            - type: 'null'
+
+    DrawSectionWithEntries:
+      type: object
+      required: [section, entries]
+      properties:
+        section: { $ref: '#/components/schemas/DrawSection' }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/DrawEntryWithPlayer' }
+
+    Participation:
+      type: object
+      required: [id, userId, tournamentId, joinedAt, status]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        tournamentId: { type: string }
+        joinedAt: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/ParticipationStatus' }
+
+    BetGroup:
+      type: object
+      required: [id, tournamentId, kind, round, title, introMarkdown, deadline, status]
+      properties:
+        id: { type: string }
+        tournamentId: { type: string }
+        kind: { $ref: '#/components/schemas/BetGroupKind' }
+        round:
+          type: [integer, 'null']
+          description: Null for the tournament bet group.
+        title: { type: string }
+        introMarkdown: { type: string }
+        deadline: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/BetGroupStatus' }
+
+    QuestionChoiceOption:
+      type: object
+      required: [id, label]
+      properties:
+        id: { type: string }
+        label: { type: string }
+
+    Question:
+      type: object
+      description: |
+        Single-table inheritance (spec 6.2): `family` splits typed from generic,
+        `kind` narrows the typed case and is null for a generic question.
+      required:
+        [id, betGroupId, drawId, family, kind, prompt, answerType, options,
+         matchup, pointsHint, deadlineOverride, position]
+      properties:
+        id: { type: string }
+        betGroupId: { type: string }
+        drawId: { type: [string, 'null'] }
+        family: { $ref: '#/components/schemas/QuestionFamily' }
+        kind:
+          oneOf:
+            - $ref: '#/components/schemas/TypedQuestionKind'
+            - type: 'null'
+        prompt: { type: string }
+        answerType: { $ref: '#/components/schemas/AnswerType' }
+        options:
+          type: [array, 'null']
+          items: { $ref: '#/components/schemas/QuestionChoiceOption' }
+        matchup:
+          type: [array, 'null']
+          description: Present when `answerType` is MATCH_RESULT — the two players in the tie.
+          minItems: 2
+          maxItems: 2
+          items: { type: string }
+        pointsHint: { type: string }
+        deadlineOverride:
+          type: [string, 'null']
+          format: date-time
+          description: Unexposed per-question override (decision D7).
+        position: { type: integer }
+
+    Prediction:
+      type: object
+      required: [id, participationId, questionId, payload, submittedAt, updatedAt]
+      properties:
+        id: { type: string }
+        participationId: { type: string }
+        questionId: { type: string }
+        payload: { $ref: '#/components/schemas/PredictionPayload' }
+        submittedAt:
+          type: [string, 'null']
+          format: date-time
+          description: Null while the answer is still a draft.
+        updatedAt: { type: string, format: date-time }
+
+    # --- requests and view models ---
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 10 }
+        displayName: { type: string, minLength: 2 }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    AuthenticatedUser:
+      type: object
+      required: [user, requiresEmailVerification]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        requiresEmailVerification: { type: boolean }
+
+    NextGameTeaser:
+      type: object
+      required:
+        [tournamentId, name, category, surface, location, startDate, endDate,
+         signupDeadline, participantCount]
+      properties:
+        tournamentId: { type: string }
+        name: { type: string }
+        category: { $ref: '#/components/schemas/TournamentCategory' }
+        surface: { $ref: '#/components/schemas/Surface' }
+        location: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        signupDeadline: { type: string, format: date-time }
+        participantCount: { type: integer }
+
+    TournamentSummary:
+      type: object
+      required:
+        [tournament, state, participantCount, participationId, nextDeadline,
+         userPosition, userPoints, currentRound]
+      properties:
+        tournament: { $ref: '#/components/schemas/Tournament' }
+        state: { $ref: '#/components/schemas/GameListState' }
+        participantCount: { type: integer }
+        participationId:
+          type: [string, 'null']
+          description: Null when the signed-in user has not joined.
+        nextDeadline: { type: [string, 'null'], format: date-time }
+        userPosition: { type: [integer, 'null'] }
+        userPoints: { type: [integer, 'null'] }
+        currentRound: { type: [integer, 'null'] }
+
+    TournamentDetail:
+      type: object
+      required: [tournament, draws, participantCount, participationId]
+      properties:
+        tournament: { $ref: '#/components/schemas/Tournament' }
+        draws:
+          type: array
+          items: { $ref: '#/components/schemas/Draw' }
+        participantCount: { type: integer }
+        participationId: { type: [string, 'null'] }
+
+    JoinTournamentRequest:
+      type: object
+      required: [tournamentId]
+      properties:
+        tournamentId: { type: string }
+        joinCode:
+          type: string
+          description: Required for a private game (decision D4).
+
+    PutPredictionRequest:
+      type: object
+      required: [tournamentId, questionId, payload, asDraft]
+      properties:
+        tournamentId: { type: string }
+        questionId: { type: string }
+        payload: { $ref: '#/components/schemas/PredictionPayload' }
+        asDraft:
+          type: boolean
+          description: A draft skips the completeness and cross-question checks.
+
+    QuestionScoreRow:
+      type: object
+      required: [question, ownPayload, correctAnswer, points, reason]
+      properties:
+        question: { $ref: '#/components/schemas/Question' }
+        ownPayload:
+          oneOf:
+            - $ref: '#/components/schemas/PredictionPayload'
+            - type: 'null'
+        correctAnswer:
+          oneOf:
+            - $ref: '#/components/schemas/QuestionOutcomePayload'
+            - type: 'null'
+        points:
+          type: [integer, 'null']
+          description: Null while the question has not settled — not the same as zero.
+        reason:
+          type: [string, 'null']
+          description: The audit line explaining the award (decision D9).
+
+    BetGroupScoreBlock:
+      type: object
+      required: [betGroup, rows, subtotal, comparisonAvailable]
+      properties:
+        betGroup: { $ref: '#/components/schemas/BetGroup' }
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/QuestionScoreRow' }
+        subtotal: { type: integer }
+        comparisonAvailable:
+          type: boolean
+          description: Whether other participants' answers may be shown for this group.
+
+    ScoreBreakdown:
+      type: object
+      required: [tournamentId, total, position, participantCount, groups]
+      properties:
+        tournamentId: { type: string }
+        total: { type: integer }
+        position: { type: [integer, 'null'] }
+        participantCount: { type: integer }
+        groups:
+          type: array
+          items: { $ref: '#/components/schemas/BetGroupScoreBlock' }
+
+    BetGroupPoints:
+      type: object
+      required: [betGroupId, title, points]
+      properties:
+        betGroupId: { type: string }
+        title: { type: string }
+        points: { type: integer }
+
+    RankingEntry:
+      type: object
+      required:
+        [position, participationId, displayName, isCurrentUser, totalPoints,
+         lastGroupPoints, movement, perGroupPoints]
+      properties:
+        position:
+          type: integer
+          description: Ties share a position and the next position skips (decision D13).
+        participationId: { type: string }
+        displayName: { type: string }
+        isCurrentUser: { type: boolean }
+        totalPoints: { type: integer }
+        lastGroupPoints: { type: integer }
+        movement:
+          type: [integer, 'null']
+          description: Positions gained since the previous settled group; null on the first.
+        perGroupPoints:
+          type: array
+          items: { $ref: '#/components/schemas/BetGroupPoints' }
+
+    OutcomeEntryInput:
+      type: object
+      required: [playerId, roundReached, note]
+      properties:
+        playerId: { type: string }
+        roundReached: { $ref: '#/components/schemas/RoundReached' }
+        note:
+          type: [string, 'null']
+          description: Where a walkover or retirement is explained (decision D12).
+
+    PutDrawOutcomesRequest:
+      type: object
+      required: [drawId, entries]
+      properties:
+        drawId: { type: string }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/OutcomeEntryInput' }
+
+    PutQuestionOutcomeRequest:
+      type: object
+      required: [questionId, correctAnswer, note]
+      properties:
+        questionId: { type: string }
+        correctAnswer: { $ref: '#/components/schemas/QuestionOutcomePayload' }
+        note: { type: [string, 'null'] }
+
+    RecalculateResult:
+      type: object
+      required: [tournamentId, scoreEntriesWritten, calculatedAt]
+      properties:
+        tournamentId: { type: string }
+        scoreEntriesWritten: { type: integer }
+        calculatedAt: { type: string, format: date-time }
