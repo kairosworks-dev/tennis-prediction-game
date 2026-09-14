@@ -28,7 +28,7 @@ The project is built in four sequential steps. **Do not work ahead.** Code that 
 | 1 | React frontend against a mocked service layer | **Done** |
 | 2 | `openapi.yaml` derived from the frontend service layer | **Done** |
 | 3 | FastAPI backend with in-memory repositories | **Done** |
-| 4 | SQLAlchemy and SQLite persistence | **Active** |
+| 4 | SQLAlchemy and SQLite persistence | **Done** |
 
 Each step has a definition of done in Section 9 of the spec. A step is finished when every item is met, not when the code appears to work.
 

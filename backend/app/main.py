@@ -7,12 +7,21 @@ it the request, and turns whatever comes back into the wire shape.
 
 from __future__ import annotations
 
+import os
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
 from app.api.routers import auth, games, play, results
+from app.repositories.interfaces import Repositories
 from app.repositories.memory import MemoryRepositories
+from app.repositories.models import Base
+from app.repositories.sqlalchemy_repos import (
+    SqlAlchemyRepositories,
+    create_session_factory,
+    create_sqlite_engine,
+)
 from app.seed import seed_demo_game
 from app.services.errors import ServiceError
 
@@ -37,7 +46,26 @@ _TITLES = {
 }
 
 
-def create_app(*, seed: bool = True) -> FastAPI:
+def build_repositories(backend: str | None = None) -> Repositories:
+    """Pick a persistence implementation.
+
+    This is the whole of step 4's swap: the services and the domain never
+    learn which one they got. `memory` keeps the in-memory set from step 3;
+    `sqlite` uses SQLAlchemy against a file, or against `:memory:` for tests.
+    """
+    choice = backend or os.environ.get("REPOSITORY_BACKEND", "memory")
+    if choice == "memory":
+        return MemoryRepositories()
+
+    url = os.environ.get("DATABASE_URL", "sqlite:///./tennis.db")
+    engine = create_sqlite_engine(url)
+    # Alembic owns the schema for a real database; create_all is here so a
+    # throwaway in-memory database works without running migrations first.
+    Base.metadata.create_all(engine)
+    return SqlAlchemyRepositories(create_session_factory(engine)())
+
+
+def create_app(*, seed: bool = True, repositories: Repositories | None = None) -> FastAPI:
     app = FastAPI(
         title="Tennis Prediction Game",
         version="0.1.0",
@@ -45,11 +73,10 @@ def create_app(*, seed: bool = True) -> FastAPI:
         servers=[{"url": "/api", "description": "Same-origin API"}],
     )
 
-    # Step 3 wires the in-memory set; step 4 swaps this one line.
-    repositories = MemoryRepositories()
-    if seed:
-        seed_demo_game(repositories)
-    app.state.repositories = repositories
+    repos = repositories if repositories is not None else build_repositories()
+    if seed and repos.tournaments.get("roland-garros-2026") is None:
+        seed_demo_game(repos)
+    app.state.repositories = repos
 
     app.add_middleware(
         CORSMiddleware,
