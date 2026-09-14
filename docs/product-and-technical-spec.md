@@ -439,11 +439,16 @@ Four steps, each with a definition of done. No step starts before the previous o
 Build the complete React application against `MockApiClient`.
 
 **Done when:**
-- Every page in [Section 4](#4-product-requirements) renders and is navigable.
-- Both roles are walkable end to end on mock data.
+- Every page in the **first-pass surface** (see [13.1](#131-deferred-from-the-first-pass)) renders and is navigable.
+- A participant is walkable end to end on mock data, and an organiser can enter results and trigger a recalculation.
 - Seed fixtures include a two-draw Grand Slam mid-tournament, a finished game and an open-for-signup game.
 - No direct HTTP calls exist outside `src/services/`. Enforced by an ESLint rule.
 - `ApiClient` is fully typed, with every method's request and response shape declared.
+
+The original bar was every page in [Section 4](#4-product-requirements) and both
+roles walkable in full. Decision D14 narrowed it; the deferred screens are listed
+in [13.1](#131-deferred-from-the-first-pass) and the requirements in Section 4
+still describe the intended product.
 
 ### Step 2 — API contract
 
@@ -460,7 +465,9 @@ Derive `openapi.yaml` from the `ApiClient` interface.
 Implement the contract with in-memory repositories.
 
 **Done when:**
-- Every operation in `openapi.yaml` is implemented.
+- Every operation in `openapi.yaml` is implemented. The contract carries only the
+  operations the first-pass frontend uses (decision D14), so an endpoint that has
+  no screen is not written twice before it is needed.
 - FastAPI's generated schema matches the committed `openapi.yaml`; a CI check fails on drift.
 - The scoring engine has unit tests covering every question kind, including zero-point and partial-credit cases.
 - Validation rules from [5.3](#53-validation-rules) are enforced and tested.
@@ -522,6 +529,7 @@ README.md           setup and run instructions
 | D11 | Transactional email only in the MVP; deadline reminders are the first post-MVP feature | Avoids a scheduler and its operational weight before there is evidence it is needed |
 | D12 | Walkovers and retirements resolved by admin judgement through the outcome grid, explained in the audit reason | A human resolves these in seconds; a void-and-reopen mechanism can follow if it proves necessary |
 | D13 | Static landing-page copy with a live teaser block. Ties share a position on total points. Finished games stay read-only | Only the part that goes stale is dynamic; no file storage decision needed |
+| D14 | First pass builds a narrowed screen surface (see [13.1](#131-deferred-from-the-first-pass)). The architecture is not narrowed: the service layer, the contract, the backend layering, the pure scoring engine and the twice-implemented repository interface all stay | The product surface is what makes the build long; the architecture is what makes it correct. Every operation kept is built in the contract, the backend and the repository, so cutting screens compounds. The deferred items are a backlog, not an exclusion — Section 4 still describes the intended product |
 
 ---
 
@@ -552,6 +560,27 @@ Excluded from the MVP by explicit decision. Listed so that scope creep has to be
 ---
 
 ## 13. Post-MVP backlog
+
+### 13.1 Deferred from the first pass
+
+Specified in Section 4 and deliberately not built in the first pass (decision
+D14). These are nearer than the rest of this backlog: the domain model, the
+service layer and the API all already accommodate them.
+
+| Deferred | Kept instead | Spec |
+|---|---|---|
+| Admin screens for user management, tournament creation, draw population and question composition | The outcome grid and **Recalculate scores**, which are what close the loop from results to leaderboard. Everything else is seeded by script | 4.5.1–4.5.3 |
+| Email verification, password reset, profile editing, account deletion | Sign-up and sign-in | 4.2 |
+| The draw view | Section membership still drives pick validation, it is simply not rendered | 4.4.5 |
+| The post-lock comparison view of everyone's predictions | A participant's own predictions and scores | 4.4.3 |
+| Landing-page gallery and testimonials | Hero, how it works, and the live upcoming-game teaser | 4.1 |
+
+**Not deferred, and not negotiable:** the scoring engine and its unit tests, the
+validation rules in 5.3, `openapi.yaml` as the contract, the framework-free
+domain layer, and the repository interface implemented against both memory and
+SQLAlchemy.
+
+### 13.2 Beyond the MVP
 
 Ordered by expected value, not by effort.
 

@@ -32,6 +32,14 @@ The project is built in four sequential steps. **Do not work ahead.** Code that 
 
 Each step has a definition of done in Section 9 of the spec. A step is finished when every item is met, not when the code appears to work.
 
+**The first pass builds a narrowed screen surface** (decision D14, spec 13.1).
+Deferred: admin screens other than the outcome grid and recalculation; email
+verification, password reset, profile editing and account deletion; the draw
+view; the post-lock comparison view; the landing-page gallery and testimonials.
+Deferred means *not now*, not *never* — Section 4 still describes the intended
+product, so do not delete its requirements. The architecture is **not** narrowed:
+every hard rule below applies in full.
+
 **Update the table above when a step completes.**
 
 ---
@@ -153,5 +161,7 @@ uv run ruff check .
 ## Scope reminders
 
 Not in the MVP, by decision: entry fees and prize pots, doubles and qualifying draws, live score polling, background jobs and schedulers, notifications beyond transactional email, file and image upload, OAuth and two-factor authentication, internationalisation, full bracket tree modelling, and admin-editable marketing content.
+
+Not in the first pass, by decision D14: see the deferred list above and spec 13.1.
 
 If a task appears to require one of these, it is the task that is wrong. Stop and ask.
