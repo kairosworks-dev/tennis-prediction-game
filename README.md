@@ -27,13 +27,23 @@ the spec, and no step starts before the previous one meets it.
 | 3 | FastAPI backend with in-memory repositories | **Done** |
 | 4 | SQLAlchemy and SQLite persistence | **Done** |
 
+All four are done, to the narrowed screen surface set by decision D14 — nineteen
+API operations rather than thirty-four, with the deferred screens recorded in
+spec section 13 rather than dropped. 215 tests pass; the backend suite runs
+twice, once against each repository implementation.
+
+Three definitions of done are still unmet and two defects are known.
+[`docs/status.md`](docs/status.md) lists them, and is the right place to start
+when picking this up again.
+
 ---
 
 ## Stack
 
 **Frontend** — React 18, TypeScript (strict), Vite, React Router, TanStack Query,
-React Hook Form with Zod, Tailwind CSS. Tested with Vitest, React Testing Library
-and Playwright.
+React Hook Form with Zod, Tailwind CSS. Tested with Vitest and React Testing
+Library. (Playwright is specified for one end-to-end path per role and is not
+built yet — see [`docs/status.md`](docs/status.md).)
 
 **Backend** — FastAPI, Pydantic v2, SQLAlchemy 2.0 with SQLite, Alembic, Argon2
 password hashing, session cookies. Tested with pytest and the httpx test client.
@@ -45,12 +55,18 @@ password hashing, session cookies. Tested with pytest and the httpx test client.
 ## Repository layout
 
 ```
-/backend            FastAPI application and its tests   (from step 3)
-/docs               specification and supporting documentation
-/frontend           React application                   (step 1)
-AGENTS.md           instructions for coding agents
-openapi.yaml        the API agreement                   (from step 2)
-README.md           this file
+/backend               FastAPI application, domain layer, repositories, tests
+/frontend              React application and its service layer
+/docs
+  product-and-technical-spec.md   requirements, decisions, scope, backlog
+  status.md                       where the code stands against that spec
+  ai-usage-report.md              how this was built, and what it taught
+  design/                         Claude Design artboards (source for the canvas)
+AGENTS.md              instructions for coding agents — read this first
+CLAUDE.md              points at AGENTS.md
+Makefile               make run, make test, make check
+openapi.yaml           the agreement between frontend and backend
+README.md              this file
 ```
 
 ---
