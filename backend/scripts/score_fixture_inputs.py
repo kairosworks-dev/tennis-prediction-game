@@ -20,10 +20,10 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.domain.entities import ScoringProfile  # noqa: E402
-from app.domain.enums import RoundReached  # noqa: E402
-from app.domain.scoring import ScoringContext, score_prediction  # noqa: E402
-from app.repositories.mapping import payload_from_json  # noqa: E402
+from app.domain.entities import ScoringProfile
+from app.domain.enums import RoundReached
+from app.domain.scoring import ScoringContext, score_prediction
+from app.repositories.mapping import payload_from_json
 
 
 def snake(name: str) -> str:

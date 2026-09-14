@@ -24,6 +24,9 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# Alembic writes these; reformatting them by hand only invites a diff the next
+# autogenerate will undo.
+extend-exclude = ["migrations/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

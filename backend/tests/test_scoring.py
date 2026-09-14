@@ -89,7 +89,10 @@ class TestQuarterFinalPicks:
 
 class TestSemiFinalPicks:
     def test_partial_credit_at_two_points_each(self) -> None:
-        outcomes = {"a": RoundReached.SF, "b": RoundReached.F, "c": RoundReached.QF, "d": RoundReached.QF}
+        outcomes = {
+            "a": RoundReached.SF, "b": RoundReached.F,
+            "c": RoundReached.QF, "d": RoundReached.QF,
+        }
         award = score_prediction(SemiFinalPicks(("a", "b", "c", "d")), None, context(outcomes))
         assert award is not None
         assert award.points == 2 * PROFILE.semi_finalist_points

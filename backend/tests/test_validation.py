@@ -6,6 +6,8 @@ never rewrites a rule test.
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import pytest
 
 from app.domain.entities import Draw, DrawEntry, Question
@@ -87,15 +89,15 @@ class TestQuarterFinalPicks:
         assert "one player from each" in detail
 
     def test_rejects_two_picks_for_one_section(self) -> None:
-        payload = QuarterFinalPicks(
-            picks=tuple(SectionPick(i + 1, p) for i, p in enumerate(ALL_SECTIONS[:7]))
-            + (SectionPick(1, "seedB-1"),)
-        )
+        picks = [SectionPick(i + 1, p) for i, p in enumerate(ALL_SECTIONS[:7])]
+        picks.append(SectionPick(1, "seedB-1"))
+        payload = QuarterFinalPicks(picks=tuple(picks))
         assert "two picks" in rejection(payload, context(question(TypedQuestionKind.QF_PICKS)))
 
     def test_rejects_someone_outside_the_draw(self) -> None:
         payload = qf("ghost", *ALL_SECTIONS[1:])
-        assert "not in this draw" in rejection(payload, context(question(TypedQuestionKind.QF_PICKS)))
+        ctx = context(question(TypedQuestionKind.QF_PICKS))
+        assert "not in this draw" in rejection(payload, ctx)
 
 
 class TestCascade:
@@ -111,11 +113,13 @@ class TestCascade:
 
     def test_semi_finalists_ask_for_the_quarter_finals_first(self) -> None:
         ctx = context(question(TypedQuestionKind.SF_PICKS))
-        assert "quarter-finalists question first" in rejection(SemiFinalPicks(ALL_SECTIONS[:4]), ctx)
+        detail = rejection(SemiFinalPicks(ALL_SECTIONS[:4]), ctx)
+        assert "quarter-finalists question first" in detail
 
     def test_finalists_must_come_from_the_semi_finalists(self) -> None:
         ctx = context(
-            question(TypedQuestionKind.FINALIST_PICKS), SF_PICKS=SemiFinalPicks(ALL_SECTIONS[:4])
+            question(TypedQuestionKind.FINALIST_PICKS),
+            SF_PICKS=SemiFinalPicks(ALL_SECTIONS[:4]),
         )
         validate_prediction(FinalistPicks(ALL_SECTIONS[:2]), ctx)
         detail = rejection(FinalistPicks((ALL_SECTIONS[0], "seedA-8")), ctx)
@@ -123,7 +127,8 @@ class TestCascade:
 
     def test_the_champion_must_be_a_finalist(self) -> None:
         ctx = context(
-            question(TypedQuestionKind.CHAMPION), FINALIST_PICKS=FinalistPicks(ALL_SECTIONS[:2])
+            question(TypedQuestionKind.CHAMPION),
+            FINALIST_PICKS=FinalistPicks(ALL_SECTIONS[:2]),
         )
         validate_prediction(ChampionPick(ALL_SECTIONS[1]), ctx)
         assert "must come from your finalists" in rejection(ChampionPick("seedA-7"), ctx)
@@ -153,7 +158,10 @@ class TestBreakout:
 
 
 class TestSetScores:
-    MATCH = {"answer_type": AnswerType.MATCH_RESULT, "matchup": ("seedA-1", "seedA-2")}
+    MATCH: ClassVar[dict[str, object]] = {
+        "answer_type": AnswerType.MATCH_RESULT,
+        "matchup": ("seedA-1", "seedA-2"),
+    }
 
     @pytest.mark.parametrize("score", ["3-0", "3-1", "3-2"])
     def test_best_of_five_accepts(self, score: str) -> None:
