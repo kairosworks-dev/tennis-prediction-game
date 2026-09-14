@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    body { margin: 0; background: #FAF6EF; font-family: 'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #BE5A2E; text-decoration: none; }
+    a:hover { color: #9A4622; }
+  </style>
+</helmet>
+
+<div style="width: 390px; background: #FAF6EF; color: #1E1B16;">
+
+  <div style="background: #1C4034;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px 0 20px;">
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; flex-shrink: 0;" fill="none" stroke="#94B0A2" stroke-width="1.8">
+        <path d="M14.5 5.5L8 12l6.5 6.5"></path>
+      </svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #94B0A2;">Clay · Round 3</div>
+        <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 21px; line-height: 1.2; color: #FAF6EF;">Roland-Garros 2026</div>
+      </div>
+    </div>
+    <div style="display: flex; margin-top: 12px; padding: 0 8px;">
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 600; color: #FAF6EF; border-bottom: 2px solid #BE5A2E;">Rules</div>
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: #94B0A2;">Bets</div>
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: #94B0A2;">Scores</div>
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: #94B0A2;">Ranking</div>
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: #94B0A2;">Draw</div>
+    </div>
+  </div>
+
+  <div style="padding: 20px;">
+    <div style="background: #FFFCF7; border: 1px solid #E7DFD2; border-radius: 4px; overflow: hidden;">
+      <div style="display: flex; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #F0E9DD;">
+        <span style="width: 96px; flex-shrink: 0; font-size: 13px; color: #9A8B76;">Category</span>
+        <span style="flex-grow: 1; font-size: 13px; font-weight: 500;">Grand Slam</span>
+      </div>
+      <div style="display: flex; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #F0E9DD;">
+        <span style="width: 96px; flex-shrink: 0; font-size: 13px; color: #9A8B76;">Surface</span>
+        <span style="flex-grow: 1; font-size: 13px; font-weight: 500;">Clay, outdoor</span>
+      </div>
+      <div style="display: flex; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #F0E9DD;">
+        <span style="width: 96px; flex-shrink: 0; font-size: 13px; color: #9A8B76;">Location</span>
+        <span style="flex-grow: 1; font-size: 13px; font-weight: 500;">Paris, France</span>
+      </div>
+      <div style="display: flex; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #F0E9DD;">
+        <span style="width: 96px; flex-shrink: 0; font-size: 13px; color: #9A8B76;">Dates</span>
+        <span style="flex-grow: 1; font-size: 13px; font-weight: 500;">25 May – 8 June 2026</span>
+      </div>
+      <div style="display: flex; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #F0E9DD;">
+        <span style="width: 96px; flex-shrink: 0; font-size: 13px; color: #9A8B76;">ATP draw</span>
+        <span style="flex-grow: 1; font-size: 13px; font-weight: 500;">128 · best of five</span>
+      </div>
+      <div style="display: flex; gap: 10px; padding: 12px 16px;">
+        <span style="width: 96px; flex-shrink: 0; font-size: 13px; color: #9A8B76;">WTA draw</span>
+        <span style="flex-grow: 1; font-size: 13px; font-weight: 500;">128 · best of three</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 4px 20px 0 20px;">
+    <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px;">Tournament bets</div>
+    <div style="margin-top: 4px; font-size: 13px; color: #786D5F;">Submitted once per draw, before play begins.</div>
+
+    <div style="margin-top: 14px; background: #FFFCF7; border: 1px solid #E7DFD2; border-radius: 4px; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid #F0E9DD;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 14px; font-weight: 600;">Quarter-finalists</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">One per section, eight in total</div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #1C4034;">1 ea.</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid #F0E9DD;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 14px; font-weight: 600;">Semi-finalists</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">Four, from your quarter-finalists</div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #1C4034;">2 ea.</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid #F0E9DD;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 14px; font-weight: 600;">Finalists</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">Two, from your semi-finalists</div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #1C4034;">3 ea.</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid #F0E9DD;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 14px; font-weight: 600;">Champion</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">One, from your two finalists</div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #1C4034;">5</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid #F0E9DD;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 14px; font-weight: 600;">Underperformer</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">Seeded ten or better · exit in R1 / R2 / R3</div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #1C4034;">3/2/1</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 14px; font-weight: 600;">Breakout</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">Unseeded · R4 / QF / SF / F / title</div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: #1C4034;">2/3/4/5/7</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 24px 20px 0 20px;">
+    <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px;">Round bets</div>
+    <div style="margin-top: 14px; background: #FFFCF7; border: 1px solid #E7DFD2; border-radius: 4px; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid #F0E9DD;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 14px; font-weight: 600;">Featured match</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">Winner, plus the exact set score</div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #1C4034;">1 + 1</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 14px; font-weight: 600;">Extra questions</div>
+          <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">Whatever the organiser invents</div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: #9A8B76;">varies</span>
+      </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; line-height: 1.55; color: #9A8B76; text-wrap: pretty;">The set-score point only counts if you also called the winner. Round bets do not have to agree with your bracket — contradict yourself freely.</div>
+  </div>
+
+  <div style="padding: 24px 20px 0 20px;">
+    <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px;">House rules</div>
+    <div style="margin-top: 12px; padding: 16px; background: #FFFCF7; border: 1px solid #E7DFD2; border-radius: 4px; font-size: 14px; line-height: 1.65; color: #57503F; text-wrap: pretty;">
+      Deadlines are the deadlines. If a group closes while you are asleep, that is between you and your alarm clock.<br><br>
+      Withdrawals and retirements are settled by whoever is running the game, and the reason shows up next to your points. Argue in the group chat, not here.<br><br>
+      Nobody sees anybody else's picks until the group locks.
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #9A8B76;">Last updated by the organiser on 24 May.</div>
+  </div>
+
+  <div style="height: 28px;"></div>
+
+</div>
+</x-dc>
+</body>
+</html>

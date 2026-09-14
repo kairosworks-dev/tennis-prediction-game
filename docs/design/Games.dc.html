@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    body { margin: 0; background: #FAF6EF; font-family: 'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #BE5A2E; text-decoration: none; }
+    a:hover { color: #9A4622; }
+  </style>
+</helmet>
+
+<div style="width: 390px; background: #FAF6EF; color: #1E1B16;">
+
+  <div style="display: flex; align-items: center; gap: 12px; padding: 18px 20px; background: #1C4034;">
+    <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;" fill="none" stroke="#D98A5E" stroke-width="1.6">
+      <circle cx="12" cy="12" r="9.5"></circle>
+      <path d="M4.2 6.5c3.6 2.1 5.4 5.3 5.1 10.8"></path>
+      <path d="M19.8 6.5c-3.6 2.1-5.4 5.3-5.1 10.8"></path>
+    </svg>
+    <span style="flex-grow: 1; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #FAF6EF;">Deuce</span>
+    <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #2E5245; font-size: 13px; font-weight: 600; color: #FAF6EF;">M</span>
+  </div>
+
+  <div style="padding: 26px 20px 0 20px;">
+    <h1 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: 34px; line-height: 1.05; font-weight: 400;">Your games</h1>
+  </div>
+
+  <div style="padding: 26px 20px 0 20px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: #BE5A2E;"></span>
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #BE5A2E;">Running</span>
+    </div>
+
+    <div style="margin-top: 12px; background: #FFFCF7; border: 1px solid #E7DFD2; border-left: 3px solid #BE5A2E; border-radius: 4px; padding: 18px; box-shadow: 0 4px 14px rgba(30, 27, 22, 0.05);">
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <div style="flex-grow: 1;">
+          <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 26px; line-height: 1.12;">Roland-Garros 2026</div>
+          <div style="margin-top: 5px; font-size: 13px; color: #786D5F;">25 May – 8 June · Paris</div>
+        </div>
+        <span style="padding: 4px 9px; background: #F8EAE0; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #A8481F;">Clay</span>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 16px; padding: 12px 14px; background: #F3EDE3; border-radius: 4px;">
+        <div style="flex-grow: 1;">
+          <div style="font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #786D5F;">Round</div>
+          <div style="margin-top: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; color: #1C4034;">3</div>
+        </div>
+        <div style="width: 1px; background: #DED4C4;"></div>
+        <div style="flex-grow: 1;">
+          <div style="font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #786D5F;">Your rank</div>
+          <div style="margin-top: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; color: #1C4034;">4<span style="font-size: 12px; color: #786D5F;">/14</span></div>
+        </div>
+        <div style="width: 1px; background: #DED4C4;"></div>
+        <div style="flex-grow: 1;">
+          <div style="font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #786D5F;">Points</div>
+          <div style="margin-top: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; color: #1C4034;">34</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 7px; margin-top: 14px;">
+        <svg viewBox="0 0 24 24" style="width: 15px; height: 15px;" fill="none" stroke="#BE5A2E" stroke-width="1.8">
+          <circle cx="12" cy="12" r="8.6"></circle>
+          <path d="M12 7.4V12l3 1.8"></path>
+        </svg>
+        <span style="font-size: 13px; font-weight: 600; color: #BE5A2E;">Round 3 bets close in 5h 12m</span>
+      </div>
+
+      <button type="button" style="width: 100%; height: 46px; margin-top: 14px; background: #1C4034; border: none; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; font-weight: 600; color: #FAF6EF;">Place your round 3 bets</button>
+    </div>
+  </div>
+
+  <div style="padding: 30px 20px 0 20px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: #1C4034;"></span>
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #1C4034;">Open for signup</span>
+    </div>
+
+    <div style="margin-top: 12px; background: #FFFCF7; border: 1px solid #E7DFD2; border-radius: 4px; padding: 18px;">
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <div style="flex-grow: 1;">
+          <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; line-height: 1.12;">Wimbledon 2026</div>
+          <div style="margin-top: 5px; font-size: 13px; color: #786D5F;">29 June – 12 July · London</div>
+        </div>
+        <span style="padding: 4px 9px; background: #E7EFE9; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #1C4034;">Grass</span>
+      </div>
+      <div style="display: flex; align-items: center; margin-top: 14px; padding-top: 14px; border-top: 1px solid #E7DFD2;">
+        <div style="flex-grow: 1; font-size: 13px; color: #786D5F;">6 joined · closes 24 June</div>
+        <button type="button" style="height: 40px; padding: 0 22px; background: #FFFCF7; border: 1.5px solid #1C4034; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 600; color: #1C4034;">Join</button>
+      </div>
+    </div>
+
+    <button type="button" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 46px; margin-top: 12px; background: transparent; border: 1px dashed #C9BCA8; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 500; color: #786D5F;">
+      <svg viewBox="0 0 24 24" style="width: 16px; height: 16px;" fill="none" stroke="#786D5F" stroke-width="1.7">
+        <rect x="4" y="10.5" width="16" height="10" rx="2"></rect>
+        <path d="M8 10.5V7.5a4 4 0 018 0v3"></path>
+      </svg>
+      Join a private game with a code
+    </button>
+  </div>
+
+  <div style="padding: 30px 20px 0 20px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: #C9BCA8;"></span>
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #9A8B76;">Finished</span>
+    </div>
+
+    <div style="margin-top: 12px; background: #F6F1E8; border: 1px solid #E7DFD2; border-radius: 4px; padding: 18px;">
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <div style="flex-grow: 1;">
+          <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; line-height: 1.12; color: #57503F;">Australian Open 2026</div>
+          <div style="margin-top: 5px; font-size: 13px; color: #9A8B76;">12 – 25 January · Melbourne</div>
+        </div>
+        <span style="padding: 4px 9px; background: #E4E6EC; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #4A5367;">Hard</span>
+      </div>
+      <div style="display: flex; align-items: center; margin-top: 14px; padding-top: 14px; border-top: 1px solid #E7DFD2;">
+        <div style="display: flex; align-items: center; gap: 7px; flex-grow: 1;">
+          <svg viewBox="0 0 24 24" style="width: 16px; height: 16px;" fill="none" stroke="#9A8B76" stroke-width="1.6">
+            <path d="M7 4h10v5a5 5 0 01-10 0V4z"></path>
+            <path d="M7 5.5H4.5V8a3 3 0 003 3"></path>
+            <path d="M17 5.5h2.5V8a3 3 0 01-3 3"></path>
+            <path d="M9.5 20h5M12 14v6"></path>
+          </svg>
+          <span style="font-size: 13px; color: #786D5F;">You placed <strong style="color: #57503F;">2nd</strong> of 12</span>
+        </div>
+        <a href="#" style="font-size: 14px; font-weight: 600; color: #786D5F; border-bottom: 1px solid #C9BCA8;">Final table</a>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 32px;"></div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    body { margin: 0; background: #FAF6EF; font-family: 'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #BE5A2E; text-decoration: none; }
+    a:hover { color: #9A4622; }
+  </style>
+</helmet>
+
+<div style="width: 390px; background: #FAF6EF; color: #1E1B16;">
+
+  <div style="background: #1C4034;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px 0 20px;">
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; flex-shrink: 0;" fill="none" stroke="#94B0A2" stroke-width="1.8">
+        <path d="M14.5 5.5L8 12l6.5 6.5"></path>
+      </svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #94B0A2;">Clay · Round 3</div>
+        <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 21px; line-height: 1.2; color: #FAF6EF;">Roland-Garros 2026</div>
+      </div>
+    </div>
+    <div style="display: flex; margin-top: 12px; padding: 0 8px;">
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: #94B0A2;">Rules</div>
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 600; color: #FAF6EF; border-bottom: 2px solid #BE5A2E;">Bets</div>
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: #94B0A2;">Scores</div>
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: #94B0A2;">Ranking</div>
+      <div style="flex-grow: 1; padding: 12px 0 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: #94B0A2;">Draw</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px;">
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 15px 16px; background: #F6F1E8; border: 1px solid #E7DFD2; border-radius: 4px;">
+      <svg viewBox="0 0 24 24" style="width: 17px; height: 17px; flex-shrink: 0;" fill="none" stroke="#9A8B76" stroke-width="1.7">
+        <rect x="4.5" y="10.5" width="15" height="9.5" rx="2"></rect>
+        <path d="M8 10.5V7.8a4 4 0 018 0v2.7"></path>
+      </svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 15px; font-weight: 600; color: #57503F;">Tournament bets</div>
+        <div style="margin-top: 2px; font-size: 12px; color: #9A8B76;">Locked 25 May · 16 of 16 answered</div>
+      </div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; color: #1C4034;">21<span style="font-size: 11px; color: #9A8B76;">pts</span></div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: #F6F1E8; border: 1px solid #E7DFD2; border-radius: 4px;">
+      <svg viewBox="0 0 24 24" style="width: 17px; height: 17px; flex-shrink: 0;" fill="none" stroke="#9A8B76" stroke-width="1.7">
+        <rect x="4.5" y="10.5" width="15" height="9.5" rx="2"></rect>
+        <path d="M8 10.5V7.8a4 4 0 018 0v2.7"></path>
+      </svg>
+      <div style="flex-grow: 1; font-size: 14px; font-weight: 600; color: #57503F;">Round 1</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: #1C4034;">3<span style="font-size: 11px; color: #9A8B76;">pts</span></div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: #F6F1E8; border: 1px solid #E7DFD2; border-radius: 4px;">
+      <svg viewBox="0 0 24 24" style="width: 17px; height: 17px; flex-shrink: 0;" fill="none" stroke="#9A8B76" stroke-width="1.7">
+        <rect x="4.5" y="10.5" width="15" height="9.5" rx="2"></rect>
+        <path d="M8 10.5V7.8a4 4 0 018 0v2.7"></path>
+      </svg>
+      <div style="flex-grow: 1; font-size: 14px; font-weight: 600; color: #57503F;">Round 2</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: #1C4034;">2<span style="font-size: 11px; color: #9A8B76;">pts</span></div>
+    </div>
+
+    <div style="background: #FFFCF7; border: 1px solid #E7DFD2; border-top: 3px solid #BE5A2E; border-radius: 4px; box-shadow: 0 6px 20px rgba(30, 27, 22, 0.07);">
+
+      <div style="display: flex; align-items: flex-start; gap: 12px; padding: 18px 18px 0 18px;">
+        <div style="flex-grow: 1;">
+          <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 26px; line-height: 1.1;">Round 3</div>
+          <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px;">
+            <svg viewBox="0 0 24 24" style="width: 14px; height: 14px;" fill="none" stroke="#BE5A2E" stroke-width="1.9">
+              <circle cx="12" cy="12" r="8.6"></circle>
+              <path d="M12 7.4V12l3 1.8"></path>
+            </svg>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: #BE5A2E;">5h 12m left</span>
+          </div>
+        </div>
+        <span style="padding: 5px 10px; background: #F8EAE0; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #A8481F;">Open</span>
+      </div>
+
+      <div style="margin: 16px 18px 0 18px; padding: 13px 14px; background: #F3EDE3; border-radius: 4px; font-size: 13px; line-height: 1.55; color: #57503F; text-wrap: pretty;">Quarters on both sides this week. Musetti has never gone past this stage in Paris and I refuse to believe it starts now. Prove me wrong.</div>
+
+      <div style="padding: 22px 18px 0 18px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #786D5F;">Featured match · ATP</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">1 + 1 pt</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <div style="flex-grow: 1; flex-basis: 0; padding: 14px 12px; background: #F8EAE0; border: 2px solid #BE5A2E; border-radius: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: #BE5A2E;">[1]</span>
+              <span style="font-size: 11px; color: #A8481F;">ESP</span>
+            </div>
+            <div style="margin-top: 5px; font-size: 15px; font-weight: 600; line-height: 1.25; color: #1E1B16;">Carlos<br>Alcaraz</div>
+          </div>
+          <div style="flex-grow: 1; flex-basis: 0; padding: 14px 12px; background: #FFFCF7; border: 1px solid #D8CDBA; border-radius: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: #786D5F;">[9]</span>
+              <span style="font-size: 11px; color: #9A8B76;">ITA</span>
+            </div>
+            <div style="margin-top: 5px; font-size: 15px; font-weight: 600; line-height: 1.25; color: #57503F;">Lorenzo<br>Musetti</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; font-size: 12px; color: #786D5F;">Set score — best of five</div>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <div style="flex-grow: 1; height: 46px; display: flex; align-items: center; justify-content: center; background: #FFFCF7; border: 1px solid #D8CDBA; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: #57503F;">3–0</div>
+          <div style="flex-grow: 1; height: 46px; display: flex; align-items: center; justify-content: center; background: #1C4034; border: 1px solid #1C4034; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: #FAF6EF;">3–1</div>
+          <div style="flex-grow: 1; height: 46px; display: flex; align-items: center; justify-content: center; background: #FFFCF7; border: 1px solid #D8CDBA; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: #57503F;">3–2</div>
+        </div>
+      </div>
+
+      <div style="padding: 24px 18px 0 18px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #786D5F;">Featured match · WTA</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">1 + 1 pt</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <div style="flex-grow: 1; flex-basis: 0; padding: 14px 12px; background: #FFFCF7; border: 1px solid #D8CDBA; border-radius: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: #786D5F;">[1]</span>
+              <span style="font-size: 11px; color: #9A8B76;">BLR</span>
+            </div>
+            <div style="margin-top: 5px; font-size: 15px; font-weight: 600; line-height: 1.25; color: #57503F;">Aryna<br>Sabalenka</div>
+          </div>
+          <div style="flex-grow: 1; flex-basis: 0; padding: 14px 12px; background: #FFFCF7; border: 1px solid #D8CDBA; border-radius: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: #786D5F;">[3]</span>
+              <span style="font-size: 11px; color: #9A8B76;">USA</span>
+            </div>
+            <div style="margin-top: 5px; font-size: 15px; font-weight: 600; line-height: 1.25; color: #57503F;">Coco<br>Gauff</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; font-size: 12px; color: #9A8B76;">Set score — pick a winner first</div>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <div style="flex-grow: 1; height: 46px; display: flex; align-items: center; justify-content: center; background: #F3EDE3; border: 1px solid #E7DFD2; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: #BEB1A0;">2–0</div>
+          <div style="flex-grow: 1; height: 46px; display: flex; align-items: center; justify-content: center; background: #F3EDE3; border: 1px solid #E7DFD2; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: #BEB1A0;">2–1</div>
+        </div>
+      </div>
+
+      <div style="padding: 24px 18px 0 18px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #786D5F;">Extra question</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">2 pts</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 15px; line-height: 1.45; color: #1E1B16; text-wrap: pretty;">How many of the four men's quarter-finals go to a deciding set?</div>
+        <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px;">
+          <button type="button" style="width: 46px; height: 46px; background: #FFFCF7; border: 1px solid #D8CDBA; border-radius: 4px; font-size: 20px; color: #57503F;">−</button>
+          <div style="flex-grow: 1; height: 46px; display: flex; align-items: center; justify-content: center; background: #FFFCF7; border: 1px solid #D8CDBA; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; color: #1E1B16;">2</div>
+          <button type="button" style="width: 46px; height: 46px; background: #FFFCF7; border: 1px solid #D8CDBA; border-radius: 4px; font-size: 20px; color: #57503F;">+</button>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 16px 18px; background: #F3EDE3; border-top: 1px solid #E7DFD2;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg viewBox="0 0 24 24" style="width: 15px; height: 15px;" fill="none" stroke="#9A8B76" stroke-width="1.8">
+            <path d="M5 12.5l4.5 4.5L19 7.5"></path>
+          </svg>
+          <span style="flex-grow: 1; font-size: 13px; color: #786D5F;">3 of 4 answered · saved as a draft</span>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <button type="button" style="flex-grow: 1; height: 48px; background: transparent; border: 1.5px solid #C9BCA8; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; font-weight: 600; color: #57503F;">Save draft</button>
+          <button type="button" style="flex-grow: 1; height: 48px; background: #BE5A2E; border: none; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; font-weight: 600; color: #FFFCF7;">Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 15px 16px; background: transparent; border: 1px dashed #D8CDBA; border-radius: 4px;">
+      <svg viewBox="0 0 24 24" style="width: 17px; height: 17px; flex-shrink: 0;" fill="none" stroke="#BEB1A0" stroke-width="1.7">
+        <circle cx="12" cy="12" r="8.6"></circle>
+        <path d="M12 7.4V12l3 1.8"></path>
+      </svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 14px; font-weight: 600; color: #9A8B76;">Round 4</div>
+        <div style="margin-top: 2px; font-size: 12px; color: #BEB1A0;">Opens when round 3 finishes</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

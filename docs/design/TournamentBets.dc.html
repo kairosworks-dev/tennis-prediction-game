@@ -1,0 +1,406 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    body { margin: 0; background: #FAF6EF; font-family: 'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #BE5A2E; text-decoration: none; }
+    a:hover { color: #9A4622; }
+    button { font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; text-align: left; }
+  </style>
+</helmet>
+
+<div style="width: 390px; background: #FAF6EF; color: #1E1B16;">
+
+  <div style="background: #1C4034;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px 0 20px;">
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; flex-shrink: 0;" fill="none" stroke="#94B0A2" stroke-width="1.8">
+        <path d="M14.5 5.5L8 12l6.5 6.5"></path>
+      </svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #94B0A2;">Tournament bets · closes 25 May</div>
+        <div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 21px; line-height: 1.2; color: #FAF6EF;">Before the draw starts</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 14px; padding: 0 20px 16px 20px;">
+      <div style="flex-grow: 1; padding: 9px 0; text-align: center; background: #FAF6EF; border-radius: 3px; font-size: 13px; font-weight: 600; color: #1C4034;">ATP draw</div>
+      <div style="flex-grow: 1; padding: 9px 0; text-align: center; background: #2E5245; border-radius: 3px; font-size: 13px; font-weight: 500; color: #94B0A2;">WTA draw</div>
+    </div>
+  </div>
+
+  <div style="padding: 22px 20px 0 20px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; color: #1E1B16;">Quarter-finalists</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">1 pt each</span>
+    </div>
+    <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F;">One player from each of the eight sections. <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: {{qfColor}};">{{qfCount}} of 8</span> chosen.</div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
+      <sc-for list="{{sections}}" as="s" hint-placeholder-count="8">
+        <div style="background: #FFFCF7; border: 1px solid {{s.borderColor}}; border-radius: 4px; overflow: hidden;">
+          <button type="button" onClick="{{s.toggle}}" style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; background: {{s.headBg}}; border: none;">
+            <span style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: {{s.badgeBg}}; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: {{s.badgeFg}};">{{s.n}}</span>
+            <span style="flex-grow: 1; font-size: 15px; font-weight: {{s.nameWeight}}; color: {{s.nameColor}};">{{s.label}}</span>
+            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="#9A8B76" stroke-width="1.9">
+              <path d="{{s.chevron}}"></path>
+            </svg>
+          </button>
+          <sc-if value="{{s.open}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 6px; padding: 4px 10px 12px 10px; border-top: 1px solid #F0E9DD;">
+              <sc-for list="{{s.candidates}}" as="c" hint-placeholder-count="5">
+                <button type="button" onClick="{{c.pick}}" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px; background: {{c.bg}}; border: 1px solid {{c.bc}}; border-radius: 3px;">
+                  <span style="width: 30px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: {{c.seedColor}};">{{c.seed}}</span>
+                  <span style="flex-grow: 1; font-size: 14px; font-weight: {{c.weight}}; color: {{c.fg}};">{{c.name}}</span>
+                  <span style="font-size: 11px; color: #9A8B76;">{{c.country}}</span>
+                </button>
+              </sc-for>
+              <div style="padding: 8px 12px 0 12px; font-size: 12px; color: #9A8B76;">{{s.moreLabel}}</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding: 26px 20px 0 20px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; color: {{sfHeadColor}};">Semi-finalists</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">2 pts each</span>
+    </div>
+    <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F;">{{sfHint}}</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+      <sc-for list="{{sfPool}}" as="p" hint-placeholder-count="4">
+        <button type="button" onClick="{{p.toggle}}" style="padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding: 26px 20px 0 20px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; color: {{fHeadColor}};">Finalists</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">3 pts each</span>
+    </div>
+    <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F;">{{fHint}}</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+      <sc-for list="{{fPool}}" as="p" hint-placeholder-count="4">
+        <button type="button" onClick="{{p.toggle}}" style="padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding: 26px 20px 0 20px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; color: {{cHeadColor}};">Champion</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">5 pts</span>
+    </div>
+    <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F;">{{cHint}}</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+      <sc-for list="{{champPool}}" as="p" hint-placeholder-count="2">
+        <button type="button" onClick="{{p.toggle}}" style="padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="margin: 26px 20px 0 20px; padding-top: 24px; border-top: 1px solid #E7DFD2;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 22px;">Underperformer</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">3 / 2 / 1</span>
+    </div>
+    <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F; text-wrap: pretty;">A seed of ten or better who goes out early. Three points for a first-round exit, two for the second, one for the third.</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+      <sc-for list="{{underPool}}" as="p" hint-placeholder-count="8">
+        <button type="button" onClick="{{p.toggle}}" style="display: flex; align-items: center; gap: 7px; padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px;">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: {{p.seedColor}};">{{p.seed}}</span>
+          <span style="font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="margin: 26px 20px 0 20px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-size: 22px;">Breakout</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9A8B76;">2 / 3 / 4 / 5 / 7</span>
+    </div>
+    <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F; text-wrap: pretty;">An unseeded entrant who runs. Points climb for reaching round four, the quarters, the semis, the final, and for winning the thing.</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+      <sc-for list="{{breakoutPool}}" as="p" hint-placeholder-count="8">
+        <button type="button" onClick="{{p.toggle}}" style="padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="margin: 28px 20px 0 20px; padding: 16px; background: {{banner.bg}}; border: 1px solid {{banner.bc}}; border-radius: 4px;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;" fill="none" stroke="{{banner.icon}}" stroke-width="1.8">
+        <path d="{{banner.glyph}}"></path>
+      </svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 14px; font-weight: 600; color: {{banner.fg}};">{{banner.title}}</div>
+        <div style="margin-top: 4px; font-size: 13px; line-height: 1.5; color: {{banner.subFg}}; text-wrap: pretty;">{{banner.detail}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px; margin: 14px 20px 0 20px;">
+    <button type="button" style="flex-grow: 1; height: 50px; background: transparent; border: 1.5px solid #C9BCA8; border-radius: 4px; font-size: 15px; font-weight: 600; color: #57503F; text-align: center;">Save draft</button>
+    <button type="button" style="flex-grow: 1; height: 50px; background: {{submit.bg}}; border: none; border-radius: 4px; font-size: 15px; font-weight: 600; color: {{submit.fg}}; text-align: center;">Submit picks</button>
+  </div>
+
+  <div style="height: 28px;"></div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":2200}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { picks: [null, 'musetti', null, 'zverev', null, 'djokovic', null, 'sinner'], open: 0, sf: [], f: [], champ: null, under: null, breakout: null };
+  }
+
+  data() {
+    return [
+      { n: 1, players: [
+        { id: 'alcaraz', name: 'Carlos Alcaraz', seed: 1, country: 'ESP' },
+        { id: 'cerundolo', name: 'Francisco Cerúndolo', seed: 29, country: 'ARG' },
+        { id: 'etcheverry', name: 'Tomás Etcheverry', seed: null, country: 'ARG' },
+        { id: 'bautista', name: 'Roberto Bautista Agut', seed: null, country: 'ESP' },
+        { id: 'halys', name: 'Quentin Halys', seed: null, country: 'FRA' } ] },
+      { n: 2, players: [
+        { id: 'musetti', name: 'Lorenzo Musetti', seed: 9, country: 'ITA' },
+        { id: 'humbert', name: 'Ugo Humbert', seed: 19, country: 'FRA' },
+        { id: 'cobolli', name: 'Flavio Cobolli', seed: null, country: 'ITA' },
+        { id: 'fils', name: 'Arthur Fils', seed: null, country: 'FRA' },
+        { id: 'moutet', name: 'Corentin Moutet', seed: null, country: 'FRA' } ] },
+      { n: 3, players: [
+        { id: 'ruud', name: 'Casper Ruud', seed: 7, country: 'NOR' },
+        { id: 'tiafoe', name: 'Frances Tiafoe', seed: 18, country: 'USA' },
+        { id: 'mensik', name: 'Jakub Menšík', seed: null, country: 'CZE' },
+        { id: 'darderi', name: 'Luciano Darderi', seed: null, country: 'ITA' },
+        { id: 'muller', name: 'Alexandre Müller', seed: null, country: 'FRA' } ] },
+      { n: 4, players: [
+        { id: 'zverev', name: 'Alexander Zverev', seed: 3, country: 'GER' },
+        { id: 'tsitsipas', name: 'Stefanos Tsitsipas', seed: 13, country: 'GRE' },
+        { id: 'griekspoor', name: 'Tallon Griekspoor', seed: null, country: 'NED' },
+        { id: 'baez', name: 'Sebastián Báez', seed: null, country: 'ARG' },
+        { id: 'vdz', name: 'Botic van de Zandschulp', seed: null, country: 'NED' } ] },
+      { n: 5, players: [
+        { id: 'rune', name: 'Holger Rune', seed: 4, country: 'DEN' },
+        { id: 'machac', name: 'Tomáš Macháč', seed: 21, country: 'CZE' },
+        { id: 'nakashima', name: 'Brandon Nakashima', seed: null, country: 'USA' },
+        { id: 'berrettini', name: 'Matteo Berrettini', seed: null, country: 'ITA' },
+        { id: 'zhang', name: 'Zhang Zhizhen', seed: null, country: 'CHN' } ] },
+      { n: 6, players: [
+        { id: 'djokovic', name: 'Novak Djokovic', seed: 6, country: 'SRB' },
+        { id: 'korda', name: 'Sebastian Korda', seed: 23, country: 'USA' },
+        { id: 'popyrin', name: 'Alexei Popyrin', seed: null, country: 'AUS' },
+        { id: 'bublik', name: 'Alexander Bublik', seed: null, country: 'KAZ' },
+        { id: 'safiullin', name: 'Roman Safiullin', seed: null, country: 'RUS' } ] },
+      { n: 7, players: [
+        { id: 'deminaur', name: 'Alex de Miñaur', seed: 8, country: 'AUS' },
+        { id: 'shelton', name: 'Ben Shelton', seed: 12, country: 'USA' },
+        { id: 'michelsen', name: 'Alex Michelsen', seed: null, country: 'USA' },
+        { id: 'struff', name: 'Jan-Lennard Struff', seed: null, country: 'GER' },
+        { id: 'navone', name: 'Mariano Navone', seed: null, country: 'ARG' } ] },
+      { n: 8, players: [
+        { id: 'sinner', name: 'Jannik Sinner', seed: 2, country: 'ITA' },
+        { id: 'draper', name: 'Jack Draper', seed: 14, country: 'GBR' },
+        { id: 'dimitrov', name: 'Grigor Dimitrov', seed: null, country: 'BUL' },
+        { id: 'lehecka', name: 'Jiří Lehečka', seed: null, country: 'CZE' },
+        { id: 'dzumhur', name: 'Damir Džumhur', seed: null, country: 'BIH' } ] }
+    ];
+  }
+
+  all() {
+    const out = [];
+    this.data().forEach((s) => s.players.forEach((p) => out.push(p)));
+    return out;
+  }
+
+  find(id) {
+    return this.all().filter((p) => p.id === id)[0] || null;
+  }
+
+  shortName(p) {
+    if (!p) { return ''; }
+    const bits = p.name.split(' ');
+    return bits[bits.length - 1];
+  }
+
+  pickSection(i, id) {
+    const picks = this.state.picks.slice();
+    const old = picks[i];
+    picks[i] = id;
+    let sf = this.state.sf.filter((x) => x !== old);
+    let f = this.state.f.filter((x) => x !== old);
+    let champ = this.state.champ === old ? null : this.state.champ;
+    let next = null;
+    for (let k = 0; k < 8; k = k + 1) {
+      if (picks[k] === null) { next = k; break; }
+    }
+    this.setState({ picks: picks, sf: sf, f: f, champ: champ, open: next });
+  }
+
+  toggleSf(id) {
+    const on = this.state.sf.indexOf(id) >= 0;
+    if (on) {
+      this.setState({
+        sf: this.state.sf.filter((x) => x !== id),
+        f: this.state.f.filter((x) => x !== id),
+        champ: this.state.champ === id ? null : this.state.champ
+      });
+    } else if (this.state.sf.length < 4) {
+      this.setState({ sf: this.state.sf.concat([id]) });
+    }
+  }
+
+  toggleF(id) {
+    const on = this.state.f.indexOf(id) >= 0;
+    if (on) {
+      this.setState({ f: this.state.f.filter((x) => x !== id), champ: this.state.champ === id ? null : this.state.champ });
+    } else if (this.state.f.length < 2) {
+      this.setState({ f: this.state.f.concat([id]) });
+    }
+  }
+
+  chip(id, name, on, dim) {
+    const self = this;
+    return {
+      id: id,
+      name: name,
+      bg: on ? '#1C4034' : (dim ? '#F3EDE3' : '#FFFCF7'),
+      bc: on ? '#1C4034' : (dim ? '#E7DFD2' : '#D8CDBA'),
+      fg: on ? '#FAF6EF' : (dim ? '#BEB1A0' : '#57503F'),
+      seedColor: on ? '#94B0A2' : (dim ? '#CFC3B1' : '#9A8B76'),
+      weight: on ? '600' : '500',
+      toggle: function () { self.noop(); }
+    };
+  }
+
+  noop() {}
+
+  renderVals() {
+    const self = this;
+    const st = this.state;
+    const qfCount = st.picks.filter((x) => x !== null).length;
+
+    const sections = this.data().map(function (s, i) {
+      const pickedId = st.picks[i];
+      const picked = self.find(pickedId);
+      const isOpen = st.open === i;
+      return {
+        n: s.n,
+        open: isOpen,
+        label: picked ? picked.name : 'Choose a player',
+        nameColor: picked ? '#1E1B16' : '#9A8B76',
+        nameWeight: picked ? '600' : '400',
+        borderColor: picked ? '#D8CDBA' : (isOpen ? '#BE5A2E' : '#E7DFD2'),
+        headBg: isOpen ? '#F8EAE0' : '#FFFCF7',
+        badgeBg: picked ? '#1C4034' : '#F3EDE3',
+        badgeFg: picked ? '#FAF6EF' : '#9A8B76',
+        chevron: isOpen ? 'M6 14.5L12 8.5l6 6' : 'M6 9.5l6 6 6-6',
+        moreLabel: 'Showing 5 of 16 entrants in this section',
+        candidates: s.players.map(function (p) {
+          const on = pickedId === p.id;
+          return {
+            name: p.name,
+            country: p.country,
+            seed: p.seed ? '[' + p.seed + ']' : '—',
+            bg: on ? '#1C4034' : '#FFFCF7',
+            bc: on ? '#1C4034' : '#E7DFD2',
+            fg: on ? '#FAF6EF' : '#57503F',
+            seedColor: on ? '#94B0A2' : '#9A8B76',
+            weight: on ? '600' : '500',
+            pick: function () { self.pickSection(i, p.id); }
+          };
+        })
+      };
+    });
+
+    const sfPool = st.picks.filter((x) => x !== null).map(function (id) {
+      const on = st.sf.indexOf(id) >= 0;
+      const dim = !on && st.sf.length >= 4;
+      const c = self.chip(id, self.shortName(self.find(id)), on, dim);
+      c.toggle = function () { self.toggleSf(id); };
+      return c;
+    });
+
+    const fPool = st.sf.map(function (id) {
+      const on = st.f.indexOf(id) >= 0;
+      const dim = !on && st.f.length >= 2;
+      const c = self.chip(id, self.shortName(self.find(id)), on, dim);
+      c.toggle = function () { self.toggleF(id); };
+      return c;
+    });
+
+    const champPool = st.f.map(function (id) {
+      const on = st.champ === id;
+      const c = self.chip(id, self.shortName(self.find(id)), on, false);
+      c.toggle = function () { self.setState({ champ: on ? null : id }); };
+      return c;
+    });
+
+    const underPool = this.all().filter((p) => p.seed !== null && p.seed <= 10).map(function (p) {
+      const on = st.under === p.id;
+      const c = self.chip(p.id, self.shortName(p), on, false);
+      c.seed = '[' + p.seed + ']';
+      c.toggle = function () { self.setState({ under: on ? null : p.id }); };
+      return c;
+    });
+
+    const breakoutPool = this.all().filter((p) => p.seed === null).slice(0, 8).map(function (p) {
+      const on = st.breakout === p.id;
+      const c = self.chip(p.id, self.shortName(p), on, false);
+      c.toggle = function () { self.setState({ breakout: on ? null : p.id }); };
+      return c;
+    });
+
+    const missing = [];
+    if (qfCount < 8) { missing.push((8 - qfCount) + ' quarter-finalist picks'); }
+    if (st.sf.length < 4) { missing.push((4 - st.sf.length) + ' semi-finalists'); }
+    if (st.f.length < 2) { missing.push((2 - st.f.length) + ' finalists'); }
+    if (!st.champ) { missing.push('a champion'); }
+    if (!st.under) { missing.push('an underperformer'); }
+    if (!st.breakout) { missing.push('a breakout pick'); }
+
+    const complete = missing.length === 0;
+    const banner = complete
+      ? { bg: '#E7EFE9', bc: '#BBD1C3', fg: '#1C4034', subFg: '#3A6252', icon: '#1C4034', glyph: 'M5 12.5l4.5 4.5L19 7.5', title: 'Ready to submit', detail: 'Every question answered. You can keep changing your mind until the deadline on 25 May.' }
+      : { bg: '#F8EAE0', bc: '#E3BCA0', fg: '#A8481F', subFg: '#8A5233', icon: '#BE5A2E', glyph: 'M12 7.5v5.5M12 16.4v0.1M10.3 3.9L2.5 17.4a2 2 0 001.7 3h15.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z', title: 'Still to answer', detail: 'You need ' + missing.join(', ') + '.' };
+
+    return {
+      sections: sections,
+      qfCount: qfCount,
+      qfColor: qfCount === 8 ? '#1C4034' : '#BE5A2E',
+      sfPool: sfPool,
+      fPool: fPool,
+      champPool: champPool,
+      underPool: underPool,
+      breakoutPool: breakoutPool,
+      sfHeadColor: sfPool.length ? '#1E1B16' : '#BEB1A0',
+      fHeadColor: fPool.length ? '#1E1B16' : '#BEB1A0',
+      cHeadColor: champPool.length ? '#1E1B16' : '#BEB1A0',
+      sfHint: sfPool.length ? ('Four of your eight. ' + st.sf.length + ' of 4 chosen.') : 'Choose your quarter-finalists first.',
+      fHint: fPool.length ? ('Two of your four. ' + st.f.length + ' of 2 chosen.') : 'Choose your semi-finalists first.',
+      cHint: champPool.length ? 'One of your two finalists.' : 'Choose your finalists first.',
+      banner: banner,
+      submit: { bg: complete ? '#BE5A2E' : '#E0D5C3', fg: complete ? '#FFFCF7' : '#A99B87' }
+    };
+  }
+}
+</script>
+</body>
+</html>

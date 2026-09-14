@@ -56,3 +56,11 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+
+# ==========================================
+# Design Canvas (Claude Design)
+# ==========================================
+# The .dc.html artboards and canvas.json are the source and ARE tracked.
+# The seeded bundle is ~2.5 MB of generated editor payload — regenerate it
+# from the artboards instead of committing it.
+docs/design/*-screens.html
