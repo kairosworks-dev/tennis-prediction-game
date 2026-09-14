@@ -669,7 +669,15 @@ export class MockApiClient implements ApiClient {
     });
   }
 
-  /* --- admin --- */
+  /* -----------------------------------------------------------------------
+   * Deferred surface (spec 13.1, decision D14)
+   *
+   * Everything below is implemented and tested but is NOT on the `ApiClient`
+   * interface, so it does not reach `openapi.yaml` or the backend. It is kept
+   * because it works and the next pass wants it. Do not add a call site for
+   * any of it without first putting the method back on the interface and the
+   * operation in the contract.
+   * -------------------------------------------------------------------- */
 
   async listUsers(query: ListUsersQuery): Promise<Paginated<User>> {
     this.requireAdmin();
