@@ -8,6 +8,7 @@ nowhere else.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 from typing import Annotated
 
 from fastapi import Cookie, Depends, Request
@@ -43,9 +44,15 @@ def read_session(raw: str | None) -> str | None:
     return user_id if isinstance(user_id, str) else None
 
 
-def get_repositories(request: Request) -> Repositories:
-    """The one place an implementation is chosen (step 4 swaps it here)."""
-    return request.app.state.repositories
+def get_repositories(request: Request) -> Iterator[Repositories]:
+    """Open a repository set for this request, and close it afterwards.
+
+    Which implementation it is was decided once in `create_app`. Per-request is
+    not a detail: a SQLAlchemy Session shared across concurrent requests
+    corrupts their results.
+    """
+    with request.app.state.repository_scope() as repos:
+        yield repos
 
 
 def get_email_provider() -> EmailProvider:

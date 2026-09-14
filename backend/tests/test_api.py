@@ -7,8 +7,13 @@ validation in spec 5.3.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 
+from app.main import build_repository_scope, create_app
 from app.seed import DEMO_PASSWORD
 from tests.conftest import TOURNAMENT_ID
 
@@ -278,3 +283,53 @@ class TestRankingAndScores:
         open_block = next(g for g in breakdown["groups"] if g["betGroup"]["status"] == "OPEN")
         assert all(row["points"] is None for row in open_block["rows"])
         assert open_block["comparisonAvailable"] is False
+
+
+class TestRepositoryScoping:
+    """A repository set is opened per request, not shared across them.
+
+    A SQLAlchemy Session is not thread-safe and uvicorn runs sync endpoints in
+    a threadpool, so one shared session corrupts results under concurrency. It
+    surfaced in a browser as an IndexError inside SQLAlchemy's row handling,
+    which names nothing useful. TestClient issues requests sequentially, so no
+    amount of ordinary API testing would have found it.
+    """
+
+    def test_sqlite_opens_a_fresh_repository_set_each_time(self) -> None:
+        scope = build_repository_scope("sqlite")
+        with scope() as first, scope() as second:
+            assert first is not second
+
+    def test_memory_shares_one_set_because_the_store_is_the_truth(self) -> None:
+        scope = build_repository_scope("memory")
+        with scope() as first, scope() as second:
+            assert first is second
+
+    def test_concurrent_reads_all_succeed(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The shape of the bug: many readers at once, against a real app.
+
+        A file database rather than `sqlite://`, because the in-memory URL uses
+        a StaticPool — one connection for everybody — which would reintroduce
+        the same contention one layer down and prove nothing.
+        """
+        monkeypatch.setenv("REPOSITORY_BACKEND", "sqlite")
+        monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path / 'concurrency.db'}")
+
+        client = TestClient(create_app())
+        client.post(
+            "/api/auth/login", json={"email": "you@example.com", "password": DEMO_PASSWORD}
+        )
+
+        paths = [
+            f"/api/tournaments/{TOURNAMENT_ID}/draws",
+            f"/api/tournaments/{TOURNAMENT_ID}/bet-groups",
+            f"/api/tournaments/{TOURNAMENT_ID}/ranking",
+            f"/api/tournaments/{TOURNAMENT_ID}/scores",
+            "/api/me",
+        ] * 6
+
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            codes = [r.status_code for r in pool.map(client.get, paths)]
+        assert codes == [200] * len(paths)

@@ -8,10 +8,13 @@ it the request, and turns whatever comes back into the wire shape.
 from __future__ import annotations
 
 import os
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager, contextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.api.routers import auth, games, play, results
 from app.repositories.interfaces import Repositories
@@ -46,23 +49,69 @@ _TITLES = {
 }
 
 
-def build_repositories(backend: str | None = None) -> Repositories:
+#: Opens a `Repositories` for the life of one request and closes it after.
+RepositoryScope = Callable[[], AbstractContextManager[Repositories]]
+
+
+def _fixed_scope(repos: Repositories) -> RepositoryScope:
+    """One shared instance, for the in-memory set and for injected test doubles."""
+
+    @contextmanager
+    def scope() -> Iterator[Repositories]:
+        yield repos
+
+    return scope
+
+
+def _session_scope(session_factory: sessionmaker[Session]) -> RepositoryScope:
+    """A fresh session per request.
+
+    A SQLAlchemy Session is not thread-safe, and uvicorn runs sync endpoints in
+    a threadpool, so sharing one across requests corrupts results under any
+    concurrency at all — it surfaces as an IndexError inside SQLAlchemy's row
+    handling rather than as anything that names the real cause. One session per
+    request is the standard answer and the only correct one here.
+    """
+
+    @contextmanager
+    def scope() -> Iterator[Repositories]:
+        session = session_factory()
+        try:
+            yield SqlAlchemyRepositories(session)
+        finally:
+            session.close()
+
+    return scope
+
+
+def build_repository_scope(backend: str | None = None) -> RepositoryScope:
     """Pick a persistence implementation.
 
-    This is the whole of step 4's swap: the services and the domain never
-    learn which one they got. `memory` keeps the in-memory set from step 3;
-    `sqlite` uses SQLAlchemy against a file, or against `:memory:` for tests.
+    This is the whole of step 4's swap: the services and the domain never learn
+    which one they got. `memory` keeps the in-memory set from step 3; `sqlite`
+    uses SQLAlchemy against a file, or against `:memory:` for tests.
     """
     choice = backend or os.environ.get("REPOSITORY_BACKEND", "memory")
     if choice == "memory":
-        return MemoryRepositories()
+        return _fixed_scope(MemoryRepositories())
 
     url = os.environ.get("DATABASE_URL", "sqlite:///./tennis.db")
     engine = create_sqlite_engine(url)
     # Alembic owns the schema for a real database; create_all is here so a
     # throwaway in-memory database works without running migrations first.
     Base.metadata.create_all(engine)
-    return SqlAlchemyRepositories(create_session_factory(engine)())
+    return _session_scope(create_session_factory(engine))
+
+
+def build_repositories(backend: str | None = None) -> Repositories:
+    """A single `Repositories` outside a request — for scripts and seeding.
+
+    Holds its session open for the caller's lifetime, which is right for a
+    one-shot script and wrong for a server; the server uses the scope above.
+    """
+    scope = build_repository_scope(backend)
+    context = scope()
+    return context.__enter__()
 
 
 def create_app(*, seed: bool = True, repositories: Repositories | None = None) -> FastAPI:
@@ -73,10 +122,12 @@ def create_app(*, seed: bool = True, repositories: Repositories | None = None) -
         servers=[{"url": "/api", "description": "Same-origin API"}],
     )
 
-    repos = repositories if repositories is not None else build_repositories()
-    if seed and repos.tournaments.get("roland-garros-2026") is None:
-        seed_demo_game(repos)
-    app.state.repositories = repos
+    scope = _fixed_scope(repositories) if repositories is not None else build_repository_scope()
+    if seed:
+        with scope() as repos:
+            if repos.tournaments.get("roland-garros-2026") is None:
+                seed_demo_game(repos)
+    app.state.repository_scope = scope
 
     app.add_middleware(
         CORSMiddleware,
