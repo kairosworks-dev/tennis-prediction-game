@@ -93,7 +93,4 @@ outcomes.
 
 ## Context
 
-Built for Module 2 of the AI Dev Tools Zoomcamp, as an exercise in a controlled
-AI-assisted workflow: spec first, then frontend, then contract, then backend, then
-persistence — verifying each step before starting the next. The AI usage log is in
-[`docs/ai-usage-report.md`](docs/ai-usage-report.md).
+Built for Module 2 of the [AI Dev Tools Zoomcamp](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp) by Alexey Grigorev and the DataTalks.Club, as an exercise in a controlled AI-assisted workflow: spec first, then frontend, then contract, then backend, then persistence — verifying each step before starting the next. The AI usage log is in [`docs/ai-usage-report.md`](docs/ai-usage-report.md).
