@@ -29,8 +29,8 @@
       </div>
     </div>
     <div style="display: flex; gap: 8px; margin-top: 14px; padding: 0 20px 16px 20px;">
-      <div style="flex-grow: 1; padding: 9px 0; text-align: center; background: #FAF6EF; border-radius: 3px; font-size: 13px; font-weight: 600; color: #1C4034;">ATP draw</div>
-      <div style="flex-grow: 1; padding: 9px 0; text-align: center; background: #2E5245; border-radius: 3px; font-size: 13px; font-weight: 500; color: #94B0A2;">WTA draw</div>
+      <div style="flex-grow: 1; padding: 14px 0; text-align: center; background: #FAF6EF; border-radius: 3px; font-size: 13px; font-weight: 600; color: #1C4034;">ATP draw</div>
+      <div style="flex-grow: 1; padding: 14px 0; text-align: center; background: #2E5245; border-radius: 3px; font-size: 13px; font-weight: 500; color: #94B0A2;">WTA draw</div>
     </div>
   </div>
 
@@ -55,7 +55,7 @@
           <sc-if value="{{s.open}}" hint-placeholder-val="{{true}}">
             <div style="display: flex; flex-direction: column; gap: 6px; padding: 4px 10px 12px 10px; border-top: 1px solid #F0E9DD;">
               <sc-for list="{{s.candidates}}" as="c" hint-placeholder-count="5">
-                <button type="button" onClick="{{c.pick}}" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px; background: {{c.bg}}; border: 1px solid {{c.bc}}; border-radius: 3px;">
+                <button type="button" onClick="{{c.pick}}" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 13px 12px; background: {{c.bg}}; border: 1px solid {{c.bc}}; border-radius: 3px;">
                   <span style="width: 30px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: {{c.seedColor}};">{{c.seed}}</span>
                   <span style="flex-grow: 1; font-size: 14px; font-weight: {{c.weight}}; color: {{c.fg}};">{{c.name}}</span>
                   <span style="font-size: 11px; color: #9A8B76;">{{c.country}}</span>
@@ -78,7 +78,7 @@
     <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F;">{{sfHint}}</div>
     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
       <sc-for list="{{sfPool}}" as="p" hint-placeholder-count="4">
-        <button type="button" onClick="{{p.toggle}}" style="padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
+        <button type="button" onClick="{{p.toggle}}" style="padding: 12px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
       </sc-for>
     </div>
   </div>
@@ -92,7 +92,7 @@
     <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F;">{{fHint}}</div>
     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
       <sc-for list="{{fPool}}" as="p" hint-placeholder-count="4">
-        <button type="button" onClick="{{p.toggle}}" style="padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
+        <button type="button" onClick="{{p.toggle}}" style="padding: 12px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
       </sc-for>
     </div>
   </div>
@@ -106,7 +106,7 @@
     <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F;">{{cHint}}</div>
     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
       <sc-for list="{{champPool}}" as="p" hint-placeholder-count="2">
-        <button type="button" onClick="{{p.toggle}}" style="padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
+        <button type="button" onClick="{{p.toggle}}" style="padding: 12px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
       </sc-for>
     </div>
   </div>
@@ -120,7 +120,7 @@
     <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F; text-wrap: pretty;">A seed of ten or better who goes out early. Three points for a first-round exit, two for the second, one for the third.</div>
     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
       <sc-for list="{{underPool}}" as="p" hint-placeholder-count="8">
-        <button type="button" onClick="{{p.toggle}}" style="display: flex; align-items: center; gap: 7px; padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px;">
+        <button type="button" onClick="{{p.toggle}}" style="display: flex; align-items: center; gap: 7px; padding: 12px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px;">
           <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: {{p.seedColor}};">{{p.seed}}</span>
           <span style="font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</span>
         </button>
@@ -137,9 +137,10 @@
     <div style="margin-top: 5px; font-size: 13px; line-height: 1.5; color: #786D5F; text-wrap: pretty;">An unseeded entrant who runs. Points climb for reaching round four, the quarters, the semis, the final, and for winning the thing.</div>
     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
       <sc-for list="{{breakoutPool}}" as="p" hint-placeholder-count="8">
-        <button type="button" onClick="{{p.toggle}}" style="padding: 10px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
+        <button type="button" onClick="{{p.toggle}}" style="padding: 12px 14px; background: {{p.bg}}; border: 1px solid {{p.bc}}; border-radius: 20px; font-size: 14px; font-weight: {{p.weight}}; color: {{p.fg}};">{{p.name}}</button>
       </sc-for>
     </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #9A8B76;">{{breakoutMore}}</div>
   </div>
 
   <div style="margin: 28px 20px 0 20px; padding: 16px; background: {{banner.bg}}; border: 1px solid {{banner.bc}}; border-radius: 4px;">
@@ -164,7 +165,7 @@
 </div>
 </x-dc>
 
-<script data-dc-script data-props='{"$preview":{"width":390,"height":2200}}'>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":2260}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -174,53 +175,53 @@ class Component extends DCLogic {
   data() {
     return [
       { n: 1, players: [
-        { id: 'alcaraz', name: 'Carlos Alcaraz', seed: 1, country: 'ESP' },
-        { id: 'cerundolo', name: 'Francisco Cerúndolo', seed: 29, country: 'ARG' },
-        { id: 'etcheverry', name: 'Tomás Etcheverry', seed: null, country: 'ARG' },
-        { id: 'bautista', name: 'Roberto Bautista Agut', seed: null, country: 'ESP' },
-        { id: 'halys', name: 'Quentin Halys', seed: null, country: 'FRA' } ] },
+        { id: 'alcaraz', name: 'Carlos Alcaraz', short: 'Alcaraz', seed: 1, country: 'ESP' },
+        { id: 'cerundolo', name: 'Francisco Cerúndolo', short: 'Cerúndolo', seed: 29, country: 'ARG' },
+        { id: 'etcheverry', name: 'Tomás Etcheverry', short: 'Etcheverry', seed: null, country: 'ARG' },
+        { id: 'bautista', name: 'Roberto Bautista Agut', short: 'Bautista Agut', seed: null, country: 'ESP' },
+        { id: 'halys', name: 'Quentin Halys', short: 'Halys', seed: null, country: 'FRA' } ] },
       { n: 2, players: [
-        { id: 'musetti', name: 'Lorenzo Musetti', seed: 9, country: 'ITA' },
-        { id: 'humbert', name: 'Ugo Humbert', seed: 19, country: 'FRA' },
-        { id: 'cobolli', name: 'Flavio Cobolli', seed: null, country: 'ITA' },
-        { id: 'fils', name: 'Arthur Fils', seed: null, country: 'FRA' },
-        { id: 'moutet', name: 'Corentin Moutet', seed: null, country: 'FRA' } ] },
+        { id: 'fritz', name: 'Taylor Fritz', short: 'Fritz', seed: 5, country: 'USA' },
+        { id: 'musetti', name: 'Lorenzo Musetti', short: 'Musetti', seed: 9, country: 'ITA' },
+        { id: 'humbert', name: 'Ugo Humbert', short: 'Humbert', seed: 19, country: 'FRA' },
+        { id: 'cobolli', name: 'Flavio Cobolli', short: 'Cobolli', seed: null, country: 'ITA' },
+        { id: 'fils', name: 'Arthur Fils', short: 'Fils', seed: null, country: 'FRA' } ] },
       { n: 3, players: [
-        { id: 'ruud', name: 'Casper Ruud', seed: 7, country: 'NOR' },
-        { id: 'tiafoe', name: 'Frances Tiafoe', seed: 18, country: 'USA' },
-        { id: 'mensik', name: 'Jakub Menšík', seed: null, country: 'CZE' },
-        { id: 'darderi', name: 'Luciano Darderi', seed: null, country: 'ITA' },
-        { id: 'muller', name: 'Alexandre Müller', seed: null, country: 'FRA' } ] },
+        { id: 'ruud', name: 'Casper Ruud', short: 'Ruud', seed: 7, country: 'NOR' },
+        { id: 'tiafoe', name: 'Frances Tiafoe', short: 'Tiafoe', seed: 18, country: 'USA' },
+        { id: 'mensik', name: 'Jakub Menšík', short: 'Menšík', seed: null, country: 'CZE' },
+        { id: 'darderi', name: 'Luciano Darderi', short: 'Darderi', seed: null, country: 'ITA' },
+        { id: 'muller', name: 'Alexandre Müller', short: 'Müller', seed: null, country: 'FRA' } ] },
       { n: 4, players: [
-        { id: 'zverev', name: 'Alexander Zverev', seed: 3, country: 'GER' },
-        { id: 'tsitsipas', name: 'Stefanos Tsitsipas', seed: 13, country: 'GRE' },
-        { id: 'griekspoor', name: 'Tallon Griekspoor', seed: null, country: 'NED' },
-        { id: 'baez', name: 'Sebastián Báez', seed: null, country: 'ARG' },
-        { id: 'vdz', name: 'Botic van de Zandschulp', seed: null, country: 'NED' } ] },
+        { id: 'zverev', name: 'Alexander Zverev', short: 'Zverev', seed: 3, country: 'GER' },
+        { id: 'tsitsipas', name: 'Stefanos Tsitsipas', short: 'Tsitsipas', seed: 13, country: 'GRE' },
+        { id: 'griekspoor', name: 'Tallon Griekspoor', short: 'Griekspoor', seed: null, country: 'NED' },
+        { id: 'baez', name: 'Sebastián Báez', short: 'Báez', seed: null, country: 'ARG' },
+        { id: 'vdz', name: 'Botic van de Zandschulp', short: 'van de Zandschulp', seed: null, country: 'NED' } ] },
       { n: 5, players: [
-        { id: 'rune', name: 'Holger Rune', seed: 4, country: 'DEN' },
-        { id: 'machac', name: 'Tomáš Macháč', seed: 21, country: 'CZE' },
-        { id: 'nakashima', name: 'Brandon Nakashima', seed: null, country: 'USA' },
-        { id: 'berrettini', name: 'Matteo Berrettini', seed: null, country: 'ITA' },
-        { id: 'zhang', name: 'Zhang Zhizhen', seed: null, country: 'CHN' } ] },
+        { id: 'rune', name: 'Holger Rune', short: 'Rune', seed: 4, country: 'DEN' },
+        { id: 'rublev', name: 'Andrey Rublev', short: 'Rublev', seed: 10, country: 'RUS' },
+        { id: 'machac', name: 'Tomáš Macháč', short: 'Macháč', seed: 21, country: 'CZE' },
+        { id: 'nakashima', name: 'Brandon Nakashima', short: 'Nakashima', seed: null, country: 'USA' },
+        { id: 'berrettini', name: 'Matteo Berrettini', short: 'Berrettini', seed: null, country: 'ITA' } ] },
       { n: 6, players: [
-        { id: 'djokovic', name: 'Novak Djokovic', seed: 6, country: 'SRB' },
-        { id: 'korda', name: 'Sebastian Korda', seed: 23, country: 'USA' },
-        { id: 'popyrin', name: 'Alexei Popyrin', seed: null, country: 'AUS' },
-        { id: 'bublik', name: 'Alexander Bublik', seed: null, country: 'KAZ' },
-        { id: 'safiullin', name: 'Roman Safiullin', seed: null, country: 'RUS' } ] },
+        { id: 'djokovic', name: 'Novak Djokovic', short: 'Djokovic', seed: 6, country: 'SRB' },
+        { id: 'korda', name: 'Sebastian Korda', short: 'Korda', seed: 23, country: 'USA' },
+        { id: 'popyrin', name: 'Alexei Popyrin', short: 'Popyrin', seed: null, country: 'AUS' },
+        { id: 'bublik', name: 'Alexander Bublik', short: 'Bublik', seed: null, country: 'KAZ' },
+        { id: 'safiullin', name: 'Roman Safiullin', short: 'Safiullin', seed: null, country: 'RUS' } ] },
       { n: 7, players: [
-        { id: 'deminaur', name: 'Alex de Miñaur', seed: 8, country: 'AUS' },
-        { id: 'shelton', name: 'Ben Shelton', seed: 12, country: 'USA' },
-        { id: 'michelsen', name: 'Alex Michelsen', seed: null, country: 'USA' },
-        { id: 'struff', name: 'Jan-Lennard Struff', seed: null, country: 'GER' },
-        { id: 'navone', name: 'Mariano Navone', seed: null, country: 'ARG' } ] },
+        { id: 'deminaur', name: 'Alex de Miñaur', short: 'de Miñaur', seed: 8, country: 'AUS' },
+        { id: 'shelton', name: 'Ben Shelton', short: 'Shelton', seed: 12, country: 'USA' },
+        { id: 'michelsen', name: 'Alex Michelsen', short: 'Michelsen', seed: null, country: 'USA' },
+        { id: 'struff', name: 'Jan-Lennard Struff', short: 'Struff', seed: null, country: 'GER' },
+        { id: 'navone', name: 'Mariano Navone', short: 'Navone', seed: null, country: 'ARG' } ] },
       { n: 8, players: [
-        { id: 'sinner', name: 'Jannik Sinner', seed: 2, country: 'ITA' },
-        { id: 'draper', name: 'Jack Draper', seed: 14, country: 'GBR' },
-        { id: 'dimitrov', name: 'Grigor Dimitrov', seed: null, country: 'BUL' },
-        { id: 'lehecka', name: 'Jiří Lehečka', seed: null, country: 'CZE' },
-        { id: 'dzumhur', name: 'Damir Džumhur', seed: null, country: 'BIH' } ] }
+        { id: 'sinner', name: 'Jannik Sinner', short: 'Sinner', seed: 2, country: 'ITA' },
+        { id: 'draper', name: 'Jack Draper', short: 'Draper', seed: 14, country: 'GBR' },
+        { id: 'dimitrov', name: 'Grigor Dimitrov', short: 'Dimitrov', seed: null, country: 'BUL' },
+        { id: 'lehecka', name: 'Jiří Lehecká', short: 'Lehecká', seed: null, country: 'CZE' },
+        { id: 'dzumhur', name: 'Damir Džumhur', short: 'Džumhur', seed: null, country: 'BIH' } ] }
     ];
   }
 
@@ -235,9 +236,7 @@ class Component extends DCLogic {
   }
 
   shortName(p) {
-    if (!p) { return ''; }
-    const bits = p.name.split(' ');
-    return bits[bits.length - 1];
+    return p ? p.short : '';
   }
 
   pickSection(i, id) {
@@ -313,6 +312,7 @@ class Component extends DCLogic {
         badgeFg: picked ? '#FAF6EF' : '#9A8B76',
         chevron: isOpen ? 'M6 14.5L12 8.5l6 6' : 'M6 9.5l6 6 6-6',
         moreLabel: 'Showing 5 of 16 entrants in this section',
+        toggle: function () { self.setState({ open: isOpen ? null : i }); },
         candidates: s.players.map(function (p) {
           const on = pickedId === p.id;
           return {
@@ -361,17 +361,19 @@ class Component extends DCLogic {
       return c;
     });
 
-    const breakoutPool = this.all().filter((p) => p.seed === null).slice(0, 8).map(function (p) {
+    const unseeded = this.all().filter((p) => p.seed === null);
+    const breakoutPool = unseeded.slice(0, 8).map(function (p) {
       const on = st.breakout === p.id;
       const c = self.chip(p.id, self.shortName(p), on, false);
       c.toggle = function () { self.setState({ breakout: on ? null : p.id }); };
       return c;
     });
 
+    const plural = function (count, one, many) { return count + ' ' + (count === 1 ? one : many); };
     const missing = [];
-    if (qfCount < 8) { missing.push((8 - qfCount) + ' quarter-finalist picks'); }
-    if (st.sf.length < 4) { missing.push((4 - st.sf.length) + ' semi-finalists'); }
-    if (st.f.length < 2) { missing.push((2 - st.f.length) + ' finalists'); }
+    if (qfCount < 8) { missing.push(plural(8 - qfCount, 'quarter-finalist', 'quarter-finalists')); }
+    if (st.sf.length < 4) { missing.push(plural(4 - st.sf.length, 'semi-finalist', 'semi-finalists')); }
+    if (st.f.length < 2) { missing.push(plural(2 - st.f.length, 'finalist', 'finalists')); }
     if (!st.champ) { missing.push('a champion'); }
     if (!st.under) { missing.push('an underperformer'); }
     if (!st.breakout) { missing.push('a breakout pick'); }
@@ -390,6 +392,7 @@ class Component extends DCLogic {
       champPool: champPool,
       underPool: underPool,
       breakoutPool: breakoutPool,
+      breakoutMore: 'Showing ' + breakoutPool.length + ' of ' + unseeded.length + ' unseeded entrants',
       sfHeadColor: sfPool.length ? '#1E1B16' : '#BEB1A0',
       fHeadColor: fPool.length ? '#1E1B16' : '#BEB1A0',
       cHeadColor: champPool.length ? '#1E1B16' : '#BEB1A0',

@@ -1,15 +1,77 @@
 {
   "artboards": [
-    { "file": "Landing.dc.html",        "x": 0,    "y": 0,    "w": 390, "h": 2400, "title": "Landing page" },
-    { "file": "SignUp.dc.html",         "x": 500,  "y": 0,    "w": 390, "h": 1000, "title": "Sign up" },
-    { "file": "Games.dc.html",          "x": 1000, "y": 0,    "w": 390, "h": 1250, "title": "Your games" },
-
-    { "file": "Rules.dc.html",          "x": 0,    "y": 2640, "w": 390, "h": 1620, "title": "Rules & key facts" },
-    { "file": "Main.dc.html",           "x": 500,  "y": 2640, "w": 390, "h": 1420, "title": "Betting" },
-    { "file": "TournamentBets.dc.html", "x": 1000, "y": 2640, "w": 390, "h": 2260, "title": "Tournament bets — live" },
-    { "file": "MyBets.dc.html",         "x": 1500, "y": 2640, "w": 390, "h": 1460, "title": "My bets & scores" },
-    { "file": "Ranking.dc.html",        "x": 2000, "y": 2640, "w": 390, "h": 1360, "title": "Ranking" },
-    { "file": "Draw.dc.html",           "x": 2500, "y": 2640, "w": 390, "h": 1620, "title": "Draw" }
+    {
+      "file": "Landing.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 2400,
+      "title": "Landing page"
+    },
+    {
+      "file": "SignUp.dc.html",
+      "x": 500,
+      "y": 0,
+      "w": 390,
+      "h": 1000,
+      "title": "Sign up"
+    },
+    {
+      "file": "Games.dc.html",
+      "x": 1000,
+      "y": 0,
+      "w": 390,
+      "h": 1250,
+      "title": "Your games"
+    },
+    {
+      "file": "Rules.dc.html",
+      "x": 0,
+      "y": 2640,
+      "w": 390,
+      "h": 1620,
+      "title": "Rules & key facts"
+    },
+    {
+      "file": "Main.dc.html",
+      "x": 500,
+      "y": 2640,
+      "w": 390,
+      "h": 1500,
+      "title": "Betting"
+    },
+    {
+      "file": "TournamentBets.dc.html",
+      "x": 1000,
+      "y": 2640,
+      "w": 390,
+      "h": 2260,
+      "title": "Tournament bets — live"
+    },
+    {
+      "file": "MyBets.dc.html",
+      "x": 1500,
+      "y": 2640,
+      "w": 390,
+      "h": 1760,
+      "title": "My bets & scores"
+    },
+    {
+      "file": "Ranking.dc.html",
+      "x": 2000,
+      "y": 2640,
+      "w": 390,
+      "h": 1200,
+      "title": "Ranking"
+    },
+    {
+      "file": "Draw.dc.html",
+      "x": 2500,
+      "y": 2640,
+      "w": 390,
+      "h": 1500,
+      "title": "Draw"
+    }
   ],
   "annotations": [
     {
@@ -27,5 +89,7 @@
       "text": "Inside a game — the five tabs from spec 4.4, in tab order.\nThe third one is the tournament-bet cascade and it actually works: tap a section, pick a player, and watch the semi-finalists narrow to what you chose. The validation banner at the bottom is live too."
     }
   ],
-  "launch": { "view": "canvas" }
+  "launch": {
+    "view": "canvas"
+  }
 }
