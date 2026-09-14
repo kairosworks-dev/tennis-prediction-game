@@ -1,0 +1,58 @@
+# ==========================================
+# Operating System & IDE Files
+# ==========================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
+.env
+.env.local
+.env.*.local
+
+# ==========================================
+# Database & Local Storage (Backend)
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+backend/*.db
+
+# ==========================================
+# Frontend (Node, Vite, React)
+# ==========================================
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.eslintcache
+.vite/
+
+# ==========================================
+# Backend (Python, FastAPI, Pytest)
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+backend/__pycache__/
+backend/.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ==========================================
+# End-to-End Testing (Playwright / Vitest)
+# ==========================================
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
