@@ -229,6 +229,68 @@ verified by deliberately corrupting the snapshot and watching the test fail.
 
 ---
 
+### Step 5 — The confirmation run
+
+**Outcome:** a `Makefile`, a dialect-agnostic engine, and the most instructive
+defect of the whole build.
+
+**Method:** running the stack again from a deleted database, following the
+README literally, and walking every path by hand: the landing teaser, a
+deliberately wrong password, sign-in, the game list, submitting a prediction,
+the scores, the ranking, and the organiser's outcome grid.
+
+**What it found — a bug no test could have caught.** The organiser's results
+screen returned 500 and the recalculation bounced to sign-in. The log showed
+`IndexError: tuple index out of range` deep inside SQLAlchemy's row handling,
+which names nothing about the cause. The cause was that `create_app` built one
+`SqlAlchemyRepositories` at startup and every request shared its `Session`.
+Sessions are not thread-safe; uvicorn runs sync endpoints in a threadpool.
+
+The part worth sitting with: **117 passing tests and a clean lint said the
+backend was fine.** `TestClient` issues requests sequentially, so the suite was
+structurally incapable of finding it. No amount of adding more tests of the
+same shape would have helped.
+
+The fix is a repository scope opened per request. The regression test runs
+against a real app on a *file* database rather than `sqlite://`, because the
+in-memory URL uses a StaticPool — one connection for everybody — which would
+reintroduce the same contention a layer down while appearing to pass.
+Reintroducing the bug makes it fail with the original `IndexError`.
+
+**A second, smaller finding of the same kind:** `uv run ruff check .` — the
+command the README tells people to run — had been failing. Only `app/` had ever
+been linted, so `tests/` and `migrations/` carried twenty-four unreported
+findings. Writing a setup instruction is not the same as running it.
+
+**Also closed:** `create_sqlite_engine` passed SQLite's `check_same_thread` to
+every URL, so "database-agnostic" was true of `services/` and `domain/` and
+false of the one function where a dialect actually matters. A Postgres URL now
+gets as far as needing its driver, which is the correct failure.
+
+---
+
+### Step 5.5 — Recording the state
+
+**Outcome:** spec section 13 became one ordered backlog, section 12 gained what
+the build settled, and [`status.md`](status.md) is new.
+
+Three documents, three questions: the spec says what the product should be, this
+report says what we did, and `status.md` says what is true of the code. Keeping
+the backlog in one place rather than copying it into a status file avoids
+exactly the drift this project guards against everywhere else.
+
+**What writing it surfaced:** three unmet definitions of done nobody had named.
+Frontend types are not generated from the contract, so drift is checked between
+the contract and the backend but not between the contract and the frontend.
+There is no Playwright path, so the manual walk that found six defects is not
+repeatable. And nothing runs the drift check automatically.
+
+None of them were hidden. They simply had not been written down, and a
+definition of done that nobody has checked against is a definition of done in
+name only.
+
+---
+
 ## Reflections
 
 **What the three mechanisms were worth.**
@@ -255,10 +317,26 @@ Almost every defect found in this project was found by *running* something, not
 by generating it. The design canvas looked right and had eleven defects. The
 fixtures passed 79 tests while assigning seed 1 to an unknown player. The
 frontend appeared to sign in correctly for a reason that had nothing to do with
-sign-in working. Tests written alongside code caught real bugs — the fixture
-clock, the timezone decorator — but only the ones they were pointed at.
+sign-in working. The README told people to run a lint command that failed.
 
 The pattern worth keeping: generate, then look at the actual artifact.
+
+**And a sharper version of the same lesson, learned last.**
+
+The shared-session bug is the strongest case in the project, because it is not
+about insufficient testing. It is about the *shape* of the tests. `TestClient`
+is sequential, so a suite built on it cannot observe a concurrency fault no
+matter how many cases it contains. The 117 passing tests were not thin; they
+were pointed the wrong way.
+
+Tests written alongside code did catch real bugs — the fixture clock, the
+timezone decorator, the stale-snapshot guard. Each was caught because a test
+asked a question the code had not been asked before. None of them would have
+found this one.
+
+So the honest summary is narrower than "write tests as you go": a test suite
+inherits the blind spots of the harness it is built on, and the only reliable
+way to find what it cannot see is to run the real thing and watch.
 
 **What would be done differently.**
 
@@ -266,3 +344,14 @@ The screen surface should have been scoped before the frontend was designed
 rather than after. The design canvas covers screens the first pass does not
 build, which is not wasted — it is backlog documentation now — but the cut
 would have been cheaper one step earlier.
+
+The definitions of done should have been checked off explicitly at the end of
+each step rather than at the end of the project. All three of the unmet items
+in `status.md` were visible at the time and none was written down, which is how
+a step gets called finished while a stated condition of finishing it is unmet.
+
+And the whole stack should have been run at the end of each step, not only at
+the end of step 4. The concurrency bug was introduced in step 4 and found after
+step 4.5; one browser session at the close of step 4 would have caught it
+immediately, and it would have been a five-minute fix in context rather than a
+puzzle reconstructed from a stack trace.
