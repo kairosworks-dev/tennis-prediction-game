@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDatabase, CURRENT_USER_ID } from './index';
+import { snapshotKeys } from './scoreEntries';
 import type { GameListState } from '../../types';
 
 /**
@@ -122,5 +123,67 @@ describe('fixture database', () => {
 
   it('can start signed out', () => {
     expect(createDatabase({ signedIn: false }).sessionUserId).toBeNull();
+  });
+});
+
+/**
+ * The mock serves pre-computed score entries rather than computing them —
+ * scoring is the backend's job. These guard the seam between the snapshot and
+ * the generator that produced its inputs: if the fixtures change and nobody
+ * regenerates, the snapshot goes stale, and a stale snapshot is worse than no
+ * snapshot because it looks right.
+ *
+ * Regeneration is two commands, documented in scoreEntries.ts.
+ */
+describe('the score snapshot', () => {
+  it('has no orphans — every entry names a prediction that exists', () => {
+    const db = createDatabase();
+    const answered = new Set(
+      db.predictions.map((p) => `${p.participationId}:${p.questionId}`),
+    );
+    const orphans = [...snapshotKeys()].filter((key) => !answered.has(key));
+    expect(orphans, 'snapshot is stale — regenerate it, see scoreEntries.ts').toEqual([]);
+  });
+
+  it('scores only questions in a settled group', () => {
+    const db = createDatabase();
+    const settled = new Set(
+      db.betGroups.filter((g) => g.status === 'SETTLED').map((g) => g.id),
+    );
+    const groupOf = new Map(db.questions.map((q) => [q.id, q.betGroupId]));
+    const wrongGroup = [...snapshotKeys()].filter((key) => {
+      const questionId = key.slice(key.indexOf(':') + 1);
+      const groupId = groupOf.get(questionId);
+      return groupId === undefined || !settled.has(groupId);
+    });
+    expect(wrongGroup).toEqual([]);
+  });
+
+  it('covers the question kinds that have settled at the fixtures\u2019 stage', () => {
+    const db = createDatabase();
+    const kindOf = new Map(db.questions.map((q) => [q.id, q.kind]));
+    const scoredKinds = new Set(
+      [...snapshotKeys()].map((key) => kindOf.get(key.slice(key.indexOf(':') + 1))),
+    );
+    // A tournament at the quarter-finals has settled these three and not the
+    // later ones; a snapshot missing them means it was regenerated wrongly.
+    expect(scoredKinds).toContain('QF_PICKS');
+    expect(scoredKinds).toContain('UNDERPERFORMER');
+    expect(scoredKinds).toContain('BREAKOUT');
+  });
+
+  it('gives every awarded point a reason', () => {
+    const db = createDatabase();
+    expect(db.scores.length).toBeGreaterThan(0);
+    expect(db.scores.every((s) => s.reason.trim().length > 0)).toBe(true);
+  });
+
+  it('leaves an unsettled question without an entry rather than a zero', () => {
+    const db = createDatabase();
+    const open = db.betGroups.filter((g) => g.status === 'OPEN').map((g) => g.id);
+    const openQuestionIds = new Set(
+      db.questions.filter((q) => open.includes(q.betGroupId)).map((q) => q.id),
+    );
+    expect(db.scores.filter((s) => openQuestionIds.has(s.questionId))).toEqual([]);
   });
 });

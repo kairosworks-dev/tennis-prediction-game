@@ -5,9 +5,10 @@ import type {
   TournamentCategory, TournamentStatus, TournamentVisibility, Surface, User,
   MatchFormat,
 } from '../../types';
+import { roundRank } from '../../types';
 import { createRandom, daysFromNow, dateOnly, hoursFromNow, id, shuffle } from './seed';
-import { ALL_PLAYERS, playersForTour } from './players';
-import { roundRank, scorePrediction } from './fixtureScoring';
+import { playersForTour } from './players';
+import { fixtureScoreFor } from './scoreEntries';
 
 const SECTIONS_PER_DRAW = 8;
 const ENTRIES_PER_SECTION = 16;
@@ -548,7 +549,6 @@ export function buildGame(spec: GameSpec): BuiltGame {
   const plans = planGroups(spec);
   const questions = buildQuestions(spec, plans, builds);
   const questionOutcomes = buildQuestionOutcomes(spec, plans, questions, builds);
-  const outcomeByQuestion = new Map(questionOutcomes.map((o) => [o.questionId, o]));
   const planByGroup = new Map(plans.map((p) => [p.group.id, p]));
 
   // The outcome grid, flattened across draws.
@@ -560,11 +560,6 @@ export function buildGame(spec: GameSpec): BuiltGame {
       note: null,
     })),
   );
-  const outcomeByPlayer = new Map(outcomes.map((o) => [o.playerId, o.roundReached]));
-
-  const playerNames = new Map(ALL_PLAYERS.map((p) => [p.id, p.fullName]));
-  const nameOf = (playerId: PlayerId): string => playerNames.get(playerId) ?? playerId;
-
   const predictions: Prediction[] = [];
   const scores: ScoreEntry[] = [];
 
@@ -604,13 +599,9 @@ export function buildGame(spec: GameSpec): BuiltGame {
       if (!plan.settled) {
         continue;
       }
-      const score = scorePrediction(
-        payload,
-        outcomeByQuestion.get(question.id)?.correctAnswer ?? null,
-        outcomeByPlayer,
-        tournament.scoringProfile,
-        nameOf,
-      );
+      // Served, not computed: the backend owns scoring, and these rows are a
+      // snapshot of what its engine produced over this fixture data.
+      const score = fixtureScoreFor(participation.id, question.id);
       if (score !== null) {
         scores.push({
           id: id(participation.id, question.id, 'score'),

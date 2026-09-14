@@ -1,0 +1,3506 @@
+[
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Andrey Rublev, Ben Shelton."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Holger Rune exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Ivan Quintana did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Jessica Pegula exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Carla Quintana did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-1",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 3,
+    "reason": "3 of 8 correct — Andrey Rublev, Novak Djokovic, Ugo Humbert."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Taylor Fritz survived the first three rounds."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Pavel Brandt did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Iga Świątek."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 2,
+    "reason": "Jasmine Paolini exited in round 2."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Elsa Ivanov did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-2",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Novak Djokovic."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Lorenzo Musetti survived the first three rounds."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Pavel Pereira did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Qinwen Zheng."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Elena Rybakina exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Jana Novotny did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-3",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Taylor Fritz, Tomáš Macháč."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Taylor Fritz survived the first three rounds."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Otto Ferrer did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 2,
+    "reason": "Jasmine Paolini exited in round 2."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Brigita Vogel did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-4",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Andrey Rublev, Ben Shelton."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Andrey Rublev survived the first three rounds."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Ivan Rossi did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Jessica Pegula exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Mira Rossi did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-5",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Ben Shelton, Novak Djokovic."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Carlos Alcaraz exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Fabio Almeida did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Jessica Pegula exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Nela Kowalski did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 2,
+    "reason": "You said 3. Correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-6",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 3,
+    "reason": "3 of 8 correct — Lorenzo Musetti, Andrey Rublev, Tomáš Macháč."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Novak Djokovic survived the first three rounds."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Pavel Moravec did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Coco Gauff."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Jessica Pegula exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 3,
+    "reason": "Brigita Novotny reached QF."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 2,
+    "reason": "You said 3. Correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-7",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Andrey Rublev survived the first three rounds."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Dario Weiss did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Iga Świątek."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 2,
+    "reason": "Aryna Sabalenka exited in round 2."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 2,
+    "reason": "Greta Jansen reached R16."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-8",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Lorenzo Musetti."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Lorenzo Musetti survived the first three rounds."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Ivan Novotny did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Jessica Pegula exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Carla Quintana did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-9",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Tomáš Macháč."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Carlos Alcaraz exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Fabio Sandberg did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Coco Gauff."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 2,
+    "reason": "Jasmine Paolini exited in round 2."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Dana Jansen did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-10",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Alexander Zverev exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Cedric Zima did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Mirra Andreeva."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Daria Kasatkina exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Lena Gustafsson did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-11",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 3,
+    "reason": "3 of 8 correct — Andrey Rublev, Novak Djokovic, Ugo Humbert."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Lorenzo Musetti survived the first three rounds."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Nuno Jansen did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 3,
+    "reason": "3 of 8 correct — Coco Gauff, Lena Sandberg, Mirra Andreeva."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 2,
+    "reason": "Jasmine Paolini exited in round 2."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 2,
+    "reason": "Greta Jansen reached R16."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-12",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Lorenzo Musetti, Tomáš Macháč."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 1,
+    "reason": "Casper Ruud exited in round 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Emil Toth did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Iga Świątek."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Daria Kasatkina exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Dana Zima did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-13",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-tournament-atp-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Carlos Alcaraz exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Ivan Ferrer did not reach the fourth round."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Daria Kasatkina exited in round 1."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-tournament-wta-breakout",
+    "points": 2,
+    "reason": "Katia Brandt reached R16."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-1-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-2-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-2-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-3-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "roland-garros-2026-part-14",
+    "questionId": "roland-garros-2026-bg-r-4-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Stefanos Tsitsipas."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Stefanos Tsitsipas did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Taylor Fritz exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Nuno Dvorak did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Brigita Ivanov did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Mirra Andreeva exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Adela Zima did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-1",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Alexander Zverev, Alex de Miñaur."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 2,
+    "reason": "1 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Alex de Miñaur did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Jannik Sinner exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Nuno Engberg did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Paula Badosa."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Magda Linette did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 0,
+    "reason": "Aryna Sabalenka survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Petra Urban did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 2,
+    "reason": "You said 3. Correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-2",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 3,
+    "reason": "3 of 8 correct — Lorenzo Musetti, Stefanos Tsitsipas, Jack Draper."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Jack Draper did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Lorenzo Musetti survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Cedric Dvorak did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Frida Olsen."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Karolína Muchová did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Qinwen Zheng exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 2,
+    "reason": "Frida Brandt reached R16."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-3",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Casper Ruud."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Emil Corradi did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Novak Djokovic survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Nuno Ivanov did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Donna Vekić."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Clara Tauson did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 0,
+    "reason": "Jessica Pegula survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Carla Quintana did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-4",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Alexander Zverev, Stefanos Tsitsipas."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 3,
+    "reason": "1 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Kasper Almeida did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Casper Ruud survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Fabio Almeida did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Aryna Sabalenka, Donna Vekić."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 2,
+    "reason": "1 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Beatriz Haddad Maia did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 0,
+    "reason": "Iga Świątek survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Mira Urban did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 2,
+    "reason": "You said 3. Correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-5",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 3,
+    "reason": "3 of 8 correct — Andrey Rublev, Gustav Rossi, Casper Ruud."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Ben Shelton did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 2,
+    "reason": "Carlos Alcaraz exited in round 2."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Hugo Ivanov did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Nela Quintana."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Olga Brandt did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 0,
+    "reason": "Jessica Pegula survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Mira Rossi did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 2,
+    "reason": "You said 3. Correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 2,
+    "reason": "You said 3. Correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-6",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Lorenzo Musetti."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Jannik Sinner did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Jannik Sinner exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Janek Jansen did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Hana Dvorak did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Emma Navarro exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Greta Jansen did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-7",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 2,
+    "reason": "2 of 8 correct — Casper Ruud, Alex de Miñaur."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Alex de Miñaur did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Jannik Sinner exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Otto Ivanov did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Iga Świątek did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Emma Navarro exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Hana Moravec did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-8",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Luciano Darderi did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 3,
+    "reason": "Taylor Fritz exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Bjorn Brandt did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 0,
+    "reason": "None of the eight reached the quarter-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Karolína Muchová did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Mirra Andreeva exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Olga Holm did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-9",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 4,
+    "reason": "4 of 8 correct — Lorenzo Musetti, Andrey Rublev, Alexander Zverev, Jack Draper."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 2,
+    "reason": "1 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Jack Draper did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Casper Ruud survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Nuno Corradi did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Paula Badosa."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 2,
+    "reason": "1 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Beatriz Haddad Maia did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Qinwen Zheng exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Carla Quintana did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-10",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Alex de Miñaur."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 2,
+    "reason": "1 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Frances Tiafoe did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 0,
+    "reason": "Novak Djokovic survived the first three rounds."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Ivan Quintana did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Paula Badosa."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Victoria Azarenka did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Mirra Andreeva exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Olga Holm did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 0, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-11",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-atp-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Stefanos Tsitsipas."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-atp-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-atp-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-atp-champion",
+    "points": 0,
+    "reason": "Stefanos Tsitsipas did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-atp-underperformer",
+    "points": 1,
+    "reason": "Holger Rune exited in round 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-atp-breakout",
+    "points": 0,
+    "reason": "Bjorn Dvorak did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-wta-qf_picks",
+    "points": 1,
+    "reason": "1 of 8 correct — Jessica Pegula."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-wta-sf_picks",
+    "points": 0,
+    "reason": "0 of 4 reached the semi-final."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-wta-finalist_picks",
+    "points": 0,
+    "reason": "0 of 2 reached the final."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-wta-champion",
+    "points": 0,
+    "reason": "Coco Gauff did not win the title."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-wta-underperformer",
+    "points": 3,
+    "reason": "Elena Rybakina exited in round 1."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-tournament-wta-breakout",
+    "points": 0,
+    "reason": "Dana Sandberg did not reach the fourth round."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-1-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-1-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-1-extra",
+    "points": 2,
+    "reason": "You said 3. Correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-2-atp-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-2-wta-featured",
+    "points": 2,
+    "reason": "Winner correct, set score correct."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-3-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-3-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-3-extra",
+    "points": 0,
+    "reason": "You said 1, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-4-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-4-wta-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-5-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-5-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-5-extra",
+    "points": 0,
+    "reason": "You said 2, it was 3."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-6-atp-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-6-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-7-atp-featured",
+    "points": 1,
+    "reason": "Winner correct, set score wrong."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-7-wta-featured",
+    "points": 0,
+    "reason": "Wrong winner. No points."
+  },
+  {
+    "participationId": "australian-open-2026-part-12",
+    "questionId": "australian-open-2026-bg-r-7-extra",
+    "points": 0,
+    "reason": "You said 4, it was 3."
+  }
+]

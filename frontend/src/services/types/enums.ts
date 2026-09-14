@@ -22,6 +22,26 @@ export type Surface = (typeof SURFACES)[number];
 export const ROUNDS_REACHED = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'CHAMPION', 'WITHDREW'] as const;
 export type RoundReached = (typeof ROUNDS_REACHED)[number];
 
+/** Earliest exit first, so a deeper run compares greater. */
+const ADVANCEMENT_ORDER: readonly RoundReached[] = [
+  'R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'CHAMPION',
+];
+
+/**
+ * Position in the advancement order — a withdrawal never advanced.
+ *
+ * Ordering, not scoring: it answers "did this player get at least this far",
+ * which the draw view and the fixture builder both need. Points are the
+ * backend's business (AGENTS.md rule 2). Mirrors `round_rank` in the backend's
+ * `domain/enums.py`.
+ */
+export function roundRank(round: RoundReached | null | undefined): number {
+  if (round === null || round === undefined || round === 'WITHDREW') {
+    return -1;
+  }
+  return ADVANCEMENT_ORDER.indexOf(round);
+}
+
 export const TOURNAMENT_STATUSES = ['DRAFT', 'PUBLISHED', 'RUNNING', 'FINISHED'] as const;
 export type TournamentStatus = (typeof TOURNAMENT_STATUSES)[number];
 
