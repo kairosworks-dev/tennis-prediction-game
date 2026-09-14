@@ -199,6 +199,36 @@ backends seed by the same path. An earlier version had a `getattr(repos,
 
 ---
 
+### Step 4.5 — Retiring the fixture scorer
+
+**Outcome:** the frontend no longer contains code that computes points. The
+mock serves a committed snapshot of score entries, produced by the backend's
+engine over the frontend's fixture data.
+
+**Why:** the fixture scorer was flagged in this report's own review as the
+closest thing in the project to an `AGENTS.md` rule 2 violation, and once the
+backend existed it was a second implementation of a rule that already had an
+authority.
+
+**Method, and the part worth keeping:** rather than delete and trust, the
+inputs were exported to JSON, run through the backend's `score_prediction`,
+and diffed against what the TypeScript version produced. The two agreed on all
+584 entries — same set, same points, same reason strings — which is what made
+the deletion safe to make rather than merely plausible.
+
+`roundRank` moved to `services/types/enums.ts`, beside the enum it orders: it
+answers "did this player get at least this far", which the fixture builder
+needs and which is ordering rather than scoring.
+
+**The risk this introduces, and the guard:** a snapshot can go stale silently,
+and a stale snapshot is worse than none because it looks right. Five tests now
+check the seam — no orphaned entries, nothing scored outside a settled group,
+coverage of the kinds that have settled at the fixtures' stage — and the
+orphan check fails with "regenerate it, see scoreEntries.ts". That message was
+verified by deliberately corrupting the snapshot and watching the test fail.
+
+---
+
 ## Reflections
 
 **What the three mechanisms were worth.**
