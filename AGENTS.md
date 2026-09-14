@@ -109,18 +109,26 @@ providers/    tennis data, email — interfaces and mocks
 
 ## Commands
 
-Fill these in as each package is scaffolded, and keep them accurate. An agent that cannot run the tests will not write good code.
+Keep these accurate. An agent that cannot run the tests will not write good code.
 
 ```bash
-# frontend
-cd frontend && npm install
-npm run dev
-npm run test
-npm run lint
-npm run typecheck
+# frontend — Node 20+
+cd frontend
+npm install
+npm run dev          # Vite dev server, runs against MockApiClient
+npm run test         # Vitest, one pass
+npm run test:watch   # Vitest, watching
+npm run lint         # ESLint, including the no-HTTP-outside-services rule
+npm run typecheck    # tsc --noEmit
+npm run build        # typecheck, then production build
+```
 
-# backend (from step 3)
-cd backend && uv sync          # or the chosen tool
+`VITE_API_CLIENT` selects the implementation: `mock` (default, no backend
+needed) or `http` (step 3 onward). Copy `.env.example` to `.env` to change it.
+
+```bash
+# backend — from step 3
+cd backend && uv sync
 uv run uvicorn app.main:app --reload
 uv run pytest
 uv run ruff check .
