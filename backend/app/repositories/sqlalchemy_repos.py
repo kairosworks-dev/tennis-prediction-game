@@ -7,6 +7,8 @@ the same test suite runs against both.
 
 from __future__ import annotations
 
+import os
+
 from sqlalchemy import Engine, create_engine, delete, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -290,18 +292,39 @@ class SqlAlchemyRepositories(interfaces.Repositories):
         self._session.commit()
 
 
-def create_sqlite_engine(url: str = "sqlite:///./tennis.db") -> Engine:
-    """Two SQLite quirks, neither of them an application decision.
+def create_db_engine(url: str | None = None) -> Engine:
+    """An engine for whatever `DATABASE_URL` names.
 
-    `check_same_thread` because TestClient and uvicorn both touch the
-    connection from a worker thread. `StaticPool` because an in-memory
-    database lives inside its connection — without it, `create_all` builds the
-    schema on one connection and the session opens a second, empty one.
+    The application is database-agnostic by design: `services/` and `domain/`
+    import no SQLAlchemy at all, and the repository interfaces are what they
+    talk to. This function is the one place a dialect matters, and the only
+    dialect-specific handling is SQLite's, which is quirky in two ways that are
+    nothing to do with the application:
+
+    - `check_same_thread` must be off, because uvicorn runs sync endpoints in a
+      worker thread and SQLite objects to being touched from more than one.
+    - An in-memory SQLite database lives *inside* its connection, so without a
+      StaticPool `create_all` builds the schema on one connection and the next
+      session opens a second, empty one.
+
+    Postgres and the rest need neither, and passing SQLite's connect args to
+    them fails — so they are applied only to SQLite. Adding Postgres is a URL,
+    a driver in `pyproject.toml`, and nothing else.
     """
+    resolved = url or os.environ.get("DATABASE_URL", "sqlite:///./tennis.db")
+
+    if not resolved.startswith("sqlite"):
+        return create_engine(resolved)
+
     connect_args = {"check_same_thread": False}
-    if url in {"sqlite://", "sqlite:///:memory:"}:
-        return create_engine(url, connect_args=connect_args, poolclass=StaticPool)
-    return create_engine(url, connect_args=connect_args)
+    if resolved in {"sqlite://", "sqlite:///:memory:"}:
+        return create_engine(resolved, connect_args=connect_args, poolclass=StaticPool)
+    return create_engine(resolved, connect_args=connect_args)
+
+
+#: Kept so existing call sites and tests read naturally; SQLite is still the
+#: only database the MVP ships with.
+create_sqlite_engine = create_db_engine
 
 
 def create_session_factory(engine: Engine) -> sessionmaker[Session]:

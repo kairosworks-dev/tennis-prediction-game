@@ -119,6 +119,10 @@ providers/    tennis data, email — interfaces and mocks
 
 Keep these accurate. An agent that cannot run the tests will not write good code.
 
+`make` from the repository root lists every target; `make run` starts the whole
+app and `make check` runs lint, typecheck and every test. The underlying
+commands are below and remain the source of truth.
+
 ```bash
 # frontend — Node 20+
 cd frontend

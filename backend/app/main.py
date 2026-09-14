@@ -22,8 +22,8 @@ from app.repositories.memory import MemoryRepositories
 from app.repositories.models import Base
 from app.repositories.sqlalchemy_repos import (
     SqlAlchemyRepositories,
+    create_db_engine,
     create_session_factory,
-    create_sqlite_engine,
 )
 from app.seed import seed_demo_game
 from app.services.errors import ServiceError
@@ -95,8 +95,7 @@ def build_repository_scope(backend: str | None = None) -> RepositoryScope:
     if choice == "memory":
         return _fixed_scope(MemoryRepositories())
 
-    url = os.environ.get("DATABASE_URL", "sqlite:///./tennis.db")
-    engine = create_sqlite_engine(url)
+    engine = create_db_engine()
     # Alembic owns the schema for a real database; create_all is here so a
     # throwaway in-memory database works without running migrations first.
     Base.metadata.create_all(engine)

@@ -55,42 +55,45 @@ README.md           this file
 
 ## Running it locally
 
-Requires **Node 20+** and **[uv](https://docs.astral.sh/uv/)**. Two terminals.
-
-### The quick way — frontend only
-
-The frontend runs against in-memory fixtures with no backend at all:
+Requires **Node 20+** and **[uv](https://docs.astral.sh/uv/)**.
 
 ```bash
-cd frontend && npm install && npm run dev
+make install
+make run
 ```
 
-Open http://localhost:5173. Sign in as `you@example.com` with any password, or
-as `organiser@example.com` to reach the results screen. The fixtures cover a
-two-draw Grand Slam at the quarter-finals, a game open for signup, a finished
-game and a private game.
+`make run` migrates the database, seeds a demo game, starts the backend on
+**:8000** and the frontend on **:5173** pointed at it, and Ctrl-C stops both.
+Open http://localhost:5173.
 
-### The whole thing — frontend, backend and SQLite
+Sign in as `you@example.com` to play, or `organiser@example.com` to reach the
+results screen. Password for both: `deuce-demo-password`.
 
-**Terminal one** — create the database, seed a demo game, serve the API:
+`make` on its own lists every target. The ones worth knowing:
+
+| | |
+|---|---|
+| `make run` | Backend and frontend together, on SQLite |
+| `make run-mock` | Frontend alone on in-memory fixtures — no backend, no database |
+| `make reset-db` | Throw the database away and rebuild it from empty |
+| `make check` | Lint, typecheck and every test |
+
+### Running it without make
 
 ```bash
-cd backend && uv sync && uv run alembic upgrade head && uv run python scripts_seed.py && REPOSITORY_BACKEND=sqlite uv run uvicorn app.main:app --port 8000
+# terminal one
+cd backend && uv sync && uv run alembic upgrade head && uv run python scripts_seed.py
+REPOSITORY_BACKEND=sqlite uv run uvicorn app.main:app --port 8000
+
+# terminal two
+cd frontend && npm install && VITE_API_CLIENT=http npm run dev
 ```
 
-**Terminal two** — point the frontend at it and start:
+Vite proxies `/api` to port 8000, so the session cookie stays same-origin.
 
-```bash
-cd frontend && npm install && echo "VITE_API_CLIENT=http" > .env && npm run dev
-```
-
-Open http://localhost:5173 and sign in with `you@example.com` /
-`deuce-demo-password`, or `organiser@example.com` for the results screen. Vite
-proxies `/api` to port 8000, so the session cookie stays same-origin.
-
-Set `VITE_API_CLIENT=mock` in `frontend/.env` to go back to fixtures. That
-environment variable is the only difference between the two modes — no code
-changes, which is what the service layer exists for.
+`VITE_API_CLIENT` is the only difference between the two modes — `http` for the
+real backend, `mock` for fixtures. No code changes, which is what the service
+layer exists for. Set it in `frontend/.env` to make a choice stick.
 
 ### Tests
 
