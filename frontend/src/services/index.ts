@@ -1,5 +1,6 @@
 import type { ApiClient } from './apiClient';
 import { MockApiClient } from './mock/MockApiClient';
+import { HttpApiClient } from './http/HttpApiClient';
 
 export type { ApiClient } from './apiClient';
 export * from './types';
@@ -21,11 +22,5 @@ function configuredKind(): ApiClientKind {
  * environment variable rather than a change of code.
  */
 export function createApiClient(kind: ApiClientKind = configuredKind()): ApiClient {
-  if (kind === 'http') {
-    throw new Error(
-      'HttpApiClient arrives in step 3, once openapi.yaml exists and the backend implements it. ' +
-        'Set VITE_API_CLIENT=mock until then.',
-    );
-  }
-  return new MockApiClient();
+  return kind === 'http' ? new HttpApiClient() : new MockApiClient();
 }

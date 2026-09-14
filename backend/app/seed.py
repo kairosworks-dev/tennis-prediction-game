@@ -18,6 +18,7 @@ from app.domain.entities import (
     OutcomeEntry,
     Participation,
     Player,
+    Prediction,
     Question,
     Tournament,
     User,
@@ -36,8 +37,18 @@ from app.domain.enums import (
     TournamentVisibility,
     TypedQuestionKind,
 )
+from app.domain.predictions import (
+    BreakoutPick,
+    ChampionPick,
+    FinalistPicks,
+    QuarterFinalPicks,
+    SectionPick,
+    SemiFinalPicks,
+    UnderperformerPick,
+)
 from app.repositories.interfaces import Repositories
 from app.services.auth import hash_password
+from app.services.results import ResultsService
 
 SEED = 20260525
 SECTIONS = 8
@@ -239,8 +250,111 @@ def seed_demo_game(repos: Repositories) -> str:
         )
 
     _seed_bet_groups(repos, tournament.id, now)
+    _seed_predictions(repos, tournament.id, rng, now)
+    # Scores are derived data, so the demo builds them the same way the
+    # organiser would: from source data, through the engine.
+    ResultsService(repos).recalculate(tournament.id, organiser)
     repos.commit()
     return tournament.id
+
+
+def _seed_predictions(
+    repos: Repositories, tournament_id: str, rng: random.Random, now: datetime
+) -> None:
+    """Give every participant a plausible set of tournament bets.
+
+    Two thirds of the time a participant backs one of a section's seeds and the
+    rest of the time they take a flyer, which is roughly how a real field
+    behaves and gives the leaderboard a spread rather than a single tie.
+    """
+    entries_by_draw = {
+        draw.id: repos.draws.list_entries(draw.id)
+        for draw in repos.draws.list_for_tournament(tournament_id)
+    }
+
+    for participation in repos.participations.list_for_tournament(tournament_id):
+        for group in repos.bet_groups.list_for_tournament(tournament_id):
+            for question in repos.questions.list_for_group(group.id):
+                if question.draw_id is None or question.kind is None:
+                    continue
+                entries = entries_by_draw.get(question.draw_id, [])
+                if not entries:
+                    continue
+                payload = _payload_for(question.kind, entries, repos, participation.id, rng)
+                if payload is None:
+                    continue
+                repos.predictions.upsert(
+                    Prediction(
+                        id=f"pred-{participation.id}-{question.id}",
+                        participation_id=participation.id,
+                        question_id=question.id,
+                        payload=payload,
+                        submitted_at=now - timedelta(days=11),
+                        updated_at=now - timedelta(days=11),
+                    )
+                )
+
+
+def _payload_for(
+    kind: TypedQuestionKind,
+    entries: list[DrawEntry],
+    repos: Repositories,
+    participation_id: str,
+    rng: random.Random,
+) -> object | None:
+    by_section: dict[str, list[DrawEntry]] = {}
+    for entry in entries:
+        by_section.setdefault(entry.section_id, []).append(entry)
+    ordered_sections = sorted(by_section)
+
+    def own(sibling_kind: TypedQuestionKind) -> tuple[str, ...]:
+        for question in repos.questions.list_for_group("rg-bg-tournament"):
+            if question.kind is not sibling_kind or question.draw_id != entries[0].draw_id:
+                continue
+            found = repos.predictions.find(participation_id, question.id)
+            if found is None:
+                return ()
+            payload = found.payload
+            if isinstance(payload, QuarterFinalPicks):
+                return payload.player_ids
+            if isinstance(payload, SemiFinalPicks | FinalistPicks):
+                return payload.player_ids
+        return ()
+
+    if kind is TypedQuestionKind.QF_PICKS:
+        picks = []
+        for index, section_id in enumerate(ordered_sections, start=1):
+            candidates = by_section[section_id]
+            seeded = [e for e in candidates if e.seed is not None]
+            pool = seeded if (seeded and rng.random() < 0.66) else candidates
+            picks.append(SectionPick(section_index=index, player_id=rng.choice(pool).player_id))
+        return QuarterFinalPicks(picks=tuple(picks))
+
+    if kind is TypedQuestionKind.SF_PICKS:
+        pool = own(TypedQuestionKind.QF_PICKS)
+        if len(pool) < 4:
+            return None
+        return SemiFinalPicks(player_ids=tuple(rng.sample(list(pool), 4)))
+
+    if kind is TypedQuestionKind.FINALIST_PICKS:
+        pool = own(TypedQuestionKind.SF_PICKS)
+        if len(pool) < 2:
+            return None
+        return FinalistPicks(player_ids=tuple(rng.sample(list(pool), 2)))
+
+    if kind is TypedQuestionKind.CHAMPION:
+        pool = own(TypedQuestionKind.FINALIST_PICKS)
+        return ChampionPick(player_id=rng.choice(list(pool))) if pool else None
+
+    if kind is TypedQuestionKind.UNDERPERFORMER:
+        eligible = [e for e in entries if e.seed is not None and e.seed <= 10]
+        return UnderperformerPick(player_id=rng.choice(eligible).player_id) if eligible else None
+
+    if kind is TypedQuestionKind.BREAKOUT:
+        eligible = [e for e in entries if e.seed is None]
+        return BreakoutPick(player_id=rng.choice(eligible).player_id) if eligible else None
+
+    return None
 
 
 def _seed_bet_groups(repos: Repositories, tournament_id: str, now: datetime) -> None:

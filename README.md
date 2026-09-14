@@ -55,29 +55,62 @@ README.md           this file
 
 ## Running it locally
 
-### Frontend
+Requires **Node 20+** and **[uv](https://docs.astral.sh/uv/)**. Two terminals.
+
+### The quick way — frontend only
+
+The frontend runs against in-memory fixtures with no backend at all:
 
 ```bash
-cd frontend
-npm install
-npm run dev
+cd frontend && npm install && npm run dev
 ```
 
-The app runs against `MockApiClient` by default — deterministic in-memory fixtures,
-no backend required. Switch implementations with the `VITE_API_CLIENT` environment
-variable once the backend exists.
+Open http://localhost:5173. Sign in as `you@example.com` with any password, or
+as `organiser@example.com` to reach the results screen. The fixtures cover a
+two-draw Grand Slam at the quarter-finals, a game open for signup, a finished
+game and a private game.
+
+### The whole thing — frontend, backend and SQLite
+
+**Terminal one** — create the database, seed a demo game, serve the API:
 
 ```bash
-npm run test        # Vitest
-npm run lint        # ESLint
-npm run typecheck   # tsc --noEmit
+cd backend && uv sync && uv run alembic upgrade head && uv run python scripts_seed.py && REPOSITORY_BACKEND=sqlite uv run uvicorn app.main:app --port 8000
 ```
 
-### Backend
+**Terminal two** — point the frontend at it and start:
 
-Not yet scaffolded. Arrives in step 3.
+```bash
+cd frontend && npm install && echo "VITE_API_CLIENT=http" > .env && npm run dev
+```
 
----
+Open http://localhost:5173 and sign in with `you@example.com` /
+`deuce-demo-password`, or `organiser@example.com` for the results screen. Vite
+proxies `/api` to port 8000, so the session cookie stays same-origin.
+
+Set `VITE_API_CLIENT=mock` in `frontend/.env` to go back to fixtures. That
+environment variable is the only difference between the two modes — no code
+changes, which is what the service layer exists for.
+
+### Tests
+
+```bash
+cd frontend && npm run test && npm run lint && npm run typecheck
+```
+
+```bash
+cd backend && uv run pytest && uv run ruff check .
+```
+
+The backend suite runs twice: once against the in-memory repositories and once
+against SQLAlchemy on SQLite. `tests/test_contract_drift.py` fails if
+`openapi.yaml` and the backend disagree about any operation.
+
+### API documentation
+
+With the backend running, http://localhost:8000/docs serves the generated
+OpenAPI UI. The committed contract is [`openapi.yaml`](openapi.yaml) and it is
+the source of truth — the drift check exists to keep the two honest.
 
 ## Architecture in one paragraph
 
