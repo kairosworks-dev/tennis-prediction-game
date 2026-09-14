@@ -8,6 +8,10 @@ A web application for running tennis prediction competitions. One competition co
 
 The authoritative specification is [`docs/product-and-technical-spec.md`](docs/product-and-technical-spec.md). Read it before your first substantive change. Its decision log (Section 11) is binding.
 
+[`docs/status.md`](docs/status.md) records where the code actually stands
+against that spec — unmet definitions of done, known defects, open decisions.
+Read it before picking up work, and update it when you close something.
+
 ## Repository layout
 
 ```

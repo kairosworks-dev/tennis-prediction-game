@@ -557,41 +557,48 @@ Excluded from the MVP by explicit decision. Listed so that scope creep has to be
 - Full bracket tree modelling and automatic matchup derivation
 - Retroactive rescoring after a scoring profile change
 
+**Settled during the build, not up for reopening without a conversation:**
+- **Token-based authentication.** Bearer tokens were raised while building the
+  backend and rejected: decision D8 stands, and CSRF protection in 7.5 only
+  makes sense with a cookie. Session cookies it is.
+- **Deployment, containers and CI/CD.** Out of scope for this build by
+  agreement — a later concern, not an MVP one. The contract drift check exists
+  as a test so a pipeline has something to run when there is one.
+
 ---
 
 ## 13. Post-MVP backlog
 
-### 13.1 Deferred from the first pass
+One list, ordered by expected value rather than effort. The **Tier** column is
+how near a thing is, not how important: *first pass* items were specified in
+Section 4 and deliberately not built (decision D14), so the domain model, the
+service layer and the API already accommodate them. *Post-MVP* items need
+design before they need code.
 
-Specified in Section 4 and deliberately not built in the first pass (decision
-D14). These are nearer than the rest of this backlog: the domain model, the
-service layer and the API all already accommodate them.
-
-| Deferred | Kept instead | Spec |
-|---|---|---|
-| Admin screens for user management, tournament creation, draw population and question composition | The outcome grid and **Recalculate scores**, which are what close the loop from results to leaderboard. Everything else is seeded by script | 4.5.1–4.5.3 |
-| Email verification, password reset, profile editing, account deletion | Sign-up and sign-in | 4.2 |
-| The draw view | Section membership still drives pick validation, it is simply not rendered | 4.4.5 |
-| The post-lock comparison view of everyone's predictions | A participant's own predictions and scores | 4.4.3 |
-| Landing-page gallery and testimonials | Hero, how it works, and the live upcoming-game teaser | 4.1 |
+| # | Item | Tier | Notes |
+|---|---|---|---|
+| 1 | **Admin screens** — user management, tournament creation, draw population, question composition | First pass | Roughly a third of the original step 1. The outcome grid and **Recalculate scores** were kept, because they close the loop from results to leaderboard; everything else is seeded by script. Spec 4.5.1–4.5.3 |
+| 2 | **Account management** — email verification, password reset, profile editing, account deletion | First pass | Sign-up and sign-in were kept. Six endpoints and five screens for flows nothing yet exercises. Spec 4.2 |
+| 3 | **Deadline reminders** | Post-MVP | The feature most likely to keep a casual game alive. Brings in a scheduler, which 7.1 principle 5 currently forbids |
+| 4 | **The post-lock comparison view** — everyone's predictions once a group locks | First pass | A participant's own predictions and scores were kept. Spec 4.4.3, decision D7 |
+| 5 | **The draw view** — eight sections with entrants and rounds reached | First pass | Section membership still drives pick validation; it is simply not rendered. Spec 4.4.5 |
+| 6 | **Feed adapter** — pre-fill draws and the outcome grid from a vendor, organiser confirms | Post-MVP | Requires a provider evaluation first. Decision D2 means the game must keep working when it breaks |
+| 7 | **Void and reopen** — question-level state allowing resubmission after a withdrawal | Post-MVP | Currently resolved by organiser judgement through the outcome grid (D12) |
+| 8 | **Landing-page gallery and testimonials** | First pass | Hero, how it works and the live teaser were kept. Needs real photographs and real quotes before it is worth building. Spec 4.1 |
+| 9 | **Full bracket model** — real matchup derivation, a rendered tree, per-match result entry | Post-MVP | Upgrades from the section model without an API break, by design (D5) |
+| 10 | **Reusable scoring profiles** — named profiles as their own entity | Post-MVP | |
+| 11 | **Per-question deadlines** | Post-MVP | Surface the override column already in the schema (D7) |
+| 12 | **Season standings** — aggregate across tournaments | Post-MVP | |
+| 13 | **Fees and pot** | Post-MVP | Only if the group ever wants it, with the legal implications examined first |
 
 **Not deferred, and not negotiable:** the scoring engine and its unit tests, the
-validation rules in 5.3, `openapi.yaml` as the contract, the framework-free
-domain layer, and the repository interface implemented against both memory and
-SQLAlchemy.
+validation rules in 5.3, `openapi.yaml` as the contract with its drift check,
+the framework-free domain layer, and the repository interface implemented
+against both memory and SQLAlchemy. All of these are built.
 
-### 13.2 Beyond the MVP
-
-Ordered by expected value, not by effort.
-
-1. **Deadline reminders.** The feature most likely to keep a casual game alive. Brings in a scheduler.
-2. **Feed adapter.** Pre-fill draws and the outcome grid from a vendor, admin confirms. Requires a provider evaluation first.
-3. **Void and reopen.** Question-level state allowing resubmission after a withdrawal.
-4. **Full bracket model.** Real matchup derivation, a rendered tree, and per-match result entry.
-5. **Reusable scoring profiles.** Named profiles as their own entity.
-6. **Per-question deadlines.** Surface the override column already in the schema.
-7. **Season standings.** Aggregate across tournaments.
-8. **Fees and pot.** If the group ever wants it, with the legal implications examined first.
+Where the code stands against this document — unmet definitions of done, known
+defects, open decisions — is tracked in [`status.md`](status.md), not here. This
+section says what the product should be; that one says where it is.
 
 ---
 

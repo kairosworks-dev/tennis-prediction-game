@@ -9,6 +9,8 @@ No money, no odds, no payouts — this replaces a hand-maintained spreadsheet an
 chat thread full of bets, not a bookmaker.
 
 The authoritative specification is [`docs/product-and-technical-spec.md`](docs/product-and-technical-spec.md).
+Where the code currently stands against it — unmet definitions of done, known
+defects, open decisions — is [`docs/status.md`](docs/status.md).
 Instructions for coding agents are in [`AGENTS.md`](AGENTS.md).
 
 ---
