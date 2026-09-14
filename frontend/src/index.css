@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+
+/**
+ * The design vocabulary from docs/design/ — clay court editorial.
+ * Deep court green as the brand dark, terracotta for anything live or
+ * actionable, warm bone paper underneath.
+ */
+@theme {
+  --color-paper: #faf6ef;
+  --color-card: #fffcf7;
+  --color-sunk: #f3ede3;
+  --color-muted-bg: #f6f1e8;
+  --color-ink: #1e1b16;
+  --color-ink-soft: #57503f;
+  --color-muted: #786d5f;
+  --color-faint: #9a8b76;
+  --color-ghost: #beb1a0;
+  --color-line: #e7dfd2;
+  --color-line-strong: #d8cdba;
+  --color-court: #1c4034;
+  --color-court-light: #2e5245;
+  --color-court-pale: #94b0a2;
+  --color-court-soft: #e7efe9;
+  --color-clay: #be5a2e;
+  --color-clay-dark: #a8481f;
+  --color-clay-soft: #f8eae0;
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-sans: 'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+
+html {
+  background: var(--color-paper);
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Participant views are phone-first; the shell keeps them phone-width on a
+   desktop rather than stretching a one-column layout across 1400px. */
+.phone-shell {
+  max-width: 480px;
+  margin-inline: auto;
+  min-height: 100dvh;
+  background: var(--color-paper);
+}
+
+@media (min-width: 520px) {
+  .phone-shell {
+    box-shadow: 0 0 60px rgb(30 27 22 / 0.06);
+  }
+}

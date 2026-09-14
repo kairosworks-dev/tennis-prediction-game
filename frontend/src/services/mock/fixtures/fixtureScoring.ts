@@ -37,6 +37,19 @@ function reached(outcomes: ReadonlyMap<PlayerId, RoundReached>, playerId: Player
   return roundRank(outcomes.get(playerId) ?? null) >= floor;
 }
 
+/**
+ * The deepest round anyone has reached. A question cannot settle before the
+ * round it asks about has been played — scoring a champion pick as wrong while
+ * the quarter-finals are still going is not a zero, it is a lie.
+ */
+function deepestRank(outcomes: ReadonlyMap<PlayerId, RoundReached>): number {
+  let deepest = -1;
+  for (const round of outcomes.values()) {
+    deepest = Math.max(deepest, roundRank(round));
+  }
+  return deepest;
+}
+
 export interface FixtureScore {
   readonly points: number;
   readonly reason: string;
@@ -56,6 +69,9 @@ export function scorePrediction(
 ): FixtureScore | null {
   switch (prediction.kind) {
     case 'QF_PICKS': {
+      if (deepestRank(outcomes) < RANK_QF) {
+        return null;
+      }
       const hits = prediction.picks.filter((p) => reached(outcomes, p.playerId, RANK_QF));
       return {
         points: hits.length * profile.quarterFinalistPoints,
@@ -66,6 +82,9 @@ export function scorePrediction(
       };
     }
     case 'SF_PICKS': {
+      if (deepestRank(outcomes) < RANK_SF) {
+        return null;
+      }
       const hits = prediction.playerIds.filter((pid) => reached(outcomes, pid, RANK_SF));
       return {
         points: hits.length * profile.semiFinalistPoints,
@@ -73,6 +92,9 @@ export function scorePrediction(
       };
     }
     case 'FINALIST_PICKS': {
+      if (deepestRank(outcomes) < RANK_F) {
+        return null;
+      }
       const hits = prediction.playerIds.filter((pid) => reached(outcomes, pid, RANK_F));
       return {
         points: hits.length * profile.finalistPoints,
@@ -80,6 +102,9 @@ export function scorePrediction(
       };
     }
     case 'CHAMPION': {
+      if (deepestRank(outcomes) < RANK_CHAMPION) {
+        return null;
+      }
       const correct = reached(outcomes, prediction.playerId, RANK_CHAMPION);
       return {
         points: correct ? profile.championPoints : 0,
@@ -101,6 +126,9 @@ export function scorePrediction(
       };
     }
     case 'BREAKOUT': {
+      if (deepestRank(outcomes) < RANK_R16) {
+        return null;
+      }
       const rank = roundRank(outcomes.get(prediction.playerId) ?? null);
       const ladder: readonly (readonly [number, 0 | 1 | 2 | 3 | 4])[] = [
         [RANK_CHAMPION, 4], [RANK_F, 3], [RANK_SF, 2], [RANK_QF, 1], [RANK_R16, 0],

@@ -6,8 +6,8 @@ import type {
   MatchFormat,
 } from '../../types';
 import { createRandom, daysFromNow, dateOnly, hoursFromNow, id, shuffle } from './seed';
-import { playersForTour } from './players';
-import { scorePrediction } from './fixtureScoring';
+import { ALL_PLAYERS, playersForTour } from './players';
+import { roundRank, scorePrediction } from './fixtureScoring';
 
 const SECTIONS_PER_DRAW = 8;
 const ENTRIES_PER_SECTION = 16;
@@ -83,6 +83,11 @@ const ROUND_TITLES: readonly (readonly [number, string])[] = [
   [5, 'Quarter-finals'], [6, 'Semi-finals'], [7, 'Final'],
 ];
 
+/** How far a player must have got to appear in round N's featured match. */
+const MINIMUM_ROUND_BY_ROUND_NUMBER: Readonly<Record<number, RoundReached>> = {
+  1: 'R128', 2: 'R64', 3: 'R32', 4: 'R16', 5: 'QF', 6: 'SF', 7: 'F',
+};
+
 /** Rounds already played when the game is at the given stage. */
 function settledRounds(stage: GameStage): number {
   return stage === 'COMPLETE' ? 7 : stage === 'QUARTER_FINALS' ? 4 : 0;
@@ -100,7 +105,7 @@ interface DrawBuild {
 function buildDraw(spec: GameSpec, drawSpec: DrawSpec, seedOffset: number): DrawBuild {
   const random = createRandom(spec.randomSeed + seedOffset);
   const drawId = id(spec.key, drawSpec.tour.toLowerCase());
-  const pool = shuffle(random, playersForTour(drawSpec.tour));
+  const pool = playersForTour(drawSpec.tour);
 
   const draw: Draw = {
     id: drawId,
@@ -117,8 +122,11 @@ function buildDraw(spec: GameSpec, drawSpec: DrawSpec, seedOffset: number): Draw
 
   // Seeds 1..32 are spread one per section per pass, the way a real draw places
   // them: seeds 1-8 head a section each, then 9-16, and so on.
+  // The named players are the seeds, in ranking order — shuffling the whole
+  // pool first would hand seed 1 to a random unknown, which is exactly what a
+  // draw never does.
   const seeded = pool.slice(0, SEEDS_PER_DRAW);
-  const unseeded = pool.slice(SEEDS_PER_DRAW);
+  const unseeded = shuffle(random, pool.slice(SEEDS_PER_DRAW));
   let unseededCursor = 0;
 
   for (let sectionIndex = 1; sectionIndex <= SECTIONS_PER_DRAW; sectionIndex += 1) {
@@ -338,12 +346,14 @@ function buildQuestions(
 
     const random = createRandom(spec.randomSeed + (plan.group.round ?? 0) * 977);
     builds.forEach((build, drawIndex) => {
-      // The featured tie is between two players who were still alive at this
-      // round, so the matchup is never impossible.
-      const alive = build.entries.filter((e) => {
-        const reachedRound = build.outcomes.get(e.playerId);
-        return reachedRound !== undefined && reachedRound !== 'WITHDREW';
-      });
+      // The featured tie is between two players who actually reached this round.
+      // Picking from everyone who played produces a quarter-final between two
+      // first-round losers, which is the kind of detail that makes a mock
+      // useless for judging the screen.
+      const floor = MINIMUM_ROUND_BY_ROUND_NUMBER[plan.group.round ?? 1] ?? 'R128';
+      const alive = build.entries.filter(
+        (e) => roundRank(build.outcomes.get(e.playerId) ?? null) >= roundRank(floor),
+      );
       const candidates = shuffle(random, alive.length >= 2 ? alive : build.entries);
       const [a, b] = candidates;
       if (a === undefined || b === undefined) {
@@ -552,9 +562,7 @@ export function buildGame(spec: GameSpec): BuiltGame {
   );
   const outcomeByPlayer = new Map(outcomes.map((o) => [o.playerId, o.roundReached]));
 
-  const playerNames = new Map(
-    builds.flatMap((b) => b.entries).map((e) => [e.playerId, e.playerId]),
-  );
+  const playerNames = new Map(ALL_PLAYERS.map((p) => [p.id, p.fullName]));
   const nameOf = (playerId: PlayerId): string => playerNames.get(playerId) ?? playerId;
 
   const predictions: Prediction[] = [];
