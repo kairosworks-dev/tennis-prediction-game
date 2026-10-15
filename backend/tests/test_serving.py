@@ -77,6 +77,31 @@ def test_the_backend_routes_are_not_shadowed(served: TestClient) -> None:
     assert served.get("/health").json() == {"status": "ok"}
 
 
+def test_routing_is_untouched_by_the_mount(dist: Path) -> None:
+    repos = MemoryRepositories()
+    plain = TestClient(create_app(repositories=repos, frontend_dir=dist / "absent"))
+    served = TestClient(create_app(repositories=repos, frontend_dir=dist))
+
+    wrong_method = served.get("/api/auth/login")
+    assert wrong_method.status_code == 405
+    assert "POST" in wrong_method.headers["allow"]
+    assert served.post("/api/tournaments/roland-garros-2026").status_code == 405
+
+    for method, path in [
+        ("get", "/api/tournaments/"),
+        ("head", "/api/tournaments"),
+        ("head", "/api/me"),
+        ("get", "/api/auth/login"),
+    ]:
+        a = getattr(plain, method)(path, follow_redirects=False)
+        b = getattr(served, method)(path, follow_redirects=False)
+        assert (a.status_code, a.headers.get("location"), a.headers.get("allow")) == (
+            b.status_code,
+            b.headers.get("location"),
+            b.headers.get("allow"),
+        ), path
+
+
 @pytest.mark.parametrize(
     "path",
     ["/..%2fsecret.txt", "/%2e%2e/secret.txt", "/assets/../secret.txt", "/assets/..%2fsecret.txt"],
