@@ -72,7 +72,8 @@ lint: ## ESLint and ruff
 typecheck: ## tsc --noEmit
 	cd frontend && npm run typecheck
 
-check: lint typecheck test ## Everything CI would run
+check: lint typecheck test ## Everything CI would run, plus the commit-gate tests
+	agent-hooks/test-hooks.sh
 
 hooks: ## Enable the commit gate (git pre-commit hook) for this clone
 	git config core.hooksPath agent-hooks
