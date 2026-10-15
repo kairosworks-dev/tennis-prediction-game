@@ -17,11 +17,19 @@ In Claude Code the read-only roles have no file-editing tools (the `tools:` line
 
 ## The commit gate
 
-Every commit, by any agent or by the author, passes `agent-hooks/commit-gate.sh` (git `pre-commit`, enabled by `make hooks`). Claude Code additionally runs it before executing a `git commit` and refuses the flag that would skip git's hook. The gate scans the **added** lines of the staged diff for:
+Two doors, two jobs.
 
-- files that are never committed: environment files other than the example, private key files
-- generic patterns: public IP addresses, 1Password secret references, private key blocks, home-directory paths, GitHub and AWS tokens, inline secret assignments
-- the author's **private pattern list**, a gitignored file next to the script, holding the names of his server, backup storage, private notes and similar. The repository shows that the list exists, never its contents.
+- **Content gate: git's `pre-commit` hook** (`agent-hooks/commit-gate.sh`, enabled by `make hooks`). Every commit, by any agent or by the author, passes it. It is the only place content is scanned, because it sees exactly what is committed. It scans the **added** lines of the staged diff for:
+
+  - files that are never committed: environment files other than the example, private key files
+  - generic patterns: IPv4 addresses outside a short allowlist, 1Password secret references, private key blocks, home-directory paths, GitHub and AWS tokens, inline secret assignments
+  - the author's **private pattern list**, a gitignored file next to the script, holding the names of his server, backup storage, private notes and similar. The repository shows that the list exists, never its contents.
+
+  IPv4 policy: private infrastructure detail stays out of the public repository, so RFC 1918 private ranges are blocked like public addresses. Allowed are loopback, `0.0.0.0`, the `255.255.255.x` netmask forms and the documentation ranges (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`); examples use those. There is no version-number exemption, so an in-range four-part version still matches.
+
+- **Flag policy: Claude Code's pre-tool hook** (`agent-hooks/claude-pre-tool.sh`). It inspects the arguments of a `git commit` command only and refuses `--no-verify` (and abbreviations), `-n`, and `core.hooksPath` overrides on the command. It also refuses `git commit` unless `core.hooksPath` points at this checkout's `agent-hooks`. It does not scan content.
+
+Without `make hooks` the content gate is off, and the pre-tool door then refuses the agent's `git commit` until it is run. Remaining limits: wrapper evasions of the pre-tool door (shell wrappers, `env` prefixes, git aliases, an earlier `git config core.hooksPath`; issue #28) and the version-number limit above. `agent-hooks/test-hooks.sh`, run by `make check`, covers both doors.
 
 On a hit the gate prints the file and the pattern name, not the line, and the commit does not happen.
 
