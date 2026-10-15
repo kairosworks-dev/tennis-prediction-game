@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 
-from sqlalchemy import Engine, create_engine, delete, select
+from sqlalchemy import Engine, create_engine, delete, literal, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -287,6 +287,9 @@ class SqlAlchemyRepositories(interfaces.Repositories):
         self.predictions = SqlPredictionRepository(session)
         self.outcomes = SqlOutcomeRepository(session)
         self.scores = SqlScoreRepository(session)
+
+    def ping(self) -> None:
+        self._session.execute(select(literal(1))).scalar_one()
 
     def commit(self) -> None:
         self._session.commit()

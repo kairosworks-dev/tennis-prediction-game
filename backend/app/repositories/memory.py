@@ -272,5 +272,8 @@ class MemoryRepositories(interfaces.Repositories):
         self.outcomes = MemoryOutcomeRepository(self.store)
         self.scores = MemoryScoreRepository(self.store)
 
+    def ping(self) -> None:
+        """Always reachable: it lives in this process."""
+
     def commit(self) -> None:
         """Nothing to commit: the store is the truth while it lives in memory."""

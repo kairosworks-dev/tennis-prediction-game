@@ -179,5 +179,9 @@ class Repositories(ABC):
     scores: ScoreRepository
 
     @abstractmethod
+    def ping(self) -> None:
+        """Raise if the store cannot answer a trivial query. Readiness uses it."""
+
+    @abstractmethod
     def commit(self) -> None:
         """No-op in memory; a transaction boundary once there is a database."""
