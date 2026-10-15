@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Git runs this before every commit once `git config core.hooksPath agent-hooks` is set (make hooks).
+exec "$(dirname "$0")/commit-gate.sh"

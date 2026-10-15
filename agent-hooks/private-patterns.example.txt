@@ -1,0 +1,6 @@
+# Copy to agent-hooks/private-patterns.txt (gitignored) and list the names that
+# must never appear in this public repository: one extended regex per line.
+# Examples:
+#   my-server-name
+#   my-backup-bucket
+#   internal\.example\.org

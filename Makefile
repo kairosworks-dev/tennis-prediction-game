@@ -13,7 +13,7 @@ DATABASE_URL  ?= sqlite:///./tennis.db
 
 .DEFAULT_GOAL := help
 .PHONY: help install db reset-db run run-mock run-backend run-frontend \
-        test test-frontend test-backend lint typecheck check clean
+        test test-frontend test-backend lint typecheck check clean hooks
 
 help: ## List the targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -73,6 +73,10 @@ typecheck: ## tsc --noEmit
 	cd frontend && npm run typecheck
 
 check: lint typecheck test ## Everything CI would run
+
+hooks: ## Enable the commit gate (git pre-commit hook) for this clone
+	git config core.hooksPath agent-hooks
+	@echo "  commit gate enabled: agent-hooks/commit-gate.sh runs before every commit"
 
 clean: ## Remove build output and the database
 	rm -rf frontend/dist frontend/node_modules/.vite

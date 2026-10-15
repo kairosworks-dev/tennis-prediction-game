@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 14 September 2026
+**Last updated:** 15 October 2026
 
 Where the code stands. This is deliberately a different question from the two
 documents either side of it:
@@ -26,6 +26,7 @@ holds the snapshots.
 | 2 | `openapi.yaml` derived from the service layer | Done |
 | 3 | FastAPI backend, in-memory repositories | Done |
 | 4 | SQLAlchemy and SQLite persistence | Done |
+| 5 | Ship and operate: Postgres, containers, integration tests, CI/CD, deploy, extension pack, hardening, docs | **In progress since 15 Oct** — GitHub Issues #1–#25; see *Against the course criteria* below |
 
 **It runs.** `make install && make run` migrates, seeds a demo game, starts the
 backend on :8000 and the frontend on :5173 pointed at it. `make run-mock` runs
@@ -79,9 +80,8 @@ entering a result and recalculating.
 ### 3. Nothing runs the drift check automatically
 
 `AGENTS.md` hard rule 3: *"CI fails on drift."* The check exists as a test; no
-pipeline runs it. CI and deployment are out of scope for this build by
-agreement (spec 12), so this is correctly deferred rather than forgotten — but
-until there is a pipeline, rule 3 depends on somebody running `make check`.
+pipeline runs it yet. **Closes with issue #5** (CI), now in scope by decision
+D16. Until then, rule 3 depends on somebody running `make check`.
 
 ---
 
@@ -113,6 +113,11 @@ Newly relevant because decision D8 — session cookies rather than bearer tokens
 was raised and confirmed on 14 September. CSRF matters precisely because the
 session is a cookie.
 
+**15 Oct:** the `secure` flag is issue #7 (with the HTTPS deploy). CSRF and rate
+limiting stay open and named; the security scan (#19) and the policy (#22)
+report them as known gaps rather than hiding them. The deployment runs demo
+data only, by decision, until the course is over.
+
 ---
 
 ## Decisions
@@ -139,13 +144,40 @@ built so far; each will bite when the deferred work arrives.
 
 ---
 
+## Against the course criteria
+
+The final project is graded on fourteen criteria (AI Dev Tools Zoomcamp, 2026
+draft). Points claimed today, the target, and the issue that closes each gap.
+Scored against the repository as of 14 September; updated when an issue closes.
+
+| # | Criterion | Today | Target | Closes with |
+|---|---|---|---|---|
+| 1 | Problem description | 1 | 2 | #23 (*How the game works*) |
+| 2 | AI-assisted workflow | 1 | 2 | #24 |
+| 3 | Technologies and architecture | 1 | 2 | #23 |
+| 4 | Frontend | 3 | 3 | — |
+| 5 | API contract | 2 | 2 | — |
+| 6 | Backend | 3 | 3 | — |
+| 7 | Database | 1 | 2 | #1 |
+| 8 | Containerization | 0 | 2 | #2, #3 |
+| 9 | Integration testing | 1 | 2 | #4 |
+| 10 | Deployment | 0 | 2 | #6 |
+| 11 | CI/CD | 0 | 2 | #5, #6 |
+| 12 | Agent extension pack | 1 | 2 | #12–#17 |
+| 13 | Security, audit, DevOps hardening | 0 | 2 | #18–#22 |
+| 14 | Reproducibility | 1 | 2 | #23, #25 |
+| | **Total** | **16** | **30** | |
+
+Issues #8–#11 (monitoring, backups, rollback, public `ops/` evidence) are done
+by the author by hand and feed criteria 10, 13 and 14 as evidence.
+
 ## Recommended order from here
 
-1. **Fix the seed placement.** Cheapest, most visible, and makes every demo better.
-2. **Close the 7.5 security gaps.** CSRF, rate limiting, the `secure` flag.
-3. **Generate the frontend types.** Closes the one-directional drift guard.
-4. **Add the two Playwright paths.** Makes the manual walk repeatable.
-5. **Then the backlog**, in the order spec 13 sets out — admin screens first.
+The issues, in the order the dependencies dictate: database (#1) → image and
+compose (#2, #3) → integration tests (#4) → CI (#5) → deploy (#6, #7) → the
+by-hand operations (#8–#11) → the pack (#12–#17) → hardening (#18–#22) →
+documentation and the clean-clone run (#23–#25).
 
-Items 1 and 2 are queued as tasks. Items 3 and 4 are unmet definitions of done
-rather than new work, and should land before the backlog rather than after.
+Not on that path, and deliberately left where they are: the seed-placement
+defect above, the generated frontend types and the Playwright paths. None of
+them is graded; all three stay here as known gaps.

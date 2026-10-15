@@ -1,6 +1,6 @@
 # Tennis Prediction Game — Product and Technical Specification
 
-**Status:** Draft v0.1
+**Status:** v0.2 — 15 Oct 2026: final-project phase added (step 5, D15, D16); v0.1 was the MVP draft
 **Scope:** MVP definition and build plan
 **Audience:** Product owner, implementing engineer, coding agents
 
@@ -311,7 +311,7 @@ ScoreEntry
 2. **Every external dependency behind an interface.** Tennis data, authentication and email are each an interface with a mock implementation.
 3. **Contract first from step 2 onward.** `openapi.yaml` at the repository root is the single agreement between frontend and backend.
 4. **Derived data is rebuildable.** Scores can always be thrown away and recomputed from source data.
-5. **One process.** No scheduler, no worker, no message queue in the MVP.
+5. **One process.** The *application* runs as one process: no scheduler, no worker, no message queue in the MVP. This is a statement about application code. Platform services around it — the database server, the reverse proxy, the CI runner, the scheduled backup — are not application processes and are in scope (D16).
 
 ### 7.2 Frontend
 
@@ -338,10 +338,13 @@ Selection is by environment variable. **No component, hook or page imports `fetc
 |---|---|
 | Framework | FastAPI |
 | Validation | Pydantic v2 |
-| Persistence | In-memory repositories (step 3), SQLAlchemy 2.0 with SQLite (step 4) |
+| Persistence | In-memory repositories (step 3), SQLAlchemy 2.0 (step 4) — SQLite for local work and unit tests, **Postgres in production** (D15); the repository implementation is dialect-agnostic |
 | Migrations | Alembic, introduced with step 4 |
 | Auth | Session cookie, password hashing with Argon2 |
-| Testing | pytest, httpx test client |
+| Testing | pytest, httpx test client; integration tests in `tests/integration/` against the compose stack (step 5) |
+| Containers | One image (backend serving the built frontend), `docker-compose.yml` with Postgres (step 5) |
+| CI/CD | GitHub Actions: lint, typecheck, unit and integration tests on every push; deploy only when green (step 5) |
+| Deployment | A single VPS behind Coolify, Postgres as a managed database, daily backups (step 5) |
 
 **Layering:**
 
@@ -369,7 +372,7 @@ Interface `TennisDataProvider`, with methods to fetch tournaments, draw entrants
 
 ### 7.5 Non-functional requirements
 
-- **Scale:** designed for tens of participants per game and a handful of games per year. SQLite is adequate and deliberate.
+- **Scale:** designed for tens of participants per game and a handful of games per year. SQLite would be adequate; Postgres in production is a platform choice (D15), not a scale requirement.
 - **Performance:** ranking and betting pages under 300 ms server-side at expected scale.
 - **Security:** Argon2 password hashing, HTTP-only cookies, CSRF protection on mutating requests, rate limiting on auth endpoints, server-side authorisation checks on every admin route.
 - **Privacy:** personal data limited to email, display name and optional full name. Account deletion anonymises rather than cascades, so historical leaderboards remain intact.
@@ -483,24 +486,48 @@ Introduce SQLAlchemy and SQLite behind the existing repository interfaces.
 - The existing test suite passes against both repository implementations.
 - A seed script produces a realistic demo game.
 
+### Step 5 — Ship and operate (final project, added 15 Oct 2026)
+
+Take the MVP from "runs on a laptop" to "deployed, tested, operated and documented". The work items are the repository's GitHub Issues (#1–#25); this list is the definition of done they add up to.
+
+**Done when:**
+- Postgres runs behind the existing repository interfaces, selected by `DATABASE_URL`; the unit suite passes against memory, SQLite and Postgres (#1).
+- One image runs the whole app; `docker compose up` brings up app and Postgres with no manual step (#2, #3).
+- Integration tests live in `tests/integration/`, run against the compose stack, and cover the key workflows (#4).
+- CI runs lint, typecheck, unit and integration tests on every push; the deploy job runs only when they pass (#5, #6).
+- The app is reachable at a public URL over HTTPS, with migrations applied at container start (#6, #7).
+- **Operations, by the author by hand:** health and uptime checks with one alert, daily database backups with one restore, a rollback drill, and sanitised evidence in `ops/` (#8–#11).
+- The agent extension pack exists and is demonstrated from a real run (#12–#17).
+- Hardening artefacts exist: PR audit, security scan, agent security notes, operational diagnosis, AI tool and data policy (#18–#22).
+- The README explains the game, the architecture and how to set up, run, test and deploy; the AI usage report covers the final-project workflow including the by-hand split; a clean clone runs from the README alone (#23–#25).
+
 ---
 
 ## 10. Repository structure
 
 ```
-/backend            FastAPI application and its tests
-/docs               supporting documentation, including this file
-/frontend           React application
-AGENTS.md           instructions for coding agents
-openapi.yaml        the API agreement
-README.md           setup and run instructions
+/backend              FastAPI application and its unit tests
+/frontend             React application
+/tests/integration    integration tests against the compose stack
+/docs                 this file, status, process, roles, reports, pack docs
+/agent-capabilities   workflows and subagents (tool-agnostic)
+/agent-hooks          guardrails
+/mcp-server           one scoped MCP tool
+/custom-agent         headless agent for red CI runs
+/ops  /security       operational evidence; audit and policy artefacts
+/.github/workflows    CI and the gated deploy
+AGENTS.md             instructions for coding agents
+Dockerfile  docker-compose.yml
+openapi.yaml          the API agreement
+product-spec.md       pointer to this file
+README.md             setup, run, test and deploy instructions
 ```
 
 ### 10.1 What belongs in AGENTS.md
 
 `AGENTS.md` should encode the constraints that are easy for an agent to violate and expensive to unwind:
 
-- The four-step plan and which step is currently active.
+- The delivery plan and which phase is active; in the final-project phase, that the GitHub Issues are the work items.
 - **No HTTP calls outside the frontend service layer.**
 - **No business logic in the frontend.** Validation there is duplicated for user experience; the backend is authoritative.
 - `openapi.yaml` is the contract. Changing an endpoint means changing the spec first.
@@ -530,6 +557,8 @@ README.md           setup and run instructions
 | D12 | Walkovers and retirements resolved by admin judgement through the outcome grid, explained in the audit reason | A human resolves these in seconds; a void-and-reopen mechanism can follow if it proves necessary |
 | D13 | Static landing-page copy with a live teaser block. Ties share a position on total points. Finished games stay read-only | Only the part that goes stale is dynamic; no file storage decision needed |
 | D14 | First pass builds a narrowed screen surface (see [13.1](#131-deferred-from-the-first-pass)). The architecture is not narrowed: the service layer, the contract, the backend layering, the pure scoring engine and the twice-implemented repository interface all stay | The product surface is what makes the build long; the architecture is what makes it correct. Every operation kept is built in the contract, the backend and the repository, so cutting screens compounds. The deferred items are a backlog, not an exclusion — Section 4 still describes the intended product |
+| D15 | **Postgres in production, SQLite locally**, behind the same SQLAlchemy repository implementation; the dialect is chosen by `DATABASE_URL` and nothing else (15 Oct 2026) | The deployment platform provides a managed Postgres with daily backups; the application was database-agnostic by design, so the cost is one driver and one URL. SQLite stays for local work and unit tests because it needs no server |
+| D16 | **Deployment, containers and CI/CD are in scope** from the final-project phase (15 Oct 2026); reverses the *settled during the build* exclusion in Section 12 | The course's final project grades them, and the author's own pipeline and server exist. Principle 7.1.5 is clarified to mean application code: platform services around the app are not a violation |
 
 ---
 
@@ -550,7 +579,7 @@ Excluded from the MVP by explicit decision. Listed so that scope creep has to be
 - Public sharing of results outside the application
 
 **Technical:**
-- Live score polling, WebSockets, background jobs, schedulers
+- Live score polling, WebSockets, background jobs and schedulers *inside the application* (a platform-level scheduled backup is not one, D16)
 - OAuth, passwordless login, two-factor authentication
 - Internationalisation
 - Native mobile applications
@@ -561,9 +590,9 @@ Excluded from the MVP by explicit decision. Listed so that scope creep has to be
 - **Token-based authentication.** Bearer tokens were raised while building the
   backend and rejected: decision D8 stands, and CSRF protection in 7.5 only
   makes sense with a cookie. Session cookies it is.
-- **Deployment, containers and CI/CD.** Out of scope for this build by
-  agreement — a later concern, not an MVP one. The contract drift check exists
-  as a test so a pipeline has something to run when there is one.
+- ~~**Deployment, containers and CI/CD.** Out of scope for this build.~~
+  **Reversed 15 Oct 2026 by D16:** in scope from step 5. The contract drift
+  check that existed "so a pipeline has something to run" now runs in CI.
 
 ---
 
