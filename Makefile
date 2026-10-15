@@ -13,7 +13,7 @@ DATABASE_URL  ?= sqlite:///./tennis.db
 
 .DEFAULT_GOAL := help
 .PHONY: help install db reset-db run run-mock run-backend run-frontend \
-        test test-frontend test-backend lint typecheck check clean hooks
+        test test-frontend test-backend lint typecheck check clean hooks docker-build
 
 help: ## List the targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -74,6 +74,9 @@ typecheck: ## tsc --noEmit
 
 check: lint typecheck test ## Everything CI would run, plus the commit-gate tests
 	agent-hooks/test-hooks.sh
+
+docker-build: ## Build the container image (backend serving the built frontend)
+	docker build -t tennis-prediction-game .
 
 hooks: ## Enable the commit gate (git pre-commit hook) for this clone
 	git config core.hooksPath agent-hooks
