@@ -112,6 +112,80 @@ printf '%s' "$json" | (cd "$wt" && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hook
 printf '%s' "$json" | (cd "$wt" && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0="$tmp/main/agent-hooks" "$wt/agent-hooks/claude-pre-tool.sh") >/dev/null 2>&1
 [ $? -eq 2 ] && report "refuse  linked worktree, hooksPath pointing at another checkout" 1 || report "refuse  linked worktree, hooksPath pointing at another checkout" 0
 
+echo "== pre-tool: shell wrappers (issue 28)"
+refuse_naming 'bash -c "git commit -n -m x"' "-n"
+refuse_naming "sh -c 'git commit -n -m x'" "-n"
+refuse_naming 'bash -lc "git commit --no-verify -m x"' "--no-verify"
+refuse_naming 'eval "git commit -n -m x"' "-n"
+refuse_naming "bash -c \"sh -c 'git commit -n'\"" "-n"
+refuse_naming "bash -c \"sh -c 'bash -c \\\"sh -c \\\\\\\"git commit -m x\\\\\\\"\\\"'\"" "nested deeper than 3"
+refuse "env git commit -n -m x"
+refuse "env FOO=1 git commit -n -m x"
+refuse "command git commit -n -m x"
+refuse "exec git commit -n -m x"
+refuse "sudo git commit -n -m x"
+refuse "nohup git commit -n -m x"
+refuse "time git commit -n -m x"
+refuse "xargs git commit -n -m x"
+refuse "FOO=1 git commit -n -m x"
+refuse "sudo -u someone env FOO=1 git commit -n -m x"
+refuse 'echo $(git commit -n -m x)'
+refuse 'echo `git commit -n -m x`'
+refuse '{ git commit -n -m x; }'
+refuse '(git commit -n -m x)'
+allow  'bash -c "git commit -m x"'
+allow  "env git commit -m x"
+allow  "echo git commit -nm x"
+allow  'echo "bash -c" && git commit -m "fix: handle bash -c wrappers"'
+allow  'git commit -m "x $(date)"'
+allow  "bash script.sh -c git"
+allow  "bash -c 'ls -n'"
+
+echo "== pre-tool: environment and config overrides (issue 28)"
+refuse_naming "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git commit -m x" "GIT_CONFIG_COUNT"
+refuse "export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null; git commit -m x"
+refuse "env GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git commit -m x"
+refuse_naming "GIT_CONFIG_PARAMETERS=\"'core.hooksPath=/dev/null'\" git commit -m x" "GIT_CONFIG_PARAMETERS"
+refuse_naming "GIT_CONFIG_GLOBAL=/dev/null git commit -m x" "GIT_CONFIG_GLOBAL"
+refuse_naming "GIT_CONFIG_SYSTEM=/dev/null git commit -m x" "GIT_CONFIG_SYSTEM"
+refuse_naming "GIT_DIR=/example/.git git commit -m x" "GIT_DIR"
+refuse_naming "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=user.name GIT_CONFIG_VALUE_0=a git commit -m x" "GIT_CONFIG_COUNT"
+refuse_naming "git config core.hooksPath /dev/null && git commit -m x" "core.hooksPath"
+refuse "git config --local core.hooksPath /dev/null && git commit -m x"
+refuse "git config --unset core.hooksPath; git commit -m x"
+allow  "git config --get core.hooksPath"
+allow  "git config --list"
+allow  "git config core.hooksPath"
+allow  'git commit -m "docs: GIT_CONFIG_COUNT and core.hooksPath"'
+allow  "GIT_CONFIG_COUNT=1 git status"
+
+echo "== pre-tool: aliases (issue 28)"
+refuse_naming "git -c alias.ci=commit ci -n -m x" "-n"
+refuse "git config alias.ci commit && git ci -nm x"
+refuse "git config alias.ci 'commit -n' && git ci -m x"
+allow  "git config alias.ci commit && git ci -m x"
+al="$tmp/aliasrepo"
+mkdir -p "$al/agent-hooks"
+cp "$here/claude-pre-tool.sh" "$here/pre_tool_check.py" "$al/agent-hooks/"
+(cd "$al" && git init -q && git config alias.ci commit && git config alias.lg log \
+  && git config alias.cin 'commit -n' && git config alias.sh '!echo commit' \
+  && git config core.hooksPath agent-hooks) >/dev/null 2>&1
+run_alias() { # command -> exit code, hook copy inside the alias repo
+  local j
+  j=$(CMD="$1" python3 -c 'import json,os; print(json.dumps({"tool_input":{"command":os.environ["CMD"]}}))')
+  printf '%s' "$j" | (cd "$al" && ./agent-hooks/claude-pre-tool.sh) >/dev/null 2>"$tmp/err"
+}
+run_alias "git ci -n -m x"; rc=$?
+[ $rc -eq 2 ] && grep -qF -- "-n" "$tmp/err" && report "refuse  repo alias ci=commit: git ci -n -m x" 1 || report "refuse  repo alias ci=commit: git ci -n -m x" 0
+run_alias "git cin -m x"; rc=$?
+[ $rc -eq 2 ] && report "refuse  repo alias cin='commit -n': git cin -m x" 1 || report "refuse  repo alias cin='commit -n': git cin -m x" 0
+run_alias "git ci -m x"; rc=$?
+[ $rc -eq 0 ] && report "allow   repo alias ci=commit, hooks enabled: git ci -m x" 1 || report "allow   repo alias ci=commit, hooks enabled: git ci -m x" 0
+run_alias "git lg -n 5"; rc=$?
+[ $rc -eq 0 ] && report "allow   non-commit alias lg=log: git lg -n 5" 1 || report "allow   non-commit alias lg=log: git lg -n 5" 0
+run_alias "git sh -n"; rc=$?
+[ $rc -eq 0 ] && report "allow   shell alias (documented limit): git sh -n" 1 || report "allow   shell alias (documented limit): git sh -n" 0
+
 echo "== content gate (throwaway repository)"
 gate="$tmp/gatecopy"
 mkdir -p "$gate"
