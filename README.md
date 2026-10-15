@@ -65,6 +65,9 @@ password hashing, session cookies. Tested with pytest and the httpx test client.
 AGENTS.md              instructions for coding agents — read this first
 CLAUDE.md              points at AGENTS.md
 Makefile               make run, make test, make check
+Dockerfile             one image: backend serving the built frontend
+docker-compose.yml     app + Postgres for dev, test and CI
+.env.example           optional compose settings, placeholders only
 openapi.yaml           the agreement between frontend and backend
 README.md              this file
 ```
@@ -170,7 +173,50 @@ is lost when the container is removed.** To keep it, mount a volume on `/data`
 
 `GET /health` (process is up, no database) and `GET /ready` (database answers)
 are the container's probes; neither is part of `openapi.yaml` (decision D17).
-Compose, with Postgres, comes with issue #3.
+
+### Run with Docker
+
+The whole stack, app and Postgres, with one command and no setup:
+
+```bash
+docker compose up --build
+```
+
+Open <http://localhost:8000> and sign in as `you@example.com` or
+`organiser@example.com` with the demo password `deuce-demo-password`; the game
+list shows the seeded Roland Garros 2026 game. The app waits for Postgres to be
+healthy, migrates, seeds (on every start; it is idempotent) and serves. This is
+the stack for development, tests and CI only; the deployment builds the
+image directly (issue #6). The image itself is described in
+[Build and run the image](#build-and-run-the-image).
+
+Every variable has a development-only default, so a `.env` file is optional;
+copy `.env.example` to `.env` to change one.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `SESSION_SECRET` | `compose-dev-only-not-a-secret` | Signs the session cookie. Local and CI use only, never a deployment. |
+| `POSTGRES_USER` | `tennis` | Postgres user. |
+| `POSTGRES_PASSWORD` | `tennis` | Postgres password. |
+| `POSTGRES_DB` | `tennis` | Database name. |
+| `APP_PORT` | `8000` | Host port the app is published on (`APP_PORT=8001 docker compose up`). |
+
+`DATABASE_URL` is assembled from the three `POSTGRES_*` values and can be
+overridden whole. `COOKIE_SECURE` is left unset: the stack is plain HTTP on
+localhost.
+
+- `docker compose down` stops the stack and **keeps** the data (named volume
+  `pgdata`). `docker compose down -v` also deletes it; the next `up` starts
+  empty, migrates and re-seeds.
+- **The Postgres password is applied only when the volume is first created.**
+  Changing `POSTGRES_USER`, `POSTGRES_PASSWORD` or `POSTGRES_DB` against an
+  existing volume makes the app exit non-zero within `PGCONNECT_TIMEOUT` with
+  the error in `docker compose logs app`; run `docker compose down -v` to change
+  it.
+- Postgres is not published to the host. To look inside:
+  `docker compose exec postgres psql -U tennis tennis`.
+- There is no restart policy: a failed migration stops the app instead of
+  looping.
 
 ### Tests
 
