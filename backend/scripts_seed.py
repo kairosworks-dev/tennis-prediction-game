@@ -16,7 +16,7 @@ from app.seed import DEMO_PASSWORD, seed_demo_game
 
 
 def main() -> None:
-    os.environ.setdefault("REPOSITORY_BACKEND", "sqlite")
+    os.environ.setdefault("REPOSITORY_BACKEND", "sqlalchemy")
     repos = build_repositories()
     if repos.tournaments.get("roland-garros-2026") is not None:
         print("Already seeded; nothing to do.")

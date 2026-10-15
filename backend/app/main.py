@@ -14,6 +14,7 @@ from contextlib import AbstractContextManager, contextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.api.routers import auth, games, play, results
@@ -84,21 +85,41 @@ def _session_scope(session_factory: sessionmaker[Session]) -> RepositoryScope:
     return scope
 
 
+#: `sqlite` is a working alias for `sqlalchemy`: the dialect comes from
+#: `DATABASE_URL` alone, never from this setting.
+_BACKENDS = {"memory": "memory", "sqlalchemy": "sqlalchemy", "sqlite": "sqlalchemy"}
+
+
 def build_repository_scope(backend: str | None = None) -> RepositoryScope:
     """Pick a persistence implementation.
 
-    This is the whole of step 4's swap: the services and the domain never learn
-    which one they got. `memory` keeps the in-memory set from step 3; `sqlite`
-    uses SQLAlchemy against a file, or against `:memory:` for tests.
+    `memory` keeps the in-memory set from step 3; `sqlalchemy` (alias `sqlite`)
+    uses SQLAlchemy against whatever `DATABASE_URL` names. The services and the
+    domain never learn which one they got.
     """
     choice = backend or os.environ.get("REPOSITORY_BACKEND", "memory")
-    if choice == "memory":
+    if choice not in _BACKENDS:
+        raise ValueError(
+            f"Unknown REPOSITORY_BACKEND {choice!r}; use 'memory' or 'sqlalchemy' "
+            "(or 'sqlite', an alias for 'sqlalchemy')."
+        )
+    if _BACKENDS[choice] == "memory":
         return _fixed_scope(MemoryRepositories())
 
     engine = create_db_engine()
-    # Alembic owns the schema for a real database; create_all is here so a
-    # throwaway in-memory database works without running migrations first.
-    Base.metadata.create_all(engine)
+    # Only SQLite keeps create_all: a throwaway or first-run local database
+    # works without migrations. On every other URL (Postgres) Alembic owns the
+    # schema, and an unmigrated database stops start-up instead of being
+    # silently populated.
+    if engine.dialect.name == "sqlite":
+        Base.metadata.create_all(engine)
+    else:
+        missing = set(Base.metadata.tables) - set(inspect(engine).get_table_names())
+        if missing:
+            raise RuntimeError(
+                f"The database schema is missing tables ({', '.join(sorted(missing))}). "
+                "Run `alembic upgrade head` before starting the app."
+            )
     return _session_scope(create_session_factory(engine))
 
 

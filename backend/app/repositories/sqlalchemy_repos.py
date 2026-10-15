@@ -292,14 +292,30 @@ class SqlAlchemyRepositories(interfaces.Repositories):
         self._session.commit()
 
 
+DEFAULT_DATABASE_URL = "sqlite:///./tennis.db"
+
+
+def normalise_database_url(url: str) -> str:
+    """Pin bare Postgres URLs to the psycopg 3 driver.
+
+    A bare `postgresql://` (or Heroku-style `postgres://`) URL makes SQLAlchemy
+    import psycopg2, which this project does not install. This is the one place
+    URLs are normalised; `migrations/env.py` calls it too.
+    """
+    for bare in ("postgresql://", "postgres://"):
+        if url.startswith(bare):
+            return "postgresql+psycopg://" + url[len(bare) :]
+    return url
+
+
 def create_db_engine(url: str | None = None) -> Engine:
-    """An engine for whatever `DATABASE_URL` names.
+    """An engine for whatever `DATABASE_URL` names (default: a local SQLite file).
 
     The application is database-agnostic by design: `services/` and `domain/`
     import no SQLAlchemy at all, and the repository interfaces are what they
     talk to. This function is the one place a dialect matters, and the only
-    dialect-specific handling is SQLite's, which is quirky in two ways that are
-    nothing to do with the application:
+    dialect-specific handling is the URL normalisation above and SQLite's two
+    quirks, which have nothing to do with the application:
 
     - `check_same_thread` must be off, because uvicorn runs sync endpoints in a
       worker thread and SQLite objects to being touched from more than one.
@@ -307,11 +323,12 @@ def create_db_engine(url: str | None = None) -> Engine:
       StaticPool `create_all` builds the schema on one connection and the next
       session opens a second, empty one.
 
-    Postgres and the rest need neither, and passing SQLite's connect args to
-    them fails — so they are applied only to SQLite. Adding Postgres is a URL,
-    a driver in `pyproject.toml`, and nothing else.
+    Postgres needs neither, and passing SQLite's connect args to it fails — so
+    they are applied only to SQLite.
     """
-    resolved = url or os.environ.get("DATABASE_URL", "sqlite:///./tennis.db")
+    resolved = normalise_database_url(
+        url or os.environ.get("DATABASE_URL", DEFAULT_DATABASE_URL)
+    )
 
     if not resolved.startswith("sqlite"):
         return create_engine(resolved)
@@ -322,8 +339,7 @@ def create_db_engine(url: str | None = None) -> Engine:
     return create_engine(resolved, connect_args=connect_args)
 
 
-#: Kept so existing call sites and tests read naturally; SQLite is still the
-#: only database the MVP ships with.
+#: Kept so existing call sites and tests read naturally.
 create_sqlite_engine = create_db_engine
 
 
