@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 # Claude Code PreToolUse adapter. Receives the tool call as JSON on stdin.
-# For a `git commit`, refuses --no-verify (the way to skip git's own hook) and
-# runs the same gate, so the agent sees the reason before the commit is attempted.
+# Flag policy for `git commit` (no hook-skipping flags, no hooksPath override)
+# plus a check that git's own pre-commit hook is enabled (make hooks). It does
+# not scan content: that is git's pre-commit hook (commit-gate.sh).
 # Exit 2 = block the tool call and show stderr to the agent; exit 0 = continue.
-cmd=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("tool_input",{}).get("command",""))' 2>/dev/null || true)
-case "$cmd" in
-  *"git commit"*|*"git "*" commit"*) ;;
-  *) exit 0;;
-esac
-case "$cmd" in *--no-verify*|*" -n "*)
-  echo 'commit-gate: --no-verify is not allowed in this repository.' >&2; exit 2;;
-esac
-if ! "$(dirname "$0")/commit-gate.sh"; then exit 2; fi
-exit 0
+# Any failure of the checker itself also blocks (fail closed).
+python3 "$(dirname "$0")/pre_tool_check.py"
+rc=$?
+[ "$rc" -eq 0 ] && exit 0
+[ "$rc" -ne 2 ] && echo 'commit-gate: the pre-tool check failed to run; refusing.' >&2
+exit 2
