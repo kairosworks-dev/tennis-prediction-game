@@ -162,10 +162,16 @@ needed) or `http`. Copy `.env.example` to `.env` to change it.
 # backend
 cd backend && uv sync
 uv run alembic upgrade head && uv run python scripts_seed.py
-REPOSITORY_BACKEND=sqlite uv run uvicorn app.main:app --reload
+REPOSITORY_BACKEND=sqlalchemy uv run uvicorn app.main:app --reload   # `sqlite` is an alias
 uv run pytest
 uv run ruff check .
 ```
+
+`DATABASE_URL` picks the database (default `sqlite:///./tennis.db`; Postgres:
+`postgresql+psycopg://user:pw@localhost:5432/tennis`). On Postgres the schema
+comes only from `uv run alembic upgrade head`. `TEST_DATABASE_URL` (a throwaway
+Postgres database, never the one `DATABASE_URL` names) adds a Postgres
+parameter to the backend suite; without it that parameter is skipped.
 
 Docker and the integration tests: see the README once issues #2–#4 land; the
 Makefile targets are `make test-integration` and `docker compose up --build`.

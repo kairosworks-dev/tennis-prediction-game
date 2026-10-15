@@ -36,8 +36,9 @@ joining a game, the tournament-bet cascade, submitting a prediction that
 persists to SQLite, scores, the tied ranking, and the organiser's outcome grid
 and recalculation.
 
-**215 tests.** 95 frontend, 120 backend — the backend suite runs twice, once
-against each repository implementation.
+**230 tests.** 95 frontend, 135 backend — the backend suite runs once per
+repository implementation (memory, SQLite) and, with `TEST_DATABASE_URL` set,
+a third time on Postgres (164 backend results, 29 more).
 
 ---
 
@@ -158,7 +159,7 @@ Scored against the repository as of 14 September; updated when an issue closes.
 | 4 | Frontend | 3 | 3 | — |
 | 5 | API contract | 2 | 2 | — |
 | 6 | Backend | 3 | 3 | — |
-| 7 | Database | 1 | 2 | #1 |
+| 7 | Database | 2 | 2 | #1 (built on its branch, pending QA and merge) |
 | 8 | Containerization | 0 | 2 | #2, #3 |
 | 9 | Integration testing | 1 | 2 | #4 |
 | 10 | Deployment | 0 | 2 | #6 |

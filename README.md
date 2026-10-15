@@ -101,7 +101,7 @@ results screen. Password for both: `deuce-demo-password`.
 ```bash
 # terminal one
 cd backend && uv sync && uv run alembic upgrade head && uv run python scripts_seed.py
-REPOSITORY_BACKEND=sqlite uv run uvicorn app.main:app --port 8000
+REPOSITORY_BACKEND=sqlalchemy uv run uvicorn app.main:app --port 8000
 
 # terminal two
 cd frontend && npm install && VITE_API_CLIENT=http npm run dev
@@ -113,6 +113,34 @@ Vite proxies `/api` to port 8000, so the session cookie stays same-origin.
 real backend, `mock` for fixtures. No code changes, which is what the service
 layer exists for. Set it in `frontend/.env` to make a choice stick.
 
+### Database
+
+Configuration is environment variables:
+
+- `DATABASE_URL` selects the database. Default: `sqlite:///./tennis.db`.
+  Postgres example: `postgresql+psycopg://postgres:postgres@localhost:5433/tennis`.
+  Bare `postgresql://` and `postgres://` URLs are accepted and rewritten to
+  `postgresql+psycopg://` (the installed driver) in one place, `create_db_engine`;
+  Alembic uses the same rewrite.
+- `REPOSITORY_BACKEND` is `memory` (default) or `sqlalchemy`; `sqlite` is kept
+  as an alias for `sqlalchemy`. The dialect comes from `DATABASE_URL` alone.
+  Any other value stops start-up with an error.
+
+On SQLite the app creates missing tables itself. On any other URL it does not:
+Alembic owns the schema, and starting against an unmigrated database fails
+with a message naming `alembic upgrade head`.
+
+A throwaway local Postgres (development placeholder credentials only):
+
+```bash
+docker run --rm -d --name tennis-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=tennis -p 5433:5432 postgres:16
+export DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/tennis
+cd backend && uv run alembic upgrade head && uv run python scripts_seed.py
+REPOSITORY_BACKEND=sqlalchemy uv run uvicorn app.main:app --port 8000
+```
+
+A second run of the seed script prints "Already seeded".
+
 ### Tests
 
 ```bash
@@ -123,8 +151,17 @@ cd frontend && npm run test && npm run lint && npm run typecheck
 cd backend && uv run pytest && uv run ruff check .
 ```
 
-The backend suite runs twice: once against the in-memory repositories and once
-against SQLAlchemy on SQLite. `tests/test_contract_drift.py` fails if
+The backend suite runs against the in-memory repositories and against SQLAlchemy
+on SQLite. With `TEST_DATABASE_URL` set (see below) it also runs against Postgres. To add a Postgres run, point `TEST_DATABASE_URL` at a throwaway database
+(`docker exec tennis-pg psql -U postgres -c "create database tennis_test"`):
+
+```bash
+cd backend && TEST_DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/tennis_test uv run pytest
+```
+
+Each Postgres test drops and recreates every table, and the suite refuses a
+`TEST_DATABASE_URL` equal to `DATABASE_URL`. Without the variable the Postgres
+parameter is skipped. `tests/test_contract_drift.py` fails if
 `openapi.yaml` and the backend disagree about any operation.
 
 ### API documentation
