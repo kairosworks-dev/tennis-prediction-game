@@ -160,7 +160,7 @@ Scored against the repository as of 14 September; updated when an issue closes.
 | 5 | API contract | 2 | 2 | — |
 | 6 | Backend | 3 | 3 | — |
 | 7 | Database | 2 | 2 | done, #1 |
-| 8 | Containerization | 0 | 2 | #2, #3 |
+| 8 | Containerization | 0 | 2 | #2 (image, entrypoint, probes) is built; #3 (compose) closes it |
 | 9 | Integration testing | 1 | 2 | #4 |
 | 10 | Deployment | 0 | 2 | #6 |
 | 11 | CI/CD | 0 | 2 | #5, #6 |

@@ -141,6 +141,37 @@ REPOSITORY_BACKEND=sqlalchemy uv run uvicorn app.main:app --port 8000
 
 A second run of the seed script prints "Already seeded".
 
+### Build and run the image
+
+One image holds the whole app: the backend serves the API under `/api` and the
+built frontend at `/`. It needs Docker only.
+
+```bash
+make docker-build        # docker build -t tennis-prediction-game .
+docker run --rm -p 8000:8000 -e SESSION_SECRET=change-me tennis-prediction-game
+```
+
+Open <http://localhost:8000> and sign in as `you@example.com` with the demo
+password. At start the container migrates its database, runs the idempotent demo
+seed (on every start, for now) and then starts uvicorn; if the migration fails
+it exits non-zero. It runs as a non-root user (UID 10001).
+
+By default the data is a SQLite file at `/data/tennis.db`. **Without a volume it
+is lost when the container is removed.** To keep it, mount a volume on `/data`
+(`-v tennis-data:/data`; a bind mount must be writable by UID 10001).
+
+| Variable | In the image | Meaning |
+|---|---|---|
+| `SESSION_SECRET` | **required**, no default | Signs the session cookie. The container refuses to start without it. |
+| `DATABASE_URL` | `sqlite:////data/tennis.db` | Any SQLAlchemy URL; a bare `postgresql://` URL works. An unreachable database makes the container exit non-zero within `PGCONNECT_TIMEOUT` (10 s by default), with the error in `docker logs`. |
+| `REPOSITORY_BACKEND` | `sqlalchemy` | See the backend conventions. |
+| `COOKIE_SECURE` | unset | Passed through; see issue #7. |
+| `FRONTEND_DIR` | `/app/static` | Where the built frontend lives; served only if it exists. |
+
+`GET /health` (process is up, no database) and `GET /ready` (database answers)
+are the container's probes; neither is part of `openapi.yaml` (decision D17).
+Compose, with Postgres, comes with issue #3.
+
 ### Tests
 
 ```bash
