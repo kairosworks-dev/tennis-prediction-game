@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 from collections.abc import Callable, Iterator
 from contextlib import AbstractContextManager, contextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +18,8 @@ from fastapi.responses import JSONResponse, Response
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.api import probes
+from app.api.frontend import DEFAULT_FRONTEND_DIR, mount_frontend
 from app.api.routers import auth, games, play, results
 from app.repositories.interfaces import Repositories
 from app.repositories.memory import MemoryRepositories
@@ -134,7 +137,17 @@ def build_repositories(backend: str | None = None) -> Repositories:
     return context.__enter__()
 
 
-def create_app(*, seed: bool = True, repositories: Repositories | None = None) -> FastAPI:
+def create_app(
+    *,
+    seed: bool = True,
+    repositories: Repositories | None = None,
+    frontend_dir: Path | None = None,
+) -> FastAPI:
+    """Build the app.
+
+    `frontend_dir` (default: `FRONTEND_DIR`, else the image's path) is mounted
+    only if it holds a build, so nothing changes without one.
+    """
     app = FastAPI(
         title="Tennis Prediction Game",
         version="0.1.0",
@@ -173,6 +186,11 @@ def create_app(*, seed: bool = True, repositories: Repositories | None = None) -
 
     for router in (auth.router, games.router, play.router, results.router):
         app.include_router(router, prefix="/api")
+    app.include_router(probes.router)
+
+    static_dir = frontend_dir or Path(os.environ.get("FRONTEND_DIR", DEFAULT_FRONTEND_DIR))
+    if (static_dir / "index.html").is_file():
+        mount_frontend(app, static_dir)  # SPA served from the 404 handler
 
     return app
 
