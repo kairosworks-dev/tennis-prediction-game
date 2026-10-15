@@ -190,7 +190,7 @@ def create_app(
 
     static_dir = frontend_dir or Path(os.environ.get("FRONTEND_DIR", DEFAULT_FRONTEND_DIR))
     if (static_dir / "index.html").is_file():
-        mount_frontend(app, static_dir)  # last: its catch-all must not shadow a route
+        mount_frontend(app, static_dir)  # SPA served from the 404 handler
 
     return app
 
