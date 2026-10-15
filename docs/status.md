@@ -159,7 +159,7 @@ Scored against the repository as of 14 September; updated when an issue closes.
 | 4 | Frontend | 3 | 3 | — |
 | 5 | API contract | 2 | 2 | — |
 | 6 | Backend | 3 | 3 | — |
-| 7 | Database | 2 | 2 | #1 (built on its branch, pending QA and merge) |
+| 7 | Database | 2 | 2 | done, #1 |
 | 8 | Containerization | 0 | 2 | #2, #3 |
 | 9 | Integration testing | 1 | 2 | #4 |
 | 10 | Deployment | 0 | 2 | #6 |

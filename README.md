@@ -152,7 +152,7 @@ cd backend && uv run pytest && uv run ruff check .
 ```
 
 The backend suite runs against the in-memory repositories and against SQLAlchemy
-on SQLite. With `TEST_DATABASE_URL` set (see below) it also runs against Postgres. To add a Postgres run, point `TEST_DATABASE_URL` at a throwaway database
+on SQLite. With `TEST_DATABASE_URL` set it also runs against Postgres. To add a Postgres run, point `TEST_DATABASE_URL` at a throwaway database
 (`docker exec tennis-pg psql -U postgres -c "create database tennis_test"`):
 
 ```bash
