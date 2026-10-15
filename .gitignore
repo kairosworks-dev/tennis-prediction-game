@@ -67,7 +67,6 @@ docs/design/*-screens.html
 
 # uv
 backend/.venv/
-backend/uv.lock
 
 # commit gate: the author's private pattern list stays local
 agent-hooks/private-patterns.txt

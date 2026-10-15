@@ -2,8 +2,6 @@ import os
 import sys
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool
-
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from alembic import context
@@ -22,8 +20,18 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from app.repositories.models import Base  # noqa: E402
+from app.repositories.sqlalchemy_repos import (  # noqa: E402
+    DEFAULT_DATABASE_URL,
+    create_db_engine,
+    normalise_database_url,
+)
 
 target_metadata = Base.metadata
+
+
+def _database_url() -> str:
+    """`DATABASE_URL` from the environment; alembic.ini is not the only source."""
+    return normalise_database_url(os.environ.get("DATABASE_URL", DEFAULT_DATABASE_URL))
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -43,7 +51,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = _database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -62,11 +70,9 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    # The same engine the application builds, so URL normalisation and SQLite's
+    # connect args behave identically.
+    connectable = create_db_engine(_database_url())
 
     with connectable.connect() as connection:
         context.configure(
@@ -77,6 +83,8 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
+
+    connectable.dispose()
 
 
 if context.is_offline_mode():
