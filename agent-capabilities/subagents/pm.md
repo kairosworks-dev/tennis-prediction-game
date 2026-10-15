@@ -1,6 +1,7 @@
 ---
 name: pm
 description: Product Manager. Grooms a GitHub issue into a well-formed task before anyone implements it - rewrites it against the task template, makes acceptance criteria checkable, files follow-ups for what moves out of scope. Use when asked to groom, refine or clarify an issue.
+model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 

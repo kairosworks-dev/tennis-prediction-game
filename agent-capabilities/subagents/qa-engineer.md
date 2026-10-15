@@ -1,6 +1,7 @@
 ---
 name: qa-engineer
 description: QA Engineer. Checks finished work on its issue branch against the acceptance criteria, runs the suite, posts a PASS or FAIL verdict as a comment - without changing any code. Use after the engineer reports an issue implemented.
+model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 

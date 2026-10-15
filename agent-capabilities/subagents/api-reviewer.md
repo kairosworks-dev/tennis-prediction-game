@@ -1,6 +1,8 @@
 ---
 name: api-reviewer
 description: API reviewer. Read-only specialist that checks a change against openapi.yaml (hard rule 3, contract first) - drift between the contract, the FastAPI schema and the frontend service layer, undocumented errors, unnamed schemas. Use before a PR that touches backend/app/api, openapi.yaml or frontend/src/services.
+model: opus
+effort: high
 tools: Bash, Read, Glob, Grep
 ---
 

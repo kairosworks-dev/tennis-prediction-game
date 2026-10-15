@@ -1,6 +1,7 @@
 ---
 name: software-engineer
 description: Software Engineer. Implements one groomed GitHub issue on its own branch against the acceptance criteria, writes tests, commits - without closing the issue or opening the PR. Use when a groomed issue is ready to be built, or when a QA FAIL sends work back for another pass.
+model: sonnet
 tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
