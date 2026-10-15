@@ -1,0 +1,42 @@
+# Development, test and CI stack: the app plus Postgres, one command:
+#   docker compose up --build
+# Not a deployment (the deployment builds the Dockerfile directly, issue #6).
+# Every value below is a development placeholder; override any of them from
+# the environment or a .env file (see .env.example, which is optional).
+name: tennis-prediction-game
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tennis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tennis}
+      POSTGRES_DB: ${POSTGRES_DB:-tennis}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tennis} -d ${POSTGRES_DB:-tennis}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No ports: Postgres is reachable only from the app, as postgres:5432.
+    # No restart policy: a bad migration should fail loudly, not loop.
+
+  app:
+    build: .
+    image: tennis-prediction-game
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-tennis}:${POSTGRES_PASSWORD:-tennis}@postgres:5432/${POSTGRES_DB:-tennis}}
+      # Local and CI use only. Never use this value in a deployment.
+      SESSION_SECRET: ${SESSION_SECRET:-compose-dev-only-not-a-secret}
+      # REPOSITORY_BACKEND comes from the image (sqlalchemy). COOKIE_SECURE is
+      # left unset: the stack is plain HTTP on localhost.
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    # Health check: the image's own HEALTHCHECK (/health).
+
+volumes:
+  pgdata:
