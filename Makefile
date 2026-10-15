@@ -10,10 +10,13 @@
 BACKEND_PORT  ?= 8000
 FRONTEND_PORT ?= 5173
 DATABASE_URL  ?= sqlite:///./tennis.db
+IT_PROJECT    ?= tennis-it
+IT_PORT       ?= 18000
 
 .DEFAULT_GOAL := help
 .PHONY: help install db reset-db run run-mock run-backend run-frontend \
-        test test-frontend test-backend lint typecheck check clean hooks docker-build
+        test test-frontend test-backend test-integration lint typecheck check clean hooks \
+        docker-build
 
 help: ## List the targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -64,6 +67,18 @@ test-frontend: ## Vitest
 
 test-backend: ## pytest, against both repository implementations
 	cd backend && uv run pytest
+
+test-integration: ## Build the compose stack on its own project, test it over HTTP, tear it down
+	@set -u; \
+	trap 'docker compose -p $(IT_PROJECT) down -v --remove-orphans' EXIT; \
+	trap 'exit 130' INT TERM; \
+	docker compose -p $(IT_PROJECT) down -v --remove-orphans || exit 1; \
+	APP_PORT=$(IT_PORT) docker compose -p $(IT_PROJECT) up -d --build || exit 1; \
+	APP_URL=http://localhost:$(IT_PORT) \
+		uv run --project backend pytest -c tests/integration/pytest.ini tests/integration; \
+	rc=$$?; \
+	if [ $$rc -ne 0 ]; then docker compose -p $(IT_PROJECT) logs app; fi; \
+	exit $$rc
 
 lint: ## ESLint and ruff
 	cd frontend && npm run lint
