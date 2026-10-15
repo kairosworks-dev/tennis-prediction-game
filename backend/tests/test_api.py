@@ -300,6 +300,15 @@ class TestRepositoryScoping:
         with scope() as first, scope() as second:
             assert first is not second
 
+    def test_sqlalchemy_is_the_name_and_sqlite_its_alias(self) -> None:
+        scope = build_repository_scope("sqlalchemy")
+        with scope() as first, scope() as second:
+            assert first is not second
+
+    def test_unknown_backend_fails_at_startup(self) -> None:
+        with pytest.raises(ValueError, match="REPOSITORY_BACKEND"):
+            build_repository_scope("mongo")
+
     def test_memory_shares_one_set_because_the_store_is_the_truth(self) -> None:
         scope = build_repository_scope("memory")
         with scope() as first, scope() as second:
