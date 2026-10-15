@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Commit gate: refuse a commit whose staged changes contain secrets or private
-# infrastructure names. Runs as git's pre-commit hook (agent-hooks/pre-commit)
-# and from the coding agent's pre-tool hook (agent-hooks/claude-pre-tool.sh).
+# infrastructure names. Runs as git's pre-commit hook (agent-hooks/pre-commit);
+# it is the only content gate.
 #
 # Two pattern lists:
 #   - generic, below: things that are never right in a public repo
@@ -27,29 +27,33 @@ while IFS= read -r f; do
 done < <(git diff --cached --name-only --diff-filter=AM)
 
 # 2. Generic patterns in added lines. name|regex
-generic='ipv4 address|\b([0-9]{1,3}\.){3}[0-9]{1,3}\b
-1password reference|op://
+generic='1password reference|op://
 private key block|-----BEGIN [A-Z ]*PRIVATE KEY-----
 home directory path|(/Users/|/home/)[A-Za-z0-9_.-]+
 github token|\bgh[pousr]_[A-Za-z0-9]{20,}
 aws access key|\bAKIA[0-9A-Z]{16}\b
 bearer or api key assignment|(api[_-]?key|secret|token|password)\s*[:=]\s*["'"'"'][^"'"'"']{8,}'
-allow_ips='127\.0\.0\.1|0\.0\.0\.0|255\.255\.255\.|\b(10|172|192)\.(0|16|168)\.[0-9]+\.[0-9]+'
 
 scan() { # $1 name, $2 regex, $3 extra exclusions (regex) or empty
   local name="$1" re="$2" excl="${3:-}"
   git diff --cached --diff-filter=AM -U0 -- . ':!agent-hooks/' \
     | awk '/^\+\+\+ b\//{f=substr($0,7)} /^\+/ && !/^\+\+\+/{print f "\t" substr($0,2)}' \
     | { if [ -n "$excl" ]; then grep -Ev -e "$excl" || true; else cat; fi; } \
-    | grep -E -e "$re" | cut -f1 | sort -u \
-    | while IFS= read -r f; do hit "$f" "$name"; done
+    | grep -E -e "$re" | cut -f1 | sort -u || true
 }
 
 while IFS='|' read -r name re; do
   [ -z "$name" ] && continue
-  if [ "$name" = "ipv4 address" ]; then out=$(scan "$name" "$re" "$allow_ips"); else out=$(scan "$name" "$re"); fi
-  [ -n "$out" ] && { printf '%s\n' "$out" >&2; status=1; }
+  out=$(scan "$name" "$re")
+  [ -n "$out" ] && while IFS= read -r f; do hit "$f" "$name"; done <<< "$out"
 done <<< "$generic"
+
+# 2b. IPv4 addresses, outside the allowlist in ipv4_scan.py (RFC 1918 is blocked).
+while IFS= read -r f; do
+  [ -n "$f" ] && hit "$f" "ipv4 address"
+done < <(git diff --cached --diff-filter=AM -U0 -- . ':!agent-hooks/' \
+  | awk '/^\+\+\+ b\//{f=substr($0,7)} /^\+/ && !/^\+\+\+/{print f "\t" substr($0,2)}' \
+  | python3 "$here/ipv4_scan.py")
 
 # 3. The author's private list, if present. Scanned everywhere, including agent-hooks/.
 private="$here/private-patterns.txt"
