@@ -5,6 +5,11 @@ Reads the PreToolUse JSON on stdin. Exit 2 (reason on stderr) refuses; exit 0
 allows. It inspects only the arguments of a `git commit` segment, never option
 values, and never reads the index or file contents: content is the job of git's
 own pre-commit hook (commit-gate.sh).
+
+It is a guardrail against skipping git's hook by accident, not a security
+boundary. Wrappers (`bash -c`, `eval`, `env`, ...), `$(...)`, inline git
+configuration and aliases are followed; variable indirection, pipes into a
+shell and the like are documented limits (agent-hooks/README.md).
 """
 import json
 import os
@@ -37,10 +42,36 @@ SHORT_VALUE = set("mFCct")
 # short options with an optional, attached-only value (rest of the group)
 SHORT_OPTIONAL = set("Su")
 
+ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+GIT_ENV = re.compile(r"^(GIT_CONFIG_COUNT|GIT_CONFIG_KEY_\d+|GIT_CONFIG_VALUE_\d+|"
+                     r"GIT_CONFIG_PARAMETERS|GIT_CONFIG_GLOBAL|GIT_CONFIG_SYSTEM|GIT_DIR)=")
+# wrapper word -> its options that take a value
+WRAPPERS = {
+    "env": {"-u", "-C", "-S", "--unset", "--chdir", "--split-string"},
+    "command": set(), "builtin": set(), "nohup": set(), "setsid": set(),
+    "exec": {"-a"}, "nice": {"-n"}, "time": {"-f", "-o"},
+    "sudo": {"-u", "-g", "-h", "-p", "-C", "-D", "-R", "-T", "-U", "-r", "-t"},
+    "xargs": {"-I", "-n", "-L", "-P", "-d", "-E", "-s", "-a"},
+}
+KEYWORDS = {"{", "}", "!", "if", "then", "else", "elif", "do", "while", "until"}
+ASSIGN_BUILTINS = {"export", "declare", "typeset", "readonly", "local"}
+SHELLS = {"bash", "sh", "zsh", "dash", "ksh"}
+MAX_DEPTH = 3
+CONFIG_READ_ONLY = {"--get", "--get-all", "--get-regexp", "--get-urlmatch", "-l", "--list",
+                    "--show-origin", "--show-scope", "--name-only"}
+
 
 def refuse(msg):
     print("commit-gate: " + msg, file=sys.stderr)
     sys.exit(2)
+
+
+class State:
+    def __init__(self):
+        self.found = False        # a commit (direct or via an alias) was seen
+        self.findings = []        # overrides that matter only if a commit is found
+        self.aliases = {}         # alias name -> expansion, defined within the command
+        self.alias_cache = {}
 
 
 def split_lines(cmd):
@@ -82,54 +113,193 @@ def split_lines(cmd):
     return out
 
 
+def unwrap_substitutions(line):
+    """Turn unquoted `...` and $(...) into command separators so their content
+    is checked as commands. Quoted text is left alone."""
+    out, quote, i = [], None, 0
+    while i < len(line):
+        ch = line[i]
+        if quote:
+            out.append(ch)
+            if ch == "\\" and quote == '"' and i + 1 < len(line):
+                i += 1
+                out.append(line[i])
+            elif ch == quote:
+                quote = None
+        elif ch == "\\" and i + 1 < len(line):
+            out.append(ch + line[i + 1])
+            i += 1
+        elif ch in "'\"":
+            quote = ch
+            out.append(ch)
+        elif ch == "`":
+            out.append(" ; ")
+        elif ch == "$" and line[i + 1:i + 2] == "(":
+            out.append(" ( ")
+            i += 1
+        else:
+            out.append(ch)
+        i += 1
+    return "".join(out)
+
+
 def segments(line):
-    lex = shlex.shlex(line, posix=True, punctuation_chars=True)
+    lex = shlex.shlex(unwrap_substitutions(line), posix=True, punctuation_chars=True)
     lex.whitespace_split = True
     seg = []
     for t in lex:
-        if t in SEPARATORS:
+        if t in SEPARATORS or set(t) <= set("()"):
             if seg:
                 yield seg
             seg = []
-        elif set(t) <= set("()"):
-            continue
         else:
             seg.append(t)
     if seg:
         yield seg
 
 
-def check_config(value, shown):
-    if value.split("=", 1)[0].lower() == "core.hookspath":
+def check_config(value, shown, st):
+    key, _, val = value.partition("=")
+    if key.lower() == "core.hookspath":
         refuse(f"'{shown}' overrides core.hooksPath, which would bypass the commit gate.")
+    if key.lower().startswith("alias."):
+        st.aliases[key[6:]] = val
 
 
-def commit_args(seg):
-    """Return the args after `git ... commit`, or None if this is not a commit."""
-    if os.path.basename(seg[0]) != "git":
-        return None
+def git_verb(seg, st):
+    """Return (index, verb) of the first non-option token after `git`."""
     i = 1
     while i < len(seg):
         t = seg[i]
         if not t.startswith("-"):
-            return seg[i + 1:] if t == "commit" else None
+            return i, t
         name, eq, val = t.partition("=")
         if t == "-c" or name == "--config-env":
             if eq:
-                check_config(val, t)
+                check_config(val, t, st)
                 i += 1
             else:
                 if i + 1 < len(seg):
-                    check_config(seg[i + 1], f"{t} {seg[i + 1]}")
+                    check_config(seg[i + 1], f"{t} {seg[i + 1]}", st)
                 i += 2
         elif t.startswith("-c") and not t.startswith("--"):   # -ckey=value
-            check_config(t[2:], t)
+            check_config(t[2:], t, st)
             i += 1
         elif name in GLOBAL_VALUE_OPTS and not eq:
             i += 2
         else:
             i += 1
+    return None, None
+
+
+def repo_alias(name, st):
+    """The alias value from the git configuration of the checkout holding this hook."""
+    if name not in st.alias_cache:
+        here = os.path.dirname(os.path.realpath(__file__))
+        r = subprocess.run(["git", "-C", here, "config", "--get", "alias." + name],
+                           capture_output=True, text=True)
+        st.alias_cache[name] = r.stdout.strip() if r.returncode == 0 else ""
+    return st.alias_cache[name]
+
+
+def resolve_alias(verb, rest, st):
+    """Return the arguments of the commit that `git verb rest` expands to, or None."""
+    for _ in range(5):
+        if verb == "commit":
+            return rest
+        exp = st.aliases.get(verb) or repo_alias(verb, st)
+        if not exp or exp.startswith("!"):
+            return None
+        words = shlex.split(exp)
+        if not words:
+            return None
+        verb, rest = words[0], words[1:] + rest
     return None
+
+
+def note_config_write(seg, vi, st):
+    """`git config`: record alias definitions, flag writes to core.hooksPath."""
+    args = seg[vi + 1:]
+    if any(a in CONFIG_READ_ONLY for a in args):
+        return
+    pos = [a for a in args if not a.startswith("-")]
+    if pos and pos[0] in ("set", "unset"):
+        pos, writing = pos[1:], True
+    else:
+        writing = len(pos) > 1 or any(a.startswith(("--unset", "--replace", "--add")) for a in args)
+    if not writing or not pos:
+        return
+    if pos[0].lower() == "core.hookspath":
+        st.findings.append(f"'git config {pos[0]}' changes core.hooksPath, "
+                           "which would bypass the commit gate.")
+    elif pos[0].lower().startswith("alias.") and len(pos) > 1:
+        st.aliases[pos[0][6:]] = pos[1]
+
+
+def note_assignment(t, st):
+    if GIT_ENV.match(t):
+        name = t.split("=", 1)[0]
+        st.findings.append(f"'{name}=' overrides git's configuration and could "
+                           "bypass the commit gate.")
+
+
+def check_segment(seg, st, depth):
+    i = 0
+    while i < len(seg):
+        t = seg[i]
+        base = os.path.basename(t)
+        if ASSIGN.match(t):
+            note_assignment(t, st)
+            i += 1
+        elif t in KEYWORDS:
+            i += 1
+        elif base in ASSIGN_BUILTINS:
+            for a in seg[i + 1:]:
+                note_assignment(a, st)
+            return
+        elif base in WRAPPERS:
+            i += 1
+            while i < len(seg) and seg[i].startswith("-"):
+                i += 2 if seg[i] in WRAPPERS[base] else 1
+        else:
+            break
+    rest = seg[i:]
+    if not rest:
+        return
+    base = os.path.basename(rest[0])
+    if base in SHELLS:
+        for j, t in enumerate(rest[1:], 1):
+            if not t.startswith("-"):
+                break
+            if not t.startswith("--") and "c" in t and j + 1 < len(rest):
+                check_command(rest[j + 1], st, depth + 1)
+                break
+    elif base == "eval":
+        check_command(" ".join(rest[1:]), st, depth + 1)
+    elif base == "git":
+        vi, verb = git_verb(rest, st)
+        if verb is None:
+            return
+        if verb == "config":
+            note_config_write(rest, vi, st)
+        args = resolve_alias(verb, rest[vi + 1:], st)
+        if args is not None:
+            st.found = True
+            inspect_commit(args)
+
+
+def check_command(cmd, st, depth):
+    if depth > MAX_DEPTH:
+        refuse(f"shell wrappers (bash -c, eval) nested deeper than {MAX_DEPTH} levels; refusing.")
+    for line in split_lines(cmd):
+        try:
+            segs = list(segments(line))
+        except ValueError as e:
+            if re.search(r"\bgit\b", line):
+                refuse(f"could not parse a command mentioning git ({e}); refusing.")
+            continue
+        for seg in segs:
+            check_segment(seg, st, depth)
 
 
 def resolve_long(opt):
@@ -186,21 +356,11 @@ def main():
         cmd = json.load(sys.stdin).get("tool_input", {}).get("command", "") or ""
     except Exception:
         return
-    found = False
-    for line in split_lines(cmd):
-        if not (re.search(r"\bgit\b", line) and re.search(r"\bcommit\b", line)):
-            continue
-        try:
-            segs = list(segments(line))
-        except ValueError as e:
-            refuse(f"could not parse a command mentioning git commit ({e}); refusing.")
-        for seg in segs:
-            args = commit_args(seg)
-            if args is None:
-                continue
-            found = True
-            inspect_commit(args)
-    if found and not hooks_enabled():
+    st = State()
+    check_command(cmd, st, 0)
+    if st.found and st.findings:
+        refuse(st.findings[0])
+    if st.found and not hooks_enabled():
         refuse("git's pre-commit hook is not enabled in this clone, so the content "
                "gate would be off. Run `make hooks` first.")
 
