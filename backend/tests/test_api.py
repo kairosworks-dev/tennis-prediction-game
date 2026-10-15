@@ -276,6 +276,59 @@ class TestRankingAndScores:
         assert breakdown["total"] == mine["totalPoints"]
         assert breakdown["position"] == mine["position"]
 
+    def test_points_from_an_open_group_reach_the_ranking(self, client: TestClient) -> None:
+        """Found by the integration suite: the ranking used to sum settled groups
+        only, so a question settled inside an OPEN group moved the breakdown but
+        never the leaderboard."""
+        login = {"email": "you@example.com", "password": DEMO_PASSWORD}
+        client.post("/api/auth/login", json=login)
+        groups = client.get(f"/api/tournaments/{TOURNAMENT_ID}/bet-groups").json()
+        open_group = next(g for g in groups if g["status"] == "OPEN")
+        question = next(
+            q
+            for q in client.get(
+                f"/api/tournaments/{TOURNAMENT_ID}/bet-groups/{open_group['id']}/questions"
+            ).json()
+            if q["answerType"] == "MATCH_RESULT"
+        )
+        draws = client.get(f"/api/tournaments/{TOURNAMENT_ID}/draws").json()
+        best_of = next(d["bestOf"] for d in draws if d["id"] == question["drawId"])
+        answer = {
+            "kind": "GENERIC_MATCH_RESULT",
+            "winnerId": question["matchup"][0],
+            "setScore": "3-0" if best_of == 5 else "2-0",
+        }
+        put = client.put(
+            f"/api/tournaments/{TOURNAMENT_ID}/questions/{question['id']}/prediction",
+            json={
+                "tournamentId": TOURNAMENT_ID,
+                "questionId": question["id"],
+                "payload": answer,
+                "asDraft": False,
+            },
+        )
+        assert put.status_code == 200, put.text
+
+        def own_total() -> int:
+            ranking = client.get(f"/api/tournaments/{TOURNAMENT_ID}/ranking").json()
+            return next(r for r in ranking if r["isCurrentUser"])["totalPoints"]
+
+        before = own_total()
+        client.post(
+            "/api/auth/login",
+            json={"email": "organiser@example.com", "password": DEMO_PASSWORD},
+        )
+        client.put(
+            f"/api/admin/questions/{question['id']}/outcome",
+            json={"questionId": question["id"], "correctAnswer": answer, "note": None},
+        )
+        client.post(f"/api/admin/tournaments/{TOURNAMENT_ID}/recalculate")
+        client.post("/api/auth/login", json=login)
+
+        breakdown = client.get(f"/api/tournaments/{TOURNAMENT_ID}/scores").json()
+        assert breakdown["total"] > before
+        assert own_total() == breakdown["total"]
+
     def test_an_unsettled_question_has_no_points_rather_than_a_zero(
         self, participant: TestClient
     ) -> None:
