@@ -173,8 +173,13 @@ comes only from `uv run alembic upgrade head`. `TEST_DATABASE_URL` (a throwaway
 Postgres database, never the one `DATABASE_URL` names) adds a Postgres
 parameter to the backend suite; without it that parameter is skipped.
 
-Docker and the integration tests: see the README once issues #2–#4 land; the
-Makefile targets are `make test-integration` and `docker compose up --build`.
+```bash
+docker compose up --build   # app + Postgres on :8000 (the dev stack)
+make test-integration       # own project (tennis-it) on :18000: build, test over HTTP, tear down
+```
+
+`make test-integration` needs Docker, never touches the dev stack and is not
+part of `make check`. Details and variables: README, *Tests*.
 
 ## Commits, branches and the process
 

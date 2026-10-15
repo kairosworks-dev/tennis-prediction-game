@@ -97,7 +97,8 @@ results screen. Password for both: `deuce-demo-password`.
 | `make run` | Backend and frontend together, on SQLite |
 | `make run-mock` | Frontend alone on in-memory fixtures — no backend, no database |
 | `make reset-db` | Throw the database away and rebuild it from empty |
-| `make check` | Lint, typecheck and every test |
+| `make check` | Lint, typecheck and every unit test (no Docker) |
+| `make test-integration` | Build the compose stack on a separate project, test it over HTTP, tear it down |
 
 ### Running it without make
 
@@ -220,6 +221,18 @@ localhost.
 
 ### Tests
 
+There are two suites, and they answer different questions.
+
+| | Unit (`make test`) | Integration (`make test-integration`) |
+|---|---|---|
+| Lives in | `backend/tests/`, `frontend/src/**/*.test.ts(x)` | `tests/integration/` |
+| Talks to | the app in-process (`TestClient`), memory and SQLite repositories; Postgres too when `TEST_DATABASE_URL` is set | the built image and a real Postgres, over HTTP |
+| Needs | Node and uv; no Docker | Docker, and uv for the backend's pytest and httpx |
+| Covers | scoring, validation, repositories, every endpoint's rules, the UI | the key workflows end to end: sign-in, registration, joining, predicting, refusal of locked groups and of non-organisers, organiser results through to score and ranking, recalculation |
+| Takes | about a minute | about 15 seconds once the image is cached, longer on a cold build |
+
+#### Unit
+
 ```bash
 cd frontend && npm run test && npm run lint && npm run typecheck
 ```
@@ -240,6 +253,41 @@ Each Postgres test drops and recreates every table, and the suite refuses a
 `TEST_DATABASE_URL` equal to `DATABASE_URL`. Without the variable the Postgres
 parameter is skipped. `tests/test_contract_drift.py` fails if
 `openapi.yaml` and the backend disagree about any operation.
+
+#### Integration
+
+```bash
+make test-integration
+```
+
+It removes leftovers, builds and starts the compose stack under its own
+project (`IT_PROJECT`, default `tennis-it`) on its own host port (`IT_PORT`,
+default `18000`), waits for `GET /ready`, runs `tests/integration/` and
+tears the stack down with its volume, also when a test fails or you press
+Ctrl-C. On failure the app's logs are printed before teardown. The dev stack
+(project `tennis-prediction-game`, port 8000) and its data are never touched,
+so the two can run side by side; if `IT_PORT` is taken the run fails at
+`docker compose up` with the bind error. Building retags the shared
+`tennis-prediction-game` image, which is harmless.
+
+The suite has its own `pytest.ini`, imports nothing from `app`, and uses
+only the pytest and httpx already in the backend's dev group. It relies on the
+two documented demo accounts (`you@example.com`, `organiser@example.com`,
+password `deuce-demo-password`) and on the seed's shape: a game open for
+signup, and a running game with an OPEN group holding a match-result question
+and a SETTLED group. It finds ids by state, never by name, and asserts on
+before/after relationships, never on absolute points.
+
+To run it against a stack that is already up:
+
+```bash
+APP_URL=http://localhost:8000 uv run --project backend pytest -c tests/integration/pytest.ini tests/integration
+```
+
+`APP_URL` defaults to `http://localhost:${APP_PORT:-8000}`. The readiness wait
+is 90 seconds, overridable with `READY_TIMEOUT`. The tests register accounts and
+change scores, so a host other than `localhost` or `127.0.0.1` aborts the run
+before any request unless `INTEGRATION_ALLOW_REMOTE=1` is set.
 
 ### API documentation
 
