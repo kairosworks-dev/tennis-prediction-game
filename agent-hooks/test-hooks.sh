@@ -39,6 +39,7 @@ refuse_naming() { # command, token that the message must name verbatim
 
 echo "== pre-tool: original findings"
 allow  "sed -n 150,160p README.md && git commit -a -m 'x'"
+allow  "timeout 5 git commit -m x"
 allow  "git commit -m 'docs: mention the -n flag'"
 allow  "git commit -m 'docs: explain why --no-verify is refused'"
 refuse "git commit -m x -n"
@@ -127,6 +128,10 @@ refuse "sudo git commit -n -m x"
 refuse "nohup git commit -n -m x"
 refuse "time git commit -n -m x"
 refuse "xargs git commit -n -m x"
+refuse "timeout 5 git commit -n -m x"
+refuse "timeout -s KILL 5 git commit -n -m x"
+refuse "timeout -k 2 5 git commit --no-verify -m x"
+refuse "timeout --signal=KILL --preserve-status --foreground 5 git commit -n -m x"
 refuse "FOO=1 git commit -n -m x"
 refuse "sudo -u someone env FOO=1 git commit -n -m x"
 refuse 'echo $(git commit -n -m x)'

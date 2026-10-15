@@ -17,7 +17,7 @@ A guardrail against the agent skipping git's hook by accident, **not a security 
 
 The command is split into segments on `&&`, `||`, `;`, `|`, `&`, unquoted newlines, unquoted `$(...)` and backticks, parentheses and braces (python3 `shlex`). For each segment the checker:
 
-1. skips leading `VAR=value` assignments, shell keywords (`{`, `!`, `then`, ...) and a fixed list of wrapper words with their options: `env`, `command`, `builtin`, `exec`, `sudo`, `nohup`, `time`, `nice`, `setsid`, `xargs`. It looks at the first word after those, not at any `git` token anywhere;
+1. skips leading `VAR=value` assignments, shell keywords (`{`, `!`, `then`, ...) and a fixed list of wrapper words with their options: `env`, `command`, `builtin`, `exec`, `sudo`, `nohup`, `time`, `nice`, `setsid`, `timeout`, `xargs`. It looks at the first word after those, not at any `git` token anywhere;
 2. for `bash`/`sh`/`zsh`/`dash`/`ksh` with a `-c` flag (also `-lc`), and for `eval` with literal arguments, **recurses** into the string with the same rules, up to 3 levels; deeper nesting is refused with a stated reason;
 3. for `git`, skips global options and takes the verb. A verb that is `commit`, or an alias that resolves to `commit` (defined by `git -c alias.x=...`, by an earlier `git config alias.x ...` in the same command, or in the repository's git configuration; alias arguments such as `commit -n` count), has its arguments inspected. Shell aliases (`!...`) are not followed.
 

@@ -51,6 +51,7 @@ WRAPPERS = {
     "command": set(), "builtin": set(), "nohup": set(), "setsid": set(),
     "exec": {"-a"}, "nice": {"-n"}, "time": {"-f", "-o"},
     "sudo": {"-u", "-g", "-h", "-p", "-C", "-D", "-R", "-T", "-U", "-r", "-t"},
+    "timeout": {"-s", "-k", "--signal", "--kill-after"},
     "xargs": {"-I", "-n", "-L", "-P", "-d", "-E", "-s", "-a"},
 }
 KEYWORDS = {"{", "}", "!", "if", "then", "else", "elif", "do", "while", "until"}
@@ -261,6 +262,8 @@ def check_segment(seg, st, depth):
             i += 1
             while i < len(seg) and seg[i].startswith("-"):
                 i += 2 if seg[i] in WRAPPERS[base] else 1
+            if base == "timeout" and i < len(seg):
+                i += 1  # the DURATION positional
         else:
             break
     rest = seg[i:]
