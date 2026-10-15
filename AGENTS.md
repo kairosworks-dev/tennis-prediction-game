@@ -72,7 +72,7 @@ Validation, scoring and rule enforcement live in the backend. The frontend dupli
 
 ### 3. `openapi.yaml` is the contract
 
-Changing an endpoint means changing the spec first, then both sides. Never let the FastAPI-generated schema and the committed `openapi.yaml` drift. `backend/tests/test_contract_drift.py` fails on drift and CI runs it; fix the cause, not the check. The `api-reviewer` subagent exists for exactly this review.
+Changing an endpoint means changing the spec first, then both sides. Never let the FastAPI-generated schema and the committed `openapi.yaml` drift. `backend/tests/test_contract_drift.py` fails on drift and CI runs it; fix the cause, not the check. The `api-reviewer` subagent exists for exactly this review. One recorded exception: the operational probes `/health` and `/ready` are not in the contract (spec decision D17).
 
 ### 4. The domain layer imports no framework
 
