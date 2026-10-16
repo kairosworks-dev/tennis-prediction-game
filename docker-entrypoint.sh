@@ -13,6 +13,6 @@ set -eu
 export PGCONNECT_TIMEOUT="${PGCONNECT_TIMEOUT:-10}"
 
 alembic upgrade head
-python scripts_seed.py   # idempotent: prints "Already seeded" on later starts
+python scripts_seed.py   # idempotent: "Seeded ..." on a first start, "already present" on later starts
 
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000
