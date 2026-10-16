@@ -155,11 +155,11 @@ Scored against the repository as of 14 September; updated when an issue closes.
 | 6 | Backend | 3 | 3 | — |
 | 7 | Database | 2 | 2 | done, #1 |
 | 8 | Containerization | 2 | 2 | done: #2 (image, entrypoint, probes), #3 (compose: app + Postgres) |
-| 9 | Integration testing | 2 | 2 | done: #4 (`make test-integration`: 11 workflow tests over HTTP against compose), run in CI by #5 |
+| 9 | Integration testing | 2 | 2 | done: #4 (`make test-integration`: 11 workflow tests over HTTP against compose) and #42 (11 tests that the frontend is served: shell, assets, deep links, 404/405), run in CI by #5; more end-to-end coverage open in #43–#45 |
 | 10 | Deployment | 0 | 2 | #6 |
 | 11 | CI/CD | 1 | 2 | CI done: #5 (`check`, `commit-gate`, `integration` on every push and pull request, drift check included); the gated deploy remains #6 |
 | 12 | Agent extension pack | 1 | 2 | #12–#17 |
-| 13 | Security, audit, DevOps hardening | 0 | 2 | #18–#22 |
+| 13 | Security, audit, DevOps hardening | 0 | 2 | #18–#22; in place: Dependabot for the CI action pins with a 7-day cooldown (#39) |
 | 14 | Reproducibility | 1 | 2 | #23, #25 |
 | | **Total** | **20** | **30** | |
 
