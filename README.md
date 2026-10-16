@@ -146,7 +146,7 @@ cd backend && uv run alembic upgrade head && uv run python scripts_seed.py
 REPOSITORY_BACKEND=sqlalchemy uv run uvicorn app.main:app --port 8000
 ```
 
-A second run of the seed script prints "Already seeded".
+A second run of the seed script prints "Demo game roland-garros-2026 already present; nothing to do."
 
 ### Build and run the image
 
