@@ -308,7 +308,11 @@ three. The names are a stable interface: do not rename them.
 
 The workflow uses no repository secrets and a read-only token
 (`permissions: contents: read`), and every action is pinned to a full commit
-SHA. CI runs only the generic commit-gate patterns:
+SHA. Dependabot proposes updates to those pins weekly, on branches named
+`dependabot/…` (outside the `issue-<n>/…` naming); each proposal changes the
+SHA and the `# vX.Y.Z` comment together, CI runs on it like on any pull
+request, and the author reviews and merges it himself, with no auto-merge.
+CI runs only the generic commit-gate patterns:
 `agent-hooks/private-patterns.txt` is gitignored and absent there, so the
 author's own name list still runs only locally, through `make hooks`.
 
