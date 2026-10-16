@@ -11,6 +11,8 @@ One guardrail, two doors, two jobs.
 | `test-hooks.sh` | Tests for both doors; run by `make check`. Works in a fresh clone, uses a throwaway repository, never reads `private-patterns.txt` |
 | `private-patterns.example.txt` | Template for the gitignored `private-patterns.txt`: the author's own names, never committed |
 
+The gate also runs in CI (the `commit-gate` job in `.github/workflows/ci.yml`) over each pull request's added lines and each push's, so commits from clones without the hook are still checked; CI has no `private-patterns.txt`, so only the generic patterns run there.
+
 ## The pre-tool door
 
 A guardrail against the agent skipping git's hook by accident, **not a security boundary**. Git's own `pre-commit` hook is the backstop, and it is the only thing that scans content.

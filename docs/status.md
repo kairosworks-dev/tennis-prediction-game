@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 15 October 2026
+**Last updated:** 16 October 2026
 
 Where the code stands. This is deliberately a different question from the two
 documents either side of it:
@@ -77,12 +77,6 @@ it is not repeatable and nothing catches a regression in it.
 
 **Fix:** Playwright, two specs — a participant placing a bet, an organiser
 entering a result and recalculating.
-
-### 3. Nothing runs the drift check automatically
-
-`AGENTS.md` hard rule 3: *"CI fails on drift."* The check exists as a test; no
-pipeline runs it yet. **Closes with issue #5** (CI), now in scope by decision
-D16. Until then, rule 3 depends on somebody running `make check`.
 
 ---
 
@@ -161,13 +155,13 @@ Scored against the repository as of 14 September; updated when an issue closes.
 | 6 | Backend | 3 | 3 | — |
 | 7 | Database | 2 | 2 | done, #1 |
 | 8 | Containerization | 2 | 2 | done: #2 (image, entrypoint, probes), #3 (compose: app + Postgres) |
-| 9 | Integration testing | 2 | 2 | done: #4 (`make test-integration`: 11 workflow tests over HTTP against compose; CI wiring is #5) |
+| 9 | Integration testing | 2 | 2 | done: #4 (`make test-integration`: 11 workflow tests over HTTP against compose), run in CI by #5 |
 | 10 | Deployment | 0 | 2 | #6 |
-| 11 | CI/CD | 0 | 2 | #5, #6 |
+| 11 | CI/CD | 1 | 2 | CI done: #5 (`check`, `commit-gate`, `integration` on every push and pull request, drift check included); the gated deploy remains #6 |
 | 12 | Agent extension pack | 1 | 2 | #12–#17 |
 | 13 | Security, audit, DevOps hardening | 0 | 2 | #18–#22 |
 | 14 | Reproducibility | 1 | 2 | #23, #25 |
-| | **Total** | **19** | **30** | |
+| | **Total** | **20** | **30** | |
 
 Issues #8–#11 (monitoring, backups, rollback, public `ops/` evidence) are done
 by the author by hand and feed criteria 10, 13 and 14 as evidence.

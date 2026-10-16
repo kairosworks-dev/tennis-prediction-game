@@ -1,5 +1,7 @@
 # Tennis Prediction Game
 
+[![CI](https://github.com/kairosworks-dev/tennis-prediction-game/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kairosworks-dev/tennis-prediction-game/actions/workflows/ci.yml)
+
 A web application for running tennis prediction competitions among a group of friends.
 One competition covers one tournament. Participants predict the tournament outcome
 before play begins and submit smaller predictions round by round. Points accumulate
@@ -32,7 +34,7 @@ API operations rather than thirty-four, with the deferred screens recorded in
 spec section 13 rather than dropped. 215 tests pass; the backend suite runs
 twice, once against each repository implementation.
 
-Three definitions of done are still unmet and two defects are known.
+Two definitions of done are still unmet and two defects are known.
 [`docs/status.md`](docs/status.md) lists them, and is the right place to start
 when picking this up again.
 
@@ -65,6 +67,7 @@ password hashing, session cookies. Tested with pytest and the httpx test client.
 AGENTS.md              instructions for coding agents — read this first
 CLAUDE.md              points at AGENTS.md
 Makefile               make run, make test, make check
+/.github/workflows     CI (ci.yml): check, commit-gate, integration
 Dockerfile             one image: backend serving the built frontend
 docker-compose.yml     app + Postgres for dev, test and CI
 .env.example           optional compose settings, placeholders only
@@ -288,6 +291,26 @@ APP_URL=http://localhost:8000 uv run --project backend pytest -c tests/integrati
 is 90 seconds, overridable with `READY_TIMEOUT`. The tests register accounts and
 change scores, so a host other than `localhost` or `127.0.0.1` aborts the run
 before any request unless `INTEGRATION_ALLOW_REMOTE=1` is set.
+
+#### CI
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml), a workflow named `CI`,
+runs on every push to any branch and on every pull request targeting `main`.
+Its three jobs are independent (none `needs:` another), so one red job does not
+hide the verdicts of the others, and the deploy (issue #6) will depend on all
+three. The names are a stable interface: do not rename them.
+
+| Job | Runs | Local equivalent |
+|---|---|---|
+| `check` | `npm ci` and `uv sync --locked` (lockfiles only), then `make check` on Node 24, uv 0.12.10 and a `postgres:16` service container. `TEST_DATABASE_URL` points at a throwaway database on that service, so the backend suite runs against memory, SQLite **and** Postgres (its pytest summary reports 0 skipped), and the contract drift test runs here. | `make check` (add `TEST_DATABASE_URL` for the Postgres run) |
+| `commit-gate` | `agent-hooks/commit-gate.sh` over the lines the change **adds**: for a pull request, since it left its base branch; for a push, since the previous tip (a new branch or a force-push falls back to the merge-base with `origin/main`). Then `agent-hooks/test-hooks.sh`. A hit prints the file and the pattern name, never the line. | `make hooks`, then commit; `agent-hooks/test-hooks.sh` |
+| `integration` | `make docker-build` as its own step (so a broken Dockerfile or a `uv.lock` that disagrees with `pyproject.toml` fails with a clear name), then `make test-integration` on its own compose project. | `make docker-build` and `make test-integration` |
+
+The workflow uses no repository secrets and a read-only token
+(`permissions: contents: read`), and every action is pinned to a full commit
+SHA. CI runs only the generic commit-gate patterns:
+`agent-hooks/private-patterns.txt` is gitignored and absent there, so the
+author's own name list still runs only locally, through `make hooks`.
 
 ### API documentation
 
