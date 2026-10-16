@@ -818,7 +818,13 @@ components:
         title: { type: string }
         introMarkdown: { type: string }
         deadline: { type: string, format: date-time }
-        status: { $ref: '#/components/schemas/BetGroupStatus' }
+        status:
+          $ref: '#/components/schemas/BetGroupStatus'
+          description: >-
+            The effective status. For a group stored as OPEN the value is LOCKED
+            once the deadline has passed (now is at or after the deadline), and
+            OPEN before it. DRAFT, LOCKED and SETTLED are returned as stored.
+            Saving a prediction to a group that is not OPEN is refused with 403.
 
     QuestionChoiceOption:
       type: object
