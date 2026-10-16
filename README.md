@@ -280,6 +280,8 @@ password `deuce-demo-password`) and on the seed's shape: a game open for
 signup, and a running game with an OPEN group holding a match-result question
 and a SETTLED group. It finds ids by state, never by name, and asserts on
 before/after relationships, never on absolute points.
+The suite also checks that the frontend is served: the index page, the assets it
+references and deep links that fall back to the app shell.
 
 To run it against a stack that is already up:
 
