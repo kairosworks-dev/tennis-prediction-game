@@ -14,11 +14,14 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterator
+from datetime import UTC, datetime
 
 import pytest
 from fastapi.testclient import TestClient
 
+from app.api.deps import get_clock
 from app.main import create_app
+from app.providers.clock import FixedClock
 from app.repositories.interfaces import Repositories
 from app.repositories.memory import MemoryRepositories
 from app.repositories.models import Base
@@ -77,8 +80,19 @@ def repositories(request: pytest.FixtureRequest) -> Iterator[Repositories]:
 
 
 @pytest.fixture
-def client(repositories: Repositories) -> TestClient:
-    return TestClient(create_app(repositories=repositories))
+def clock() -> FixedClock:
+    """The app's clock, frozen at the moment the test starts.
+
+    Tests move it with `set` / `advance` to stand on either side of a deadline.
+    """
+    return FixedClock(datetime.now(UTC))
+
+
+@pytest.fixture
+def client(repositories: Repositories, clock: FixedClock) -> TestClient:
+    app = create_app(repositories=repositories)
+    app.dependency_overrides[get_clock] = lambda: clock
+    return TestClient(app)
 
 
 @pytest.fixture

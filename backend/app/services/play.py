@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from uuid import uuid4
 
+from app.domain.bet_groups import effective_status, with_effective_status
 from app.domain.entities import (
     BetGroup,
     Draw,
@@ -23,6 +23,7 @@ from app.domain.validation import (
     expected_payload_kind,
     validate_prediction,
 )
+from app.providers.clock import Clock
 from app.repositories.interfaces import Repositories
 from app.services.errors import Forbidden, NotFound, ValidationFailed
 from app.services.ranking import RankingService
@@ -68,8 +69,9 @@ class ScoreBreakdown:
 
 
 class PlayService:
-    def __init__(self, repos: Repositories) -> None:
+    def __init__(self, repos: Repositories, clock: Clock) -> None:
         self._repos = repos
+        self._clock = clock
         self._ranking = RankingService(repos)
 
     def _require_tournament(self, tournament_id: str) -> None:
@@ -111,8 +113,14 @@ class PlayService:
     def list_bet_groups(self, tournament_id: str, user: User) -> list[BetGroup]:
         self._require_tournament(tournament_id)
         groups = self._repos.bet_groups.list_for_tournament(tournament_id)
-        # A draft group is the organiser's work in progress.
-        return [g for g in groups if g.status is not BetGroupStatus.DRAFT or user.is_admin]
+        now = self._clock.now()
+        # A draft group is the organiser's work in progress. The status shown is
+        # the effective one: an OPEN group past its deadline reads as LOCKED.
+        return [
+            with_effective_status(g, now)
+            for g in groups
+            if g.status is not BetGroupStatus.DRAFT or user.is_admin
+        ]
 
     def list_questions(self, tournament_id: str, bet_group_id: str) -> list[Question]:
         self._require_tournament(tournament_id)
@@ -152,11 +160,14 @@ class PlayService:
         if group is None or group.tournament_id != tournament_id:
             raise NotFound("That question does not exist.")
 
-        # Spec 5.3: the question's bet group must be open.
-        if group.status is not BetGroupStatus.OPEN:
+        # Spec 5.3: the question's bet group must be open. A stored-OPEN group
+        # past its deadline is locked, and a replacement is no exception.
+        now = self._clock.now()
+        status = effective_status(group, now)
+        if status is not BetGroupStatus.OPEN:
             raise Forbidden(
                 "That group is not open yet."
-                if group.status is BetGroupStatus.DRAFT
+                if status is BetGroupStatus.DRAFT
                 else "That group has closed. Predictions are final."
             )
 
@@ -171,7 +182,6 @@ class PlayService:
             except ValidationError as error:
                 raise ValidationFailed(error.detail, error.errors) from error
 
-        now = datetime.now(UTC)
         existing = self._repos.predictions.find(participation_id, question_id)
         prediction = Prediction(
             id=existing.id if existing else f"pred-{uuid4().hex[:12]}",
@@ -207,10 +217,12 @@ class PlayService:
             s.question_id: s for s in self._repos.scores.list_for_participation(participation_id)
         }
         blocks: list[BetGroupScoreBlock] = []
+        now = self._clock.now()
 
-        for group in self._repos.bet_groups.list_for_tournament(tournament_id):
-            if group.status is BetGroupStatus.DRAFT:
+        for stored in self._repos.bet_groups.list_for_tournament(tournament_id):
+            if stored.status is BetGroupStatus.DRAFT:
                 continue
+            group = with_effective_status(stored, now)
             rows: list[QuestionScoreRow] = []
             for question in self._repos.questions.list_for_group(group.id):
                 prediction = self._repos.predictions.find(participation_id, question.id)

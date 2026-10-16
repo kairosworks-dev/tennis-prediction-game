@@ -106,7 +106,8 @@ class ResultsService:
                 outcome = self._repos.outcomes.get_question_outcome(question.id)
                 for participation in participations:
                     prediction = self._repos.predictions.find(participation.id, question.id)
-                    if prediction is None:
+                    # A draft was never submitted, so it never scores.
+                    if prediction is None or prediction.submitted_at is None:
                         continue
                     inputs.append(
                         ScoreInput(

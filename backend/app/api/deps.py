@@ -15,6 +15,7 @@ from fastapi import Cookie, Depends, Request
 from itsdangerous import BadSignature, URLSafeSerializer
 
 from app.domain.entities import User
+from app.providers.clock import Clock, SystemClock
 from app.providers.email import ConsoleEmailProvider, EmailProvider
 from app.repositories.interfaces import Repositories
 from app.services.auth import AuthService
@@ -59,7 +60,12 @@ def get_email_provider() -> EmailProvider:
     return ConsoleEmailProvider()
 
 
+def get_clock() -> Clock:
+    return SystemClock()
+
+
 RepositoriesDep = Annotated[Repositories, Depends(get_repositories)]
+ClockDep = Annotated[Clock, Depends(get_clock)]
 
 
 def get_optional_user(
@@ -99,12 +105,12 @@ def get_auth_service(
     return AuthService(repos, email)
 
 
-def get_game_service(repos: RepositoriesDep) -> GameService:
-    return GameService(repos)
+def get_game_service(repos: RepositoriesDep, clock: ClockDep) -> GameService:
+    return GameService(repos, clock)
 
 
-def get_play_service(repos: RepositoriesDep) -> PlayService:
-    return PlayService(repos)
+def get_play_service(repos: RepositoriesDep, clock: ClockDep) -> PlayService:
+    return PlayService(repos, clock)
 
 
 def get_ranking_service(repos: RepositoriesDep) -> RankingService:
