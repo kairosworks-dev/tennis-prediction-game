@@ -1,0 +1,159 @@
+# CI: the same checks a developer runs, through the same make targets.
+#
+#   check        make check on Node, uv and a Postgres service container
+#   commit-gate  agent-hooks/commit-gate.sh over the lines the change adds
+#   integration  make docker-build, then make test-integration (compose stack)
+#
+# The job ids and names are a stable interface: the deploy (issue 6) lists all
+# three under needs:, and the headless CI agent (issue 16) fetches logs by name.
+# The jobs are independent on purpose, so one red job never hides the others.
+#
+# No repository secrets and no widened token: this file only reads the code.
+# Every action is pinned to a full commit SHA; the version is in the comment.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer run of the same workflow and ref replaces an older one in progress,
+# except on main, where every run completes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        # Throwaway placeholders for a database that lives for this job only.
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-throwaway
+          POSTGRES_DB: tennis_test
+        ports:
+          - 5432:5432
+        # The job's steps wait until this reports healthy.
+        options: >-
+          --health-cmd "pg_isready -U ci -d tennis_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Turns on the third repository parameter of the backend suite.
+      # DATABASE_URL is deliberately unset, so the two cannot be the same.
+      TEST_DATABASE_URL: postgresql+psycopg://ci:ci-throwaway@localhost:5432/tennis_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24 # the Dockerfile's frontend stage
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: 0.12.10 # the Dockerfile's uv
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      # Lockfiles only: a lockfile that disagrees with its manifest fails here.
+      # (make install runs npm install, which may rewrite package-lock.json.)
+      - name: Install frontend from the lockfile
+        run: npm ci
+        working-directory: frontend
+      - name: Install backend from the lockfile
+        run: uv sync --locked
+        working-directory: backend
+      # Lint, typecheck, Vitest, pytest (memory, SQLite and Postgres, the
+      # contract drift test among them) and the commit-gate tests. The pytest
+      # summary line must report 0 skipped.
+      - name: make check
+        run: make check
+
+  commit-gate:
+    name: commit-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      EVENT_NAME: ${{ github.event_name }}
+      PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PUSH_BEFORE: ${{ github.event.before }}
+      PUSH_AFTER: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history, so the base of the range is reachable.
+          fetch-depth: 0
+          persist-credentials: false
+          # For a pull request, the head commit itself, not the merge commit.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      # The gate reads the staged diff. Move HEAD back to the base of the range
+      # and keep the index: the staged diff is then exactly the added lines of
+      # the range, in this throwaway checkout. Nothing here prints file content;
+      # the gate itself prints a file name and a pattern name, never the line.
+      # CI runs the generic patterns only: agent-hooks/private-patterns.txt is
+      # gitignored and absent here, so the author's own name list runs only
+      # locally, through make hooks.
+      - name: Commit gate over the added lines
+        run: |
+          set -eu
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            # Changes made by the pull request itself, since it left the base.
+            base=$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")
+            range="pull request"
+          else
+            base=""
+            # Changes made by this push. A new branch (all-zeros before) or a
+            # force-push (before no longer exists) falls back to origin/main.
+            if ! printf '%s' "$PUSH_BEFORE" | grep -Eq '^0+$' \
+               && git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
+              base=$(git merge-base "$PUSH_BEFORE" "$PUSH_AFTER" 2>/dev/null || true)
+              range="push"
+            fi
+            if [ -z "$base" ]; then
+              base=$(git merge-base origin/main "$PUSH_AFTER")
+              range="branch since origin/main"
+            fi
+          fi
+          echo "commit-gate: scanning added lines of the $range, base $base"
+          git reset --soft "$base"
+          agent-hooks/commit-gate.sh
+      - name: Commit gate tests
+        run: agent-hooks/test-hooks.sh
+
+  integration:
+    name: integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Only for the suite's own pytest and httpx; the stack runs in Docker.
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: 0.12.10 # the Dockerfile's uv
+          python-version: "3.12"
+          enable-cache: false
+      # Its own step, so a broken Dockerfile or a lockfile mismatch (the build
+      # uses uv sync --locked) fails with a clear name. It also warms the layer
+      # cache that the compose build in the next step reuses.
+      - name: Build the image
+        run: make docker-build
+      # No .env file and no repository secret: the compose defaults are used.
+      # The target runs on its own compose project (tennis-it, port 18000),
+      # tears it down itself and prints the app logs when a test fails.
+      - name: make test-integration
+        run: make test-integration
