@@ -148,6 +148,18 @@ function GroupQuestions({ tournamentId, group }: { tournamentId: string; group: 
       </div>
     );
   }
+  // An open group's forms start from the stored answers and never look again,
+  // so they wait for them; a failed load is shown, not hidden behind empty forms.
+  if (editable && predictions.isPending) {
+    return <Spinner label="Loading your answers…" />;
+  }
+  if (editable && predictions.data === undefined) {
+    return (
+      <div className="px-4 pb-4">
+        <Problem error={predictions.error} />
+      </div>
+    );
+  }
 
   return (
     <div className="border-t border-line">
@@ -164,7 +176,7 @@ function GroupQuestions({ tournamentId, group }: { tournamentId: string; group: 
               key={question.id}
               tournamentId={tournamentId}
               question={question}
-              existing={byQuestion.get(question.id)?.payload ?? null}
+              stored={byQuestion.get(question.id) ?? null}
               allPredictions={predictions.data ?? []}
               questions={questions.data}
             />
