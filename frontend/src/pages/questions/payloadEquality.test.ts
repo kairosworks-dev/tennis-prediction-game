@@ -26,13 +26,25 @@ describe('samePayload', () => {
     expect(samePayload(a, { ...b, setScore: '2-0' } as PredictionPayload)).toBe(false);
   });
 
-  it('treats the same players in another order as the same answer', () => {
+  it('compares lists in order: the same players in another order are a different answer', () => {
+    expect(
+      samePayload(
+        { kind: 'SF_PICKS', playerIds: ['a', 'b', 'c', 'd'] },
+        { kind: 'SF_PICKS', playerIds: ['a', 'b', 'c', 'd'] },
+      ),
+    ).toBe(true);
     expect(
       samePayload(
         { kind: 'SF_PICKS', playerIds: ['a', 'b', 'c', 'd'] },
         { kind: 'SF_PICKS', playerIds: ['d', 'c', 'b', 'a'] },
       ),
-    ).toBe(true);
+    ).toBe(false);
+    expect(
+      samePayload(
+        { kind: 'FINALIST_PICKS', playerIds: ['a', 'b'] },
+        { kind: 'FINALIST_PICKS', playerIds: ['b', 'a'] },
+      ),
+    ).toBe(false);
     expect(
       samePayload(
         { kind: 'FINALIST_PICKS', playerIds: ['a', 'b'] },
@@ -42,6 +54,15 @@ describe('samePayload', () => {
     expect(
       samePayload(
         { kind: 'QF_PICKS', picks: [{ sectionIndex: 2, playerId: 'b' }, { sectionIndex: 1, playerId: 'a' }] },
+        { kind: 'QF_PICKS', picks: [{ sectionIndex: 1, playerId: 'a' }, { sectionIndex: 2, playerId: 'b' }] },
+      ),
+    ).toBe(false);
+  });
+
+  it('still ignores key order inside the picks', () => {
+    expect(
+      samePayload(
+        { kind: 'QF_PICKS', picks: [{ sectionIndex: 1, playerId: 'a' }, { sectionIndex: 2, playerId: 'b' }] },
         { kind: 'QF_PICKS', picks: [{ playerId: 'a', sectionIndex: 1 }, { playerId: 'b', sectionIndex: 2 }] },
       ),
     ).toBe(true);

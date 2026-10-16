@@ -1,30 +1,10 @@
 import type { PredictionPayload } from '../../services';
 
 /**
- * A key-order-independent form of an answer, for comparison only.
- *
- * The pickers append in the order the participant taps, the server returns
- * what it stored; the same set of players in a different order is the same
- * answer. Picks are ordered by section, player lists alphabetically.
+ * Structural form of a value with object keys sorted at every depth, so that
+ * key order never matters. Array order does: whether the order of a list of
+ * picks matters is a domain rule, and the frontend holds none (AGENTS.md rule 2).
  */
-function canonical(payload: PredictionPayload): unknown {
-  switch (payload.kind) {
-    case 'QF_PICKS':
-      return {
-        kind: payload.kind,
-        picks: payload.picks
-          .map((pick) => [pick.sectionIndex, pick.playerId] as const)
-          .sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1])),
-      };
-    case 'SF_PICKS':
-    case 'FINALIST_PICKS':
-      return { kind: payload.kind, playerIds: [...payload.playerIds].sort() };
-    default:
-      return payload;
-  }
-}
-
-/** Sorts object keys at every depth, so that key order never matters. */
 function stable(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map(stable).join(',')}]`;
@@ -40,12 +20,13 @@ function stable(value: unknown): string {
 }
 
 /**
- * Whether the form shows the stored answer. Display only (AGENTS.md rule 2):
- * it decides a button label, never whether anything is allowed.
+ * Whether the form shows exactly the stored answer. Display only: it decides a
+ * button label, never whether anything is allowed. Plain structural equality;
+ * the same players in a different order are a different answer here.
  */
 export function samePayload(a: PredictionPayload | null, b: PredictionPayload | null): boolean {
   if (a === null || b === null) {
     return a === b;
   }
-  return stable(canonical(a)) === stable(canonical(b));
+  return stable(a) === stable(b);
 }
