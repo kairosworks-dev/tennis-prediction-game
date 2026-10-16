@@ -369,7 +369,7 @@ def _seed_bet_groups(repos: Repositories, tournament_id: str, now: datetime) -> 
             id="rg-bg-qf", tournament_id=tournament_id, kind=BetGroupKind.ROUND, round=5,
             title="Quarter-finals",
             intro_markdown="Quarters on both sides this week.",
-            deadline=now + timedelta(hours=5), status=BetGroupStatus.OPEN,
+            deadline=now + timedelta(days=60), status=BetGroupStatus.OPEN,
         ),
     ]
     for group in groups:

@@ -220,7 +220,14 @@ class BetGroupSchema(Schema):
     title: str
     intro_markdown: str
     deadline: datetime
-    status: BetGroupStatus
+    status: BetGroupStatus = Field(
+        description=(
+            "The effective status. For a group stored as OPEN the value is LOCKED "
+            "once the deadline has passed (now is at or after the deadline), and OPEN "
+            "before it. DRAFT, LOCKED and SETTLED are returned as stored. "
+            "Saving a prediction to a group that is not OPEN is refused with 403."
+        )
+    )
 
 
 class QuestionChoiceOptionSchema(Schema):

@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 from uuid import uuid4
 
+from app.domain.bet_groups import effective_status
 from app.domain.entities import Draw, Participation, Tournament, User
 from app.domain.enums import (
     BetGroupStatus,
@@ -14,6 +15,7 @@ from app.domain.enums import (
     TournamentStatus,
     TournamentVisibility,
 )
+from app.providers.clock import Clock
 from app.repositories.interfaces import Repositories
 from app.services.errors import Conflict, Forbidden, NotFound, ValidationFailed
 from app.services.ranking import RankingService
@@ -40,13 +42,14 @@ class TournamentDetail:
 
 
 class GameService:
-    def __init__(self, repos: Repositories) -> None:
+    def __init__(self, repos: Repositories, clock: Clock) -> None:
         self._repos = repos
+        self._clock = clock
         self._ranking = RankingService(repos)
 
     def next_open_game(self) -> Tournament | None:
         """The landing page teaser (decision D13). No session required."""
-        now = datetime.now(UTC)
+        now = self._clock.now()
         open_games = [
             t
             for t in self._repos.tournaments.list_all()
@@ -57,7 +60,7 @@ class GameService:
         return min(open_games, key=lambda t: t.signup_deadline, default=None)
 
     def list_for_user(self, user: User) -> list[TournamentSummary]:
-        now = datetime.now(UTC)
+        now = self._clock.now()
         summaries: list[TournamentSummary] = []
 
         for tournament in self._repos.tournaments.list_all():
@@ -69,7 +72,9 @@ class GameService:
 
             participants = self._repos.participations.list_for_tournament(tournament.id)
             groups = self._repos.bet_groups.list_for_tournament(tournament.id)
-            open_group = next((g for g in groups if g.status is BetGroupStatus.OPEN), None)
+            open_group = next(
+                (g for g in groups if effective_status(g, now) is BetGroupStatus.OPEN), None
+            )
 
             if tournament.status is TournamentStatus.FINISHED:
                 state = GameListState.FINISHED
@@ -132,7 +137,7 @@ class GameService:
             raise NotFound("That game does not exist.")
         if user.email_verified_at is None:
             raise Forbidden("Confirm your email address before joining a game.")
-        if tournament.signup_deadline <= datetime.now(UTC):
+        if tournament.signup_deadline <= self._clock.now():
             raise Forbidden("Signup for that game has closed.")
         private = tournament.visibility is TournamentVisibility.PRIVATE
         if private and join_code != tournament.join_code:
@@ -146,7 +151,7 @@ class GameService:
             id=f"part-{uuid4().hex[:12]}",
             user_id=user.id,
             tournament_id=tournament_id,
-            joined_at=datetime.now(UTC),
+            joined_at=self._clock.now(),
             status=ParticipationStatus.ACTIVE,
         )
         self._repos.participations.add(participation)

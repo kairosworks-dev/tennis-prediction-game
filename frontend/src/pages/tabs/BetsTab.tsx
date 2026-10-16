@@ -54,6 +54,16 @@ export function BetsTab({ tournamentId }: { tournamentId: string }): ReactNode {
   );
 }
 
+/**
+ * The line under an open group's title. Display only: the server's status
+ * decides whether the group is open (hard rule 2). A page left open past the
+ * deadline would otherwise read "closed left", since `timeUntil` says "closed".
+ */
+function countdown(deadline: string): string {
+  const remaining = timeUntil(deadline);
+  return remaining === 'closed' ? 'Closed' : `${remaining} left`;
+}
+
 function GroupCard({
   group,
   tournamentId,
@@ -99,7 +109,7 @@ function GroupCard({
           </h2>
           <p className={`mt-0.5 text-xs ${open ? 'font-mono font-semibold text-clay' : 'text-faint'}`}>
             {open
-              ? `${timeUntil(group.deadline)} left`
+              ? countdown(group.deadline)
               : upcoming
                 ? 'Not open yet'
                 : `Locked · ${answeredCount} answered`}
