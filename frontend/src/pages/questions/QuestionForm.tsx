@@ -6,6 +6,7 @@ import type {
   DrawSectionWithEntries, MatchFormat, Prediction, PredictionPayload, Question, SetScore,
 } from '../../services';
 import { PlayerChips, SectionPicker } from './pickers';
+import { samePayload } from './payloadEquality';
 
 /**
  * One question, rendered by kind.
@@ -19,20 +20,25 @@ import { PlayerChips, SectionPicker } from './pickers';
 export function QuestionForm({
   tournamentId,
   question,
-  existing,
+  stored,
   allPredictions,
   questions,
 }: {
   tournamentId: string;
   question: Question;
-  existing: PredictionPayload | null;
+  /**
+   * What the server holds for this question, or null. The caller renders this
+   * form only once the own predictions have loaded: `draft` starts from it and
+   * ignores later changes, so a form opened early would stay empty.
+   */
+  stored: Prediction | null;
   allPredictions: readonly Prediction[];
   questions: readonly Question[];
 }): ReactNode {
   const entries = useDrawEntries(tournamentId, question.drawId ?? undefined);
   const draws = useDraws(tournamentId);
   const save = usePutPrediction(tournamentId);
-  const [draft, setDraft] = useState<PredictionPayload | null>(existing);
+  const [draft, setDraft] = useState<PredictionPayload | null>(stored?.payload ?? null);
 
   const sections: readonly DrawSectionWithEntries[] = entries.data ?? [];
   const allEntries = sections.flatMap((section) => section.entries);
@@ -53,13 +59,17 @@ export function QuestionForm({
     return [];
   };
 
+  // The label follows the stored prediction, not the last mutation: only a
+  // submitted answer that the form still shows reads "Submitted".
+  const submitted = stored !== null && stored.submittedAt !== null && samePayload(draft, stored.payload);
+
   const submit = (asDraft: boolean): void => {
     if (draft === null) return;
     save.mutate({ tournamentId, questionId: question.id, payload: draft, asDraft });
   };
 
   return (
-    <div className="px-4 py-4">
+    <div className="px-4 py-4" role="group" aria-label={question.prompt}>
       <div className="flex items-baseline gap-2">
         <h3 className="grow text-sm font-semibold text-pretty">{question.prompt}</h3>
         <span className="shrink-0 font-mono text-[11px] text-faint">{question.pointsHint}</span>
@@ -178,7 +188,7 @@ export function QuestionForm({
           disabled={draft === null || save.isPending}
           className="h-12 grow rounded bg-clay text-sm font-semibold text-card disabled:opacity-50"
         >
-          {save.isSuccess ? 'Submitted' : 'Submit'}
+          {submitted ? 'Submitted' : 'Submit'}
         </button>
       </div>
     </div>
