@@ -161,13 +161,13 @@ Scored against the repository as of 14 September; updated when an issue closes.
 | 6 | Backend | 3 | 3 | — |
 | 7 | Database | 2 | 2 | done, #1 |
 | 8 | Containerization | 2 | 2 | done: #2 (image, entrypoint, probes), #3 (compose: app + Postgres) |
-| 9 | Integration testing | 1 | 2 | #4 |
+| 9 | Integration testing | 2 | 2 | done: #4 (`make test-integration`: 11 workflow tests over HTTP against compose; CI wiring is #5) |
 | 10 | Deployment | 0 | 2 | #6 |
 | 11 | CI/CD | 0 | 2 | #5, #6 |
 | 12 | Agent extension pack | 1 | 2 | #12–#17 |
 | 13 | Security, audit, DevOps hardening | 0 | 2 | #18–#22 |
 | 14 | Reproducibility | 1 | 2 | #23, #25 |
-| | **Total** | **18** | **30** | |
+| | **Total** | **19** | **30** | |
 
 Issues #8–#11 (monitoring, backups, rollback, public `ops/` evidence) are done
 by the author by hand and feed criteria 10, 13 and 14 as evidence.

@@ -42,6 +42,15 @@ class RankingService:
             for g in self._repos.bet_groups.list_for_tournament(tournament_id)
             if g.status is BetGroupStatus.SETTLED
         ]
+        # The total counts every awarded point outside draft groups, the same set
+        # the score breakdown sums, so the two views of one participant agree.
+        # Movement still compares standings across settled groups only.
+        scored_question_ids = {
+            q.id
+            for g in self._repos.bet_groups.list_for_tournament(tournament_id)
+            if g.status is not BetGroupStatus.DRAFT
+            for q in self._repos.questions.list_for_group(g.id)
+        }
         question_ids_by_group = {
             group.id: {q.id for q in self._repos.questions.list_for_group(group.id)}
             for group in settled
@@ -64,10 +73,13 @@ class RankingService:
             user = self._repos.users.get(participation.user_id)
             rows.append(
                 {
+                    "settled_points": sum(g.points for g in per_group),
                     "participation_id": participation.id,
                     "display_name": user.display_name if user else "Former participant",
                     "is_current_user": participation.user_id == current_user_id,
-                    "total_points": sum(g.points for g in per_group),
+                    "total_points": sum(
+                        s.points for s in own if s.question_id in scored_question_ids
+                    ),
                     "last_group_points": next(
                         (
                             g.points
@@ -86,7 +98,10 @@ class RankingService:
             r["participation_id"]
             for r in sorted(
                 rows,
-                key=lambda r: (-(r["total_points"] - r["last_group_points"]), r["display_name"]),
+                key=lambda r: (
+                    -(r["settled_points"] - r["last_group_points"]),
+                    r["display_name"],
+                ),
             )
         ]
 
