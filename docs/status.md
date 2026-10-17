@@ -147,8 +147,8 @@ The project is graded on the course's **final** rubric, published on 16 October
 12 criteria, 24 points, pass at 10. Three peer reviews of other projects are
 also required to pass; they happen off-repository and are not a work item here.
 The scores below were checked against the repository on 17 October 2026 and are
-updated when an issue closes. Decision D18 in the spec records the switch from
-the earlier 14-criterion draft.
+updated when an issue closes. The spec records the switch from
+the earlier 14-criterion version (D18).
 
 | # | Criterion | Today | Target | Closes with |
 |---|---|---|---|---|
