@@ -32,6 +32,10 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-tennis}:${POSTGRES_PASSWORD:-tennis}@postgres:5432/${POSTGRES_DB:-tennis}}
       # Local and CI use only. Never use this value in a deployment.
       SESSION_SECRET: ${SESSION_SECRET:-compose-dev-only-not-a-secret}
+      # The development stack prints the verification line to the container's
+      # output on purpose. The image sets no EMAIL_PROVIDER (unset means
+      # discard), and a deployment leaves it unset.
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
       # REPOSITORY_BACKEND comes from the image (sqlalchemy). COOKIE_SECURE is
       # left unset: the stack is plain HTTP on localhost.
     ports:
