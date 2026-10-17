@@ -32,7 +32,7 @@ AGENTS.md             this file
 CLAUDE.md             includes this file
 Dockerfile            one image: backend serving the built frontend
 docker-compose.yml    app + Postgres
-Makefile              make run, make test, make check, make test-integration
+Makefile              make run, make test, make test-unit, make check, make test-integration
 openapi.yaml          the API agreement between frontend and backend
 product-spec.md       pointer to docs/product-and-technical-spec.md
 README.md             setup, run, test and deploy instructions
@@ -140,8 +140,11 @@ providers/    tennis data, email — interfaces and mocks
 Keep these accurate. An agent that cannot run the tests will not write good code.
 
 `make` from the repository root lists every target; `make run` starts the whole
-app and `make check` runs lint, typecheck and every unit test. The underlying
-commands are below and remain the source of truth.
+app, `make test` runs the unit tests and then the integration tests (the single
+command; it needs Docker), `make test-unit` runs the unit tests only, and
+`make check` runs lint, typecheck and every unit test. `make test-unit` and
+`make check` need no Docker. The underlying commands are below and remain the
+source of truth.
 
 ```bash
 # frontend — Node 20+
@@ -175,11 +178,13 @@ parameter to the backend suite; without it that parameter is skipped.
 
 ```bash
 docker compose up --build   # app + Postgres on :8000 (the dev stack)
+make test                   # single command: Vitest, pytest, then integration (needs Docker)
 make test-integration       # own project (tennis-it) on :18000: build, test over HTTP, tear down
 ```
 
-`make test-integration` needs Docker, never touches the dev stack and is not
-part of `make check`. Details and variables: README, *Tests*.
+`make test` ends with `make test-integration`. It needs Docker (a preflight
+checks `docker info` and `docker compose version` first; `DOCKER` overrides the
+binary), never touches the dev stack and is not part of `make check`. Details and variables: README, *Tests*.
 
 ## Commits, branches and the process
 
