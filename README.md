@@ -66,7 +66,7 @@ password hashing, session cookies. Tested with pytest and the httpx test client.
   design/                         Claude Design artboards (source for the canvas)
 AGENTS.md              instructions for coding agents — read this first
 CLAUDE.md              points at AGENTS.md
-Makefile               make run, make test, make check
+Makefile               make run, make test, make test-unit, make check
 /.github/workflows     CI (ci.yml): check, commit-gate, integration
 Dockerfile             one image: backend serving the built frontend
 docker-compose.yml     app + Postgres for dev, test and CI
@@ -100,6 +100,8 @@ results screen. Password for both: `deuce-demo-password`.
 | `make run` | Backend and frontend together, on SQLite |
 | `make run-mock` | Frontend alone on in-memory fixtures — no backend, no database |
 | `make reset-db` | Throw the database away and rebuild it from empty |
+| `make test` | Every test: Vitest, pytest, then the integration tests (needs Docker) |
+| `make test-unit` | Vitest and pytest only (no Docker) |
 | `make check` | Lint, typecheck and every unit test (no Docker) |
 | `make test-integration` | Build the compose stack on a separate project, test it over HTTP, tear it down |
 
@@ -233,9 +235,20 @@ localhost.
 
 ### Tests
 
+**One command.** `make test` runs every test the project has, in this order:
+the Vitest suite, the backend pytest suite, then the integration tests over
+HTTP against the compose stack, and stops at the first step that fails. It
+needs Docker with the compose plugin; a preflight checks this before anything
+runs and, if Docker is missing or stopped, prints a message and exits non-zero
+(`make test-unit` is the alternative that needs no Docker). Allow about a
+minute for the unit suites, plus the integration run, which is longer on a cold
+image build. The Postgres parameter of the backend suite is skipped locally
+unless `TEST_DATABASE_URL` is set (CI's `check` job sets it); the integration
+phase runs against a real Postgres either way.
+
 There are two suites, and they answer different questions.
 
-| | Unit (`make test`) | Integration (`make test-integration`) |
+| | Unit (`make test-unit`) | Integration (`make test-integration`) |
 |---|---|---|
 | Lives in | `backend/tests/`, `frontend/src/**/*.test.ts(x)` | `tests/integration/` |
 | Talks to | the app in-process (`TestClient`), memory and SQLite repositories; Postgres too when `TEST_DATABASE_URL` is set | the built image and a real Postgres, over HTTP |

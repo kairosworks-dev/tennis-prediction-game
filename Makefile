@@ -12,15 +12,16 @@ FRONTEND_PORT ?= 5173
 DATABASE_URL  ?= sqlite:///./tennis.db
 IT_PROJECT    ?= tennis-it
 IT_PORT       ?= 18000
+DOCKER        ?= docker
 
 .DEFAULT_GOAL := help
 .PHONY: help install db reset-db run run-mock run-backend run-frontend \
-        test test-frontend test-backend test-integration lint typecheck check clean hooks \
-        docker-build
+        test test-unit test-frontend test-backend test-integration docker-check \
+        lint typecheck check clean hooks docker-build
 
 help: ## List the targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
-		| awk -F':.*?## ' '{ printf "  \033[1m%-14s\033[0m %s\n", $$1, $$2 }'
+		| awk -F':.*?## ' '{ printf "  \033[1m%-17s\033[0m %s\n", $$1, $$2 }'
 	@echo ""
 	@echo "  Backend on :$(BACKEND_PORT), frontend on :$(FRONTEND_PORT)."
 	@echo "  Sign in as you@example.com or organiser@example.com."
@@ -60,24 +61,45 @@ run-backend: db ## Run the backend alone
 run-frontend: ## Run the frontend alone against an already-running backend
 	cd frontend && VITE_API_CLIENT=http npm run dev -- --port $(FRONTEND_PORT) --strictPort
 
-test: test-frontend test-backend ## Run every test
+# The single command. The preflight runs first, so a machine without Docker
+# learns it at once; the order of the two steps lives in the recipe, not in the
+# prerequisites, so `make -j` cannot reorder it. The first failing step stops
+# the run.
+test: docker-check ## Run every test: Vitest, pytest, then the integration tests (needs Docker)
+	$(MAKE) test-unit
+	$(MAKE) test-integration
 
-test-frontend: ## Vitest
+# Sequenced in the recipe for the same reason: Vitest, then pytest, even under -j.
+test-unit: ## Vitest, then pytest (no Docker)
+	$(MAKE) test-frontend
+	$(MAKE) test-backend
+
+test-frontend: ## Vitest only
 	cd frontend && npm run test
 
-test-backend: ## pytest, against both repository implementations
+test-backend: ## pytest only, against both repository implementations
 	cd backend && uv run pytest
 
-test-integration: ## Build the compose stack on its own project, test it over HTTP, tear it down
+docker-check:
+	@if $(DOCKER) info >/dev/null 2>&1 && $(DOCKER) compose version >/dev/null 2>&1; then \
+		:; \
+	else \
+		echo "Docker with the compose plugin is required for the integration tests." >&2; \
+		echo "'$(DOCKER) info' or '$(DOCKER) compose version' failed: start Docker, or install the compose plugin." >&2; \
+		echo "To run the tests that need no Docker, use: make test-unit" >&2; \
+		exit 1; \
+	fi
+
+test-integration: docker-check ## Build the compose stack on its own project, test it over HTTP, tear it down (needs Docker)
 	@set -u; \
-	trap 'docker compose -p $(IT_PROJECT) down -v --remove-orphans' EXIT; \
+	trap '$(DOCKER) compose -p $(IT_PROJECT) down -v --remove-orphans' EXIT; \
 	trap 'exit 130' INT TERM; \
-	docker compose -p $(IT_PROJECT) down -v --remove-orphans || exit 1; \
-	APP_PORT=$(IT_PORT) docker compose -p $(IT_PROJECT) up -d --build || exit 1; \
+	$(DOCKER) compose -p $(IT_PROJECT) down -v --remove-orphans || exit 1; \
+	APP_PORT=$(IT_PORT) $(DOCKER) compose -p $(IT_PROJECT) up -d --build || exit 1; \
 	APP_URL=http://localhost:$(IT_PORT) \
 		uv run --project backend pytest -c tests/integration/pytest.ini tests/integration; \
 	rc=$$?; \
-	if [ $$rc -ne 0 ]; then docker compose -p $(IT_PROJECT) logs app; fi; \
+	if [ $$rc -ne 0 ]; then $(DOCKER) compose -p $(IT_PROJECT) logs app; fi; \
 	exit $$rc
 
 lint: ## ESLint and ruff
@@ -87,7 +109,7 @@ lint: ## ESLint and ruff
 typecheck: ## tsc --noEmit
 	cd frontend && npm run typecheck
 
-check: lint typecheck test ## Everything CI would run, plus the commit-gate tests
+check: lint typecheck test-unit ## Lint, typecheck, unit tests and the commit-gate tests (no Docker)
 	agent-hooks/test-hooks.sh
 
 docker-build: ## Build the container image (backend serving the built frontend)
