@@ -162,18 +162,18 @@ the earlier 14-criterion version (D18).
 | 3 | Agent team specification | 2 | 2 | none |
 | 4 | Context management | 2 | 2 | none |
 | 5 | Application | 2 | 2 | none |
-| 6 | Testing | 1 | 2 | #54 (coverage: #43 to #45) |
+| 6 | Testing | 2 | 2 | done: #54 (`make test` runs unit and integration tests); more coverage: #43 to #45 |
 | 7 | Containerization | 2 | 2 | none |
 | 8 | Deployment | 0 | 2 | #6 (with #7, #11) |
 | 9 | CI/CD | 1 | **3** | #6, #55 |
 | 10 | Observability | 1 | 2 | #56 (by hand) |
 | 11 | Alerting on user impact | 0 | 1 | #57 (by hand; #8 feeds it) |
 | 12 | On-call agent | 0 | 2 | #58 (by hand) |
-| | **Total** | **14 of 24** | **24** | |
+| | **Total** | **15 of 24** | **24** | |
 
-Two judgement calls. Criterion 6 is a 1 because the rubric's 2 requires unit
-and integration tests under one command; both kinds exist and pass, but they
-need two commands and `make test` omits integration. Criterion 10 is a 1 only
+Criterion 6 reached 2 on 17 October with #54: `make test` runs the frontend
+and backend unit tests and then the integration tests against the compose stack,
+in one command. One judgement call remains. Criterion 10 is a 1 only
 if uvicorn's default access log in the container counts as "emits logs": it is
 unstructured, carries no trace ID, and the application itself logs nothing (the
 email provider prints only when `EMAIL_PROVIDER=console`, which no deployment sets).
@@ -192,8 +192,9 @@ change it.
 
 ## Recommended order from here
 
-1. **Graded work first**, in this order: #53 (this context), #54 (one test
-   command), #6 and #7 (deploy, secure cookie), #55 (dev and production), #56,
+1. **Graded work first**, in this order: #53 (this context) and #54 (one test
+   command), both done 17 October, as is #59 (the email provider, which had to
+   land before the deploy); then #6 and #7 (deploy, secure cookie), #55 (dev and production), #56,
    #57, #58, then #23 (README), #43 to #45 (integration coverage) and #25
    (clean-clone run and submission). #12 to #14 (process, workflows, commit
    gate) are graded evidence for criteria 3 and 4 and belong to this group.
