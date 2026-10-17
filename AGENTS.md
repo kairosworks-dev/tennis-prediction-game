@@ -22,8 +22,8 @@ when you close something.
 /docs                 spec, status, process, roles, AI usage report, pack docs
 /agent-capabilities   reusable workflows and subagent definitions (tool-agnostic)
 /agent-hooks          guardrail scripts
-/mcp-server           one scoped MCP tool                       (issue #15)
-/custom-agent         headless agent for red CI runs            (issue #16)
+/mcp-server           one scoped MCP tool                       (issue #15; ungraded, done last)
+/custom-agent         headless agent for red CI runs            (issue #16; ungraded, done last)
 /ops                  sanitised operational evidence
 /security             audit, scan and policy artefacts
 /.github/workflows    CI and the gated deploy
@@ -44,13 +44,13 @@ Folders marked with an issue number arrive with that issue.
 
 The MVP was built in four sequential steps, each with a definition of done in spec Section 9. All four are **done** (frontend on mocks, `openapi.yaml`, FastAPI backend, SQLAlchemy persistence), to the narrowed screen surface of decision D14.
 
-**Now: the final-project phase.** The work is to ship and operate the app: Postgres, containers, integration tests, CI/CD, deployment, the agent extension pack, hardening artefacts and documentation. Spec Section 9, step 5, holds the definition of done; **the work items are the GitHub Issues of this repository**, and [`docs/process.md`](docs/process.md) says how an issue moves from open to closed. Pick work from the issues, not from this file.
+**Now: the final-project phase**, graded on the course's final rubric (12 criteria, 24 points, pass at 10); [`docs/status.md`](docs/status.md) holds the score and which issue closes each gap. The work is to ship and operate the app: Postgres, containers, tests under one command, integration tests, dev and production deployment with CI/CD, observability, an alert on user impact, an on-call agent, and documentation. Observability, the alert and the on-call agent are by-hand work of the author (D20). The issues the final rubric no longer grades, among them the agent extension pack and the hardening artefacts, are done last (D18). Spec Section 9, step 5, holds the definition of done; **the work items are the GitHub Issues of this repository**, and [`docs/process.md`](docs/process.md) says how an issue moves from open to closed. Pick work from the issues, not from this file.
 
 **The screen surface stays narrowed** (decision D14, spec 13.1). Deferred: admin screens other than the outcome grid and recalculation; email verification, password reset, profile editing and account deletion; the draw view; the post-lock comparison view; the landing-page gallery and testimonials. Deferred means *not now*, not *never* — Section 4 still describes the intended product, so do not delete its requirements. The architecture is **not** narrowed: every hard rule below applies in full.
 
 ## By-hand ops tasks — not agent work
 
-Some issues carry the label **`by-hand`** (#8 monitoring and alerting, #9 backups, #10 rollback drill, #11 the public `ops/` evidence). The author does these himself, on the server, as part of his own operations learning. **An agent does not do them**, does not script them in advance, and does not close them. An agent may review the written evidence for leaks and formatting when asked. The AI usage report records this split honestly.
+Some issues carry the label **`by-hand`** (#8 monitoring and alerting, #9 backups, #10 rollback drill, #11 the public `ops/` evidence, #56 observability, #57 the alert on user impact, #58 the on-call responder). The author does these themself, on their own machine and server, as part of their own operations learning. Monitoring, observability, alerting and the on-call responder run on the author's own machine and server, with nothing running 24/7 and no paid API key for the responder (D20). **An agent does not do them**, does not script them in advance, and does not close them. An agent may review the written evidence for leaks and formatting when asked. The AI usage report records this split honestly.
 
 ## Public repository
 
@@ -199,10 +199,10 @@ Canonical, tool-agnostic locations; `.claude/` only links to them.
 | Reusable workflows | `agent-capabilities/implement-issue/`, `agent-capabilities/review-api-change/`, `agent-capabilities/debug-ci-failure/` |
 | Subagents | `agent-capabilities/subagents/` (`pm`, `software-engineer`, `qa-engineer`, `api-reviewer`) |
 | Hook / guardrail | `agent-hooks/` |
-| MCP server | `mcp-server/` (issue #15) |
-| Custom agent | `custom-agent/` (issue #16) |
+| MCP server | `mcp-server/` (issue #15; ungraded, done last) |
+| Custom agent | `custom-agent/` (issue #16; ungraded, done last) |
 | Permissions and security note | `docs/permissions.md` |
-| Pack overview and demo | `docs/agent-extension-pack.md`, `docs/demo.md` (issue #17) |
+| Pack overview and demo | `docs/agent-extension-pack.md`, `docs/demo.md` (issue #17; ungraded, done last) |
 
 ---
 

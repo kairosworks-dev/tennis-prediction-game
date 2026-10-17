@@ -488,7 +488,7 @@ Introduce SQLAlchemy and SQLite behind the existing repository interfaces.
 
 ### Step 5 — Ship and operate (final project, added 15 Oct 2026)
 
-Take the MVP from "runs on a laptop" to "deployed, tested, operated and documented". The work items are the repository's GitHub Issues (#1–#25); this list is the definition of done they add up to.
+Take the MVP from "runs on a laptop" to "deployed, tested, operated and documented". The work items are the repository's GitHub Issues (#1 to #58); this list is the definition of done they add up to.
 
 **Done when:**
 - Postgres runs behind the existing repository interfaces, selected by `DATABASE_URL`; the unit suite passes against memory, SQLite and Postgres (#1).
@@ -497,9 +497,14 @@ Take the MVP from "runs on a laptop" to "deployed, tested, operated and document
 - CI runs lint, typecheck, unit and integration tests on every push; the deploy job runs only when they pass (#5, #6).
 - The app is reachable at a public URL over HTTPS, with migrations applied at container start (#6, #7).
 - **Operations, by the author by hand:** health and uptime checks with one alert, daily database backups with one restore, a rollback drill, and sanitised evidence in `ops/` (#8–#11).
-- The agent extension pack exists and is demonstrated from a real run (#12–#17).
-- Hardening artefacts exist: PR audit, security scan, agent security notes, operational diagnosis, AI tool and data policy (#18–#22).
+- The agent extension pack exists and is demonstrated from a real run (#12–#17) (not graded by the final rubric, D18; done last).
+- Hardening artefacts exist: PR audit, security scan, agent security notes, operational diagnosis, AI tool and data policy (#18–#22) (not graded by the final rubric, D18; done last).
 - The README explains the game, the architecture and how to set up, run, test and deploy; the AI usage report covers the final-project workflow including the by-hand split; a clean clone runs from the README alone (#23–#25).
+- One command runs the unit and the integration tests (#54).
+- Dev and production environments exist: a green `main` deploys to dev automatically, and production changes only by a manual promote (#6, #55).
+- One key journey is observable, with metrics, traces and structured logs sharing a trace ID, viewable in a UI (#56).
+- An alert fires on user impact (#57).
+- An on-call agent is demonstrated end to end: it wakes on an alert and fixes the issue (#58).
 
 ---
 
@@ -560,6 +565,9 @@ README.md             setup, run, test and deploy instructions
 | D15 | **Postgres in production, SQLite locally**, behind the same SQLAlchemy repository implementation; the dialect is chosen by `DATABASE_URL` and nothing else (15 Oct 2026) | The deployment platform provides a managed Postgres with daily backups; the application was database-agnostic by design, so the cost is one driver and one URL. SQLite stays for local work and unit tests because it needs no server |
 | D16 | **Deployment, containers and CI/CD are in scope** from the final-project phase (15 Oct 2026); reverses the *settled during the build* exclusion in Section 12 | The course's final project grades them, and the author's own pipeline and server exist. Principle 7.1.5 is clarified to mean application code: platform services around the app are not a violation |
 | D17 | **Operational probes `/health` and `/ready` are excluded from `openapi.yaml`** (15 Oct 2026): root-level, `include_in_schema=False`. A narrow exception to AGENTS.md hard rule 3 | They serve the container runtime and the platform, not the frontend; the contract is the frontend–backend agreement, and probes are not part of it. The drift test therefore stays unchanged |
+| D18 | **The final rubric** (12 criteria, 24 points, pass at 10, published 16 Oct 2026) replaces the 14-criterion draft (decided 16 Oct 2026); the target is full marks. Graded work comes first; the issues the rubric no longer grades (#15 to #22, #24) are kept for learning and done last. The ungraded issues continue after the submission deadline; the course grade is tied to the commit submitted, so later commits do not change it | The course grades the project against the final rubric; the ungraded work is still worth doing, but not before the graded work |
+| D19 | **Two deployed environments, dev and production** (16 Oct 2026). A green `main` deploys to dev automatically; production changes only by a manual promote of a build that passed CI and ran on dev. Reopens "No second deployed environment: one server, one app" in `docs/process.md` | The rubric's three-point CI/CD level asks for exactly this; dev and production keep separate databases and secrets (#55) |
+| D20 | **The observability stack and the on-call agent are a local demo** (16 Oct 2026): Docker Compose on the author's machine, optional, nothing running 24/7, no paid API key (the responder starts the author's own logged-in coding agent). The author builds these by hand (#56, #57, #58, the same status as #8 to #11): agents do not implement, script or close them, and may only review the written evidence for leaks and formatting when asked | The rubric asks for the signals, the alert and the responder, not for an operated service; building them by hand is the author's choice for their own operations learning, not the course's requirement. The server stays small: nothing beyond the deployed app and its database runs there, which is another reason the telemetry stack and the responder run locally. The stack is platform services under D16 and principle 7.1.5 is unchanged; the OpenTelemetry SDK inside the backend is an application dependency and is approved per #56, not by this decision |
 
 ---
 

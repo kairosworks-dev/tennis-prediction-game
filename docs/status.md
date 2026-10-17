@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 16 October 2026
+**Last updated:** 17 October 2026
 
 Where the code stands. This is deliberately a different question from the two
 documents either side of it:
@@ -26,7 +26,7 @@ holds the snapshots.
 | 2 | `openapi.yaml` derived from the service layer | Done |
 | 3 | FastAPI backend, in-memory repositories | Done |
 | 4 | SQLAlchemy and SQLite persistence | Done |
-| 5 | Ship and operate: Postgres, containers, integration tests, CI/CD, deploy, extension pack, hardening, docs | **In progress since 15 Oct** — GitHub Issues #1–#25; see *Against the course criteria* below |
+| 5 | Ship and operate: Postgres, containers, integration tests, CI/CD, deploy, extension pack, hardening, docs | **In progress since 15 Oct** — GitHub Issues #1 to #58; see *Against the course criteria* below |
 
 **It runs.** `make install && make run` migrates, seeds a demo game, starts the
 backend on :8000 and the frontend on :5173 pointed at it. `make run-mock` runs
@@ -141,37 +141,60 @@ built so far; each will bite when the deferred work arrives.
 
 ## Against the course criteria
 
-The final project is graded on fourteen criteria (AI Dev Tools Zoomcamp, 2026
-draft). Points claimed today, the target, and the issue that closes each gap.
-Scored against the repository as of 14 September; updated when an issue closes.
+The project is graded on the course's **final** rubric, published on 16 October
+2026 in the public course repository
+([`project/README.md`](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp/blob/main/project/README.md)):
+12 criteria, 24 points, pass at 10. Three peer reviews of other projects are
+also required to pass; they happen off-repository and are not a work item here.
+The scores below were checked against the repository on 17 October 2026 and are
+updated when an issue closes. Decision D18 in the spec records the switch from
+the earlier 14-criterion draft.
 
 | # | Criterion | Today | Target | Closes with |
 |---|---|---|---|---|
-| 1 | Problem description | 1 | 2 | #23 (*How the game works*) |
-| 2 | AI-assisted workflow | 1 | 2 | #24 |
-| 3 | Technologies and architecture | 1 | 2 | #23 |
-| 4 | Frontend | 3 | 3 | — |
-| 5 | API contract | 2 | 2 | — |
-| 6 | Backend | 3 | 3 | — |
-| 7 | Database | 2 | 2 | done, #1 |
-| 8 | Containerization | 2 | 2 | done: #2 (image, entrypoint, probes), #3 (compose: app + Postgres) |
-| 9 | Integration testing | 2 | 2 | done: #4 (`make test-integration`: 11 workflow tests over HTTP against compose) and #42 (11 tests that the frontend is served: shell, assets, deep links, 404/405), run in CI by #5; more end-to-end coverage open in #43–#45 |
-| 10 | Deployment | 0 | 2 | #6 |
-| 11 | CI/CD | 1 | 2 | CI done: #5 (`check`, `commit-gate`, `integration` on every push and pull request, drift check included); the gated deploy remains #6 |
-| 12 | Agent extension pack | 1 | 2 | #12–#17 |
-| 13 | Security, audit, DevOps hardening | 0 | 2 | #18–#22; in place: Dependabot for the CI action pins with a 7-day cooldown (#39) |
-| 14 | Reproducibility | 1 | 2 | #23, #25 |
-| | **Total** | **20** | **30** | |
+| 1 | Problem description | 1 | 2 | #23 |
+| 2 | Product specification | 2 | 2 | none |
+| 3 | Agent team specification | 2 | 2 | none |
+| 4 | Context management | 2 | 2 | none |
+| 5 | Application | 2 | 2 | none |
+| 6 | Testing | 1 | 2 | #54 (coverage: #43 to #45) |
+| 7 | Containerization | 2 | 2 | none |
+| 8 | Deployment | 0 | 2 | #6 (with #7, #11) |
+| 9 | CI/CD | 1 | **3** | #6, #55 |
+| 10 | Observability | 1 | 2 | #56 (by hand) |
+| 11 | Alerting on user impact | 0 | 1 | #57 (by hand; #8 feeds it) |
+| 12 | On-call agent | 0 | 2 | #58 (by hand) |
+| | **Total** | **14 of 24** | **24** | |
 
-Issues #8–#11 (monitoring, backups, rollback, public `ops/` evidence) are done
-by the author by hand and feed criteria 10, 13 and 14 as evidence.
+Two judgement calls. Criterion 6 is a 1 because the rubric's 2 requires unit
+and integration tests under one command; both kinds exist and pass, but they
+need two commands and `make test` omits integration. Criterion 10 is a 1 only
+if uvicorn's default access log in the container counts as "emits logs": it is
+unstructured, carries no trace ID, and the application logs nothing beyond the
+email provider.
+
+Issues #8 to #11 (monitoring, backups, rollback, public `ops/` evidence) and
+#56 to #58 (observability, the alert on user impact, the on-call agent) are all
+`by-hand`: the author does them themself, on their own machine and server, for
+their own operations learning. #8 feeds criterion 11, #10 and #11 feed criteria
+9 and 8, #9 earns no criterion, and criteria 10, 11 and 12 come from the
+by-hand issues #56, #57 and #58. Agents may review their written evidence for
+leaks and formatting when asked, nothing more.
+
+The ungraded issues (#15 to #22, #24) continue after the submission deadline;
+the course grade is tied to the commit submitted, so later commits do not
+change it.
 
 ## Recommended order from here
 
-The issues, in the order the dependencies dictate: database (#1) → image and
-compose (#2, #3) → integration tests (#4) → CI (#5) → deploy (#6, #7) → the
-by-hand operations (#8–#11) → the pack (#12–#17) → hardening (#18–#22) →
-documentation and the clean-clone run (#23–#25).
+1. **Graded work first**, in this order: #53 (this context), #54 (one test
+   command), #6 and #7 (deploy, secure cookie), #55 (dev and production), #56,
+   #57, #58, then #23 (README), #43 to #45 (integration coverage) and #25
+   (clean-clone run and submission). #12 to #14 (process, workflows, commit
+   gate) are graded evidence for criteria 3 and 4 and belong to this group.
+2. **The by-hand issues** (#8 to #11 and #56 to #58) are the author's, done
+   alongside the above.
+3. **The ungraded issues last**: #15 to #22 and #24 (D18).
 
 Not on that path, and deliberately left where they are: the seed-placement
 defect above, the generated frontend types and the Playwright paths. None of

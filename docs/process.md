@@ -64,15 +64,18 @@ issue → PM grooms → author reviews → engineer builds → QA verifies
 
 | Label | Meaning |
 |---|---|
-| `criterion-N` | The course criterion this item earns points for |
+| `criterion-N` | The course criterion (final rubric, numbered 1 to 12, see `docs/status.md`) this item earns points for |
 | `pack` | Agent extension pack item |
 | `security` | Security, audit or hardening artefact |
 | `docs` | README, spec, status, reports |
 | `by-hand` | Done by the author, not by an agent; see `AGENTS.md` |
+| `ungraded` | Not graded by the final rubric (D18); kept for learning, done last |
+
+The milestone **Project 1 — 27 Oct** holds the open issues to finish before submission, graded or not. The ungraded issues, which are done after submission, are not in it, and closed issues are not in it.
 
 ## Decisions behind this process
 
-- **Trunk-based with a PR per issue**, not direct commits to `main`: a PR is what CI gates and what the PR audit (issue #18) reviews. No second deployed environment: one server, one app.
+- **Trunk-based with a PR per issue**, not direct commits to `main`: a PR is what CI gates and what the PR audit (issue #18) reviews. Two deployed environments, dev and production (D19, #55): a green `main` deploys to dev, production is promoted by hand.
 - **No PM acceptance step**: it is the fourth agent per issue on a one-person project with ten days; the author reviews the groomed issue and the PR instead.
 - **Worktrees only on demand**: the first week's issues depend on each other in sequence.
 - **Agent-agnostic**: the role files, workflows and hooks are plain folders; `.claude/` only links to them, so another coding agent is pointed at the same files.
