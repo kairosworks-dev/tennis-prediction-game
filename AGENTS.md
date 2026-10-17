@@ -120,7 +120,7 @@ providers/    tennis data, email — interfaces and mocks
 
 - FastAPI, Pydantic v2, SQLAlchemy 2.0, Alembic, Argon2 for password hashing, session cookies.
 - Repository interfaces are defined once and implemented twice. The SQLAlchemy implementation serves SQLite and Postgres from the same code (hard rule 8).
-- Configuration comes from the environment: `DATABASE_URL`, `REPOSITORY_BACKEND`, `SESSION_SECRET`, `COOKIE_SECURE`. Defaults are development-only and say so. Never a secret in a file.
+- Configuration comes from the environment: `DATABASE_URL`, `REPOSITORY_BACKEND`, `SESSION_SECRET`, `COOKIE_SECURE`, `EMAIL_PROVIDER`. Defaults are development-only and say so; `EMAIL_PROVIDER` defaults to `discard`, which is safe rather than development-only. Never a secret in a file.
 - Authorisation is checked server-side on every admin route. Never rely on the frontend hiding a button.
 - Errors follow RFC 7807 problem details. Timestamps are ISO 8601 UTC.
 

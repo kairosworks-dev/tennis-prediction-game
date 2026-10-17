@@ -44,7 +44,7 @@ run: db ## Run backend and frontend together
 	@echo "  Ctrl-C stops both."
 	@echo ""
 	@trap 'kill 0' EXIT INT TERM; \
-		( cd backend && REPOSITORY_BACKEND=sqlite DATABASE_URL=$(DATABASE_URL) \
+		( cd backend && REPOSITORY_BACKEND=sqlite DATABASE_URL=$(DATABASE_URL) EMAIL_PROVIDER=console \
 			uv run uvicorn app.main:app --port $(BACKEND_PORT) --log-level warning ) & \
 		( cd frontend && VITE_API_CLIENT=http \
 			npm run dev -- --port $(FRONTEND_PORT) --strictPort ) & \
@@ -54,7 +54,7 @@ run-mock: ## Run the frontend alone on in-memory fixtures
 	cd frontend && VITE_API_CLIENT=mock npm run dev -- --port $(FRONTEND_PORT) --strictPort
 
 run-backend: db ## Run the backend alone
-	cd backend && REPOSITORY_BACKEND=sqlite DATABASE_URL=$(DATABASE_URL) \
+	cd backend && REPOSITORY_BACKEND=sqlite DATABASE_URL=$(DATABASE_URL) EMAIL_PROVIDER=console \
 		uv run uvicorn app.main:app --port $(BACKEND_PORT) --reload
 
 run-frontend: ## Run the frontend alone against an already-running backend

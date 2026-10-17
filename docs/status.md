@@ -113,6 +113,11 @@ limiting stay open and named; the security scan (#19) and the policy (#22)
 report them as known gaps rather than hiding them. The deployment runs demo
 data only, by decision, until the course is over.
 
+**17 Oct (issue #59):** registration email addresses and tokens are not written to
+the output of a deployed environment. `EMAIL_PROVIDER` defaults to `discard`, which
+writes nothing, and the `console` provider (stderr, local development and the dev
+compose stack only) must be asked for. No deployment sets it.
+
 ---
 
 ## Decisions
@@ -170,8 +175,8 @@ Two judgement calls. Criterion 6 is a 1 because the rubric's 2 requires unit
 and integration tests under one command; both kinds exist and pass, but they
 need two commands and `make test` omits integration. Criterion 10 is a 1 only
 if uvicorn's default access log in the container counts as "emits logs": it is
-unstructured, carries no trace ID, and the application logs nothing beyond the
-email provider.
+unstructured, carries no trace ID, and the application itself logs nothing (the
+email provider prints only when `EMAIL_PROVIDER=console`, which no deployment sets).
 
 Issues #8 to #11 (monitoring, backups, rollback, public `ops/` evidence) and
 #56 to #58 (observability, the alert on user impact, the on-call agent) are all
