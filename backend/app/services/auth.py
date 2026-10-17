@@ -67,7 +67,8 @@ class AuthService:
         )
         self._repos.users.add(user)
         self._repos.commit()
-        # Transactional email only in the MVP (decision D11); the mock prints it.
+        # Transactional email only in the MVP (decision D11). Which provider this is
+        # (discard by default, console locally) is decided at start-up.
         self._email.send_verification(user.email, token=f"verify-{user.id}")
         return user
 

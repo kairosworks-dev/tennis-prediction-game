@@ -17,7 +17,12 @@ from fastapi.responses import JSONResponse, Response
 from app.api import probes
 from app.api.frontend import DEFAULT_FRONTEND_DIR, mount_frontend
 from app.api.routers import auth, games, play, results
-from app.bootstrap import build_repositories, build_repository_scope, fixed_scope
+from app.bootstrap import (
+    build_email_provider,
+    build_repositories,
+    build_repository_scope,
+    fixed_scope,
+)
 from app.repositories.interfaces import Repositories
 from app.seed import seed_demo_game
 from app.services.errors import ServiceError
@@ -71,6 +76,8 @@ def create_app(
             if repos.tournaments.get("roland-garros-2026") is None:
                 seed_demo_game(repos)
     app.state.repository_scope = scope
+    # Read once, here, so a mistyped EMAIL_PROVIDER stops the boot, not a registration.
+    app.state.email_provider = build_email_provider()
 
     app.add_middleware(
         CORSMiddleware,

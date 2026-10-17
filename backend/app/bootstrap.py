@@ -14,6 +14,7 @@ from contextlib import AbstractContextManager, contextmanager
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.providers.email import ConsoleEmailProvider, DiscardEmailProvider, EmailProvider
 from app.repositories.interfaces import Repositories
 from app.repositories.memory import MemoryRepositories
 from app.repositories.models import Base
@@ -94,6 +95,23 @@ def build_repository_scope(backend: str | None = None) -> RepositoryScope:
                 "Run `alembic upgrade head` before starting the app."
             )
     return _session_scope(create_session_factory(engine))
+
+
+def build_email_provider(choice: str | None = None) -> EmailProvider:
+    """Pick the email implementation from `EMAIL_PROVIDER`.
+
+    `discard` is the default, and so is unset or an empty value: a deployed
+    environment that sets nothing never writes an address or a token to its
+    output. `console` prints them to stderr and is for a machine you control.
+    Matching is exact; anything else stops start-up instead of falling back.
+    """
+    if choice is None:
+        choice = os.environ.get("EMAIL_PROVIDER", "")
+    if choice in ("", "discard"):
+        return DiscardEmailProvider()
+    if choice == "console":
+        return ConsoleEmailProvider()
+    raise ValueError(f"Unknown EMAIL_PROVIDER {choice!r}; use 'console' or 'discard'.")
 
 
 def build_repositories(backend: str | None = None) -> Repositories:

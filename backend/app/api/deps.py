@@ -16,7 +16,7 @@ from itsdangerous import BadSignature, URLSafeSerializer
 
 from app.domain.entities import User
 from app.providers.clock import Clock, SystemClock
-from app.providers.email import ConsoleEmailProvider, EmailProvider
+from app.providers.email import EmailProvider
 from app.repositories.interfaces import Repositories
 from app.services.auth import AuthService
 from app.services.errors import Forbidden, Unauthorized
@@ -56,8 +56,10 @@ def get_repositories(request: Request) -> Iterator[Repositories]:
         yield repos
 
 
-def get_email_provider() -> EmailProvider:
-    return ConsoleEmailProvider()
+def get_email_provider(request: Request) -> EmailProvider:
+    """The provider `create_app` chose once at start-up from `EMAIL_PROVIDER`."""
+    provider: EmailProvider = request.app.state.email_provider
+    return provider
 
 
 def get_clock() -> Clock:
