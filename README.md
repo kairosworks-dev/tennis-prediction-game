@@ -132,6 +132,10 @@ Configuration is environment variables:
 - `REPOSITORY_BACKEND` is `memory` (default) or `sqlalchemy`; `sqlite` is kept
   as an alias for `sqlalchemy`. The dialect comes from `DATABASE_URL` alone.
   Any other value stops start-up with an error.
+- `EMAIL_PROVIDER` is `console` or `discard`. Unset or empty means `discard`: nothing
+  is written anywhere. `console` prints the verification line to stderr (address and
+  token), for a machine you control; `make run` and `make run-backend` set it.
+  Any other value stops start-up with an error.
 
 On SQLite the app creates missing tables itself. On any other URL it does not:
 Alembic owns the schema, and starting against an unmigrated database fails
@@ -172,6 +176,7 @@ is lost when the container is removed.** To keep it, mount a volume on `/data`
 | `SESSION_SECRET` | **required**, no default | Signs the session cookie. The container refuses to start without it. |
 | `DATABASE_URL` | `sqlite:////data/tennis.db` | Any SQLAlchemy URL; a bare `postgresql://` URL works. An unreachable database makes the container exit non-zero within `PGCONNECT_TIMEOUT` (10 s by default), with the error in `docker logs`. |
 | `REPOSITORY_BACKEND` | `sqlalchemy` | See the backend conventions. |
+| `EMAIL_PROVIDER` | unset, which means `discard` | `discard` or `console`. The default never writes an address or a token to the output; set `console` only on a machine you control. Any other value stops start-up. A deployed environment leaves it unset, and the pipeline never sets it. |
 | `COOKIE_SECURE` | unset | Passed through; see issue #7. |
 | `FRONTEND_DIR` | `/app/static` | Where the built frontend lives; served only if it exists. |
 
@@ -204,6 +209,10 @@ copy `.env.example` to `.env` to change one.
 | `POSTGRES_PASSWORD` | `tennis` | Postgres password. |
 | `POSTGRES_DB` | `tennis` | Database name. |
 | `APP_PORT` | `8000` | Host port the app is published on (`APP_PORT=8001 docker compose up`). |
+| `EMAIL_PROVIDER` | `console` | The dev stack prints the verification line (address and token) to the app's output, see `docker compose logs app`. |
+
+The dev stack prints the verification line on purpose (`EMAIL_PROVIDER=console`);
+the image does not.
 
 `DATABASE_URL` is assembled from the three `POSTGRES_*` values and can be
 overridden whole. `COOKIE_SECURE` is left unset: the stack is plain HTTP on
