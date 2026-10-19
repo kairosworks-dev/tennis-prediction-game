@@ -173,7 +173,7 @@ the earlier 14-criterion version (D18).
 | 6 | Testing | 2 | 2 | done: #54 (`make test` runs unit and integration tests); more coverage: #43 to #45 |
 | 7 | Containerization | 2 | 2 | none |
 | 8 | Deployment | 0 | 2 | #6 (with #7, #11) |
-| 9 | CI/CD | 1 | **3** | #6, #55 |
+| 9 | CI/CD | 1 | **3** | #6 (step A merged 19 Oct; step B makes the deploy automatic: 2), #55 (3) |
 | 10 | Observability | 1 | 2 | #56 (by hand) |
 | 11 | Alerting on user impact | 0 | 1 | #57 (by hand; #8 feeds it) |
 | 12 | On-call agent | 0 | 2 | #58 (by hand) |
@@ -202,8 +202,11 @@ change it.
 
 1. **Graded work first**, in this order: #53 (this context) and #54 (one test
    command), both done 17 October, as is #59 (the email provider, which had to
-   land before the deploy); then #6 and #7 (deploy, secure cookie), #55 (dev and production), #56,
-   #57, #58, then #23 (README), #43 to #45 (integration coverage) and #25
+   land before the deploy), and #7 (secure cookie), done 19 October; then #6
+   (deploy to dev: step A, the image job and a deploy started by hand, merged 19
+   October; step B, the automatic deploy, after the author's proof run), #55 (dev
+   and production), #56, #57, #58, then #23 (README), #43 to #45 (integration
+   coverage) and #25
    (clean-clone run and submission). #12 to #14 (process, workflows, commit
    gate) are graded evidence for criteria 3 and 4 and belong to this group.
 2. **The by-hand issues** (#8 to #11 and #56 to #58) are the author's, done
