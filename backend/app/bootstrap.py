@@ -114,6 +114,24 @@ def build_email_provider(choice: str | None = None) -> EmailProvider:
     raise ValueError(f"Unknown EMAIL_PROVIDER {choice!r}; use 'console' or 'discard'.")
 
 
+def build_cookie_secure(choice: str | None = None) -> bool:
+    """Read `COOKIE_SECURE`: whether the session cookie carries `Secure`.
+
+    Unset or empty means `false`, which is a development-only default: it keeps
+    the compose stack working over plain HTTP. A deployment behind HTTPS sets
+    `true`. Only the exact strings `true` and `false` are accepted; anything
+    else (`True`, `1`, `yes`) stops start-up, so a typo cannot quietly leave the
+    cookie insecure.
+    """
+    if choice is None:
+        choice = os.environ.get("COOKIE_SECURE", "")
+    if choice in ("", "false"):
+        return False
+    if choice == "true":
+        return True
+    raise ValueError(f"Invalid COOKIE_SECURE {choice!r}; use 'true' or 'false'.")
+
+
 def build_repositories(backend: str | None = None) -> Repositories:
     """A single `Repositories` outside a request — for scripts and seeding.
 

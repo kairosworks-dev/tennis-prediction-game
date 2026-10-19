@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 17 October 2026
+**Last updated:** 19 October 2026
 
 Where the code stands. This is deliberately a different question from the two
 documents either side of it:
@@ -101,8 +101,7 @@ the drift guard in `fixtures.test.ts` will fail until it is.
 
 Section 7.5 asks for *"CSRF protection on mutating requests, rate limiting on
 auth endpoints"*. Neither is built. The session cookie is `httponly` with
-`samesite=lax`, which does block the classic cross-site POST, and there is no
-`secure` flag for when this is not localhost.
+`samesite=lax`, which does block the classic cross-site POST.
 
 Newly relevant because decision D8 — session cookies rather than bearer tokens —
 was raised and confirmed on 14 September. CSRF matters precisely because the
@@ -117,6 +116,15 @@ data only, by decision, until the course is over.
 the output of a deployed environment. `EMAIL_PROVIDER` defaults to `discard`, which
 writes nothing, and the `console` provider (stderr, local development and the dev
 compose stack only) must be asked for. No deployment sets it.
+
+**19 Oct (issue #7):** the `secure` flag is built. `COOKIE_SECURE=true` marks the
+session cookie `Secure` on login, register and logout (the logout deletion carries
+the attributes of the cookie it deletes). The default is `false`, development-only,
+so the compose stack keeps working over plain HTTP. Parsing is strict: only `true`
+and `false` (or unset or empty, meaning `false`) are accepted, and any other value
+stops start-up. Unset in a deployment is silently insecure; the checks that catch
+it are on the deployed environments (#6 and #55 verify `Secure` on the login
+`Set-Cookie`). CSRF and rate limiting are still open.
 
 ---
 

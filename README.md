@@ -179,7 +179,7 @@ is lost when the container is removed.** To keep it, mount a volume on `/data`
 | `DATABASE_URL` | `sqlite:////data/tennis.db` | Any SQLAlchemy URL; a bare `postgresql://` URL works. An unreachable database makes the container exit non-zero within `PGCONNECT_TIMEOUT` (10 s by default), with the error in `docker logs`. |
 | `REPOSITORY_BACKEND` | `sqlalchemy` | See the backend conventions. |
 | `EMAIL_PROVIDER` | unset, which means `discard` | `discard` or `console`. The default never writes an address or a token to the output; set `console` only on a machine you control. Any other value stops start-up. A deployed environment leaves it unset, and the pipeline never sets it. |
-| `COOKIE_SECURE` | unset | Passed through; see issue #7. |
+| `COOKIE_SECURE` | unset, which means `false` | `true` marks the session cookie `Secure`, for a deployment behind HTTPS; `false` is for plain HTTP and local use only. Any other value (`True`, `1`, `yes`) stops start-up. |
 | `FRONTEND_DIR` | `/app/static` | Where the built frontend lives; served only if it exists. |
 
 `GET /health` (process is up, no database) and `GET /ready` (database answers)

@@ -18,6 +18,7 @@ from app.api import probes
 from app.api.frontend import DEFAULT_FRONTEND_DIR, mount_frontend
 from app.api.routers import auth, games, play, results
 from app.bootstrap import (
+    build_cookie_secure,
     build_email_provider,
     build_repositories,
     build_repository_scope,
@@ -78,6 +79,8 @@ def create_app(
     app.state.repository_scope = scope
     # Read once, here, so a mistyped EMAIL_PROVIDER stops the boot, not a registration.
     app.state.email_provider = build_email_provider()
+    # Likewise COOKIE_SECURE: a typo must stop the boot, not leave the cookie insecure.
+    app.state.cookie_secure = build_cookie_secure()
 
     app.add_middleware(
         CORSMiddleware,
