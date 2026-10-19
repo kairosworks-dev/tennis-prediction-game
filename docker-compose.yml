@@ -1,6 +1,6 @@
 # Development, test and CI stack: the app plus Postgres, one command:
 #   docker compose up --build
-# Not a deployment (the deployment builds the Dockerfile directly, issue #6).
+# Not a deployment (the deployment pulls the image CI built, see README, Deploy).
 # Every value below is a development placeholder; override any of them from
 # the environment or a .env file (see .env.example, which is optional).
 name: tennis-prediction-game
