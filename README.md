@@ -328,7 +328,7 @@ interface: do not rename them.
 | Job | Runs | Local equivalent |
 |---|---|---|
 | `check` | `npm ci` and `uv sync --locked` (lockfiles only), then `make check` on Node 24, uv 0.12.10 and a `postgres:16` service container. `TEST_DATABASE_URL` points at a throwaway database on that service, so the backend suite runs against memory, SQLite **and** Postgres (its pytest summary reports 0 skipped), and the contract drift test runs here. | `make check` (add `TEST_DATABASE_URL` for the Postgres run) |
-| `commit-gate` | `agent-hooks/commit-gate.sh` over the lines the change **adds**: for a pull request, since it left its base branch; for a push, since the previous tip (a new branch or a force-push falls back to the merge-base with `origin/main`). Then `agent-hooks/test-hooks.sh`. A hit prints the file and the pattern name, never the line. | `make hooks`, then commit; `agent-hooks/test-hooks.sh` |
+| `commit-gate` | `agent-hooks/commit-gate.sh` over the lines the change **adds**: for a pull request, since it left its base branch; for a push, since the previous tip (a new branch, a force-push or a dispatch falls back to the merge-base with `origin/main`, which is empty on `main`). Then `agent-hooks/test-hooks.sh`. A hit prints the file and the pattern name, never the line. | `make hooks`, then commit; `agent-hooks/test-hooks.sh` |
 | `integration` | `make docker-build` as its own step (so a broken Dockerfile or a `uv.lock` that disagrees with `pyproject.toml` fails with a clear name), then `make test-integration` on its own compose project. | `make docker-build` and `make test-integration` |
 | `image` | After the three jobs above are green, on `main` only (a push, or a dispatch from `main`): builds the `Dockerfile` once and pushes it to GHCR as `sha-<commit>`, or reuses that tag if it already exists. Its output is the image digest. | `make docker-build` (no push) |
 | `deploy-dev` | On a dispatch from `main` only, after `image`: asks the dev server to run that digest, then waits for `/ready`. See [Deploy](#deploy). | none |
@@ -337,7 +337,8 @@ A push to another branch, a pull request and a dispatch run from a branch start
 the first three jobs and nothing else. The workflow uses no repository secrets
 and a read-only token by default (`permissions: contents: read`); only `image`
 adds `packages: write`, and the five secrets of the `dev` environment are read
-by `deploy-dev` alone. Every action is pinned to a full commit SHA. Dependabot proposes updates to those pins weekly, on branches named
+by `deploy-dev` alone. Every action is pinned to a full commit SHA.
+Dependabot proposes updates to those pins weekly, on branches named
 `dependabot/…` (outside the `issue-<n>/…` naming); each proposal changes the
 SHA and the `# vX.Y.Z` comment together, CI runs on it like on any pull
 request, and the author reviews and merges it himself, with no auto-merge.
@@ -364,8 +365,8 @@ rebuild from the repository and never `docker-compose.yml`.
   `ghcr.io/<owner>/<repo>@sha256:<64 hex>`, which names the exact bytes.
 - **Secrets.** Five environment secrets of the GitHub environment `dev`, read
   only by `deploy-dev`: `DEPLOY_SSH_KEY`, `DEPLOY_SSH_HOST`, `DEPLOY_SSH_USER`,
-  `DEPLOY_SSH_KNOWN_HOSTS` and `APP_URL`. If one is empty the job fails first,
-  naming it. The workflow never holds a database URL, a session secret or a
+  `DEPLOY_SSH_KNOWN_HOSTS` and `APP_URL`. If one is empty, or `APP_URL` does not start with
+  `https://`, the job fails first, naming it. The workflow never holds a database URL, a session secret or a
   token of the hosting platform; those live only on the server.
 - **Variables of the dev application.**
 
