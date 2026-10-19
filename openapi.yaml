@@ -446,8 +446,10 @@ components:
       in: cookie
       name: session
       description: |
-        HTTP-only session cookie set on sign-in. Mutating requests additionally
-        carry CSRF protection (spec 7.5).
+        Session cookie set on sign-in and registration: HttpOnly, SameSite=Lax,
+        Path=/, no Domain, and Secure when the deployment sets COOKIE_SECURE=true
+        (HTTPS). CSRF protection on mutating requests (spec 7.5) is not built
+        yet; docs/status.md lists it as a known gap.
 
   parameters:
     tournamentId:
