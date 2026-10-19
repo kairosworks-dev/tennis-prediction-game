@@ -139,7 +139,7 @@ jobs:
           if [ "$EVENT_NAME" = "pull_request" ]; then
             # Changes made by the pull request itself, since it left the base.
             base=$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")
-            range="pull request"
+            range="the pull request"
           else
             base=""
             # Changes made by this push. A new branch (all-zeros before), a
@@ -148,14 +148,18 @@ jobs:
             if ! printf '%s' "$PUSH_BEFORE" | grep -Eq '^0+$' \
                && git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
               base=$(git merge-base "$PUSH_BEFORE" "$PUSH_AFTER" 2>/dev/null || true)
-              range="push"
+              range="the push"
             fi
             if [ -z "$base" ]; then
               base=$(git merge-base origin/main "$PUSH_AFTER")
-              range="branch since origin/main"
+              range="the branch since origin/main"
+              # A dispatch (or a re-run) on main: the commit is origin/main.
+              if [ "$base" = "$(git rev-parse "$PUSH_AFTER")" ]; then
+                range="an empty range (this commit is origin/main)"
+              fi
             fi
           fi
-          echo "commit-gate: scanning added lines of the $range, base $base"
+          echo "commit-gate: scanning added lines of $range, base $base"
           git reset --soft "$base"
           agent-hooks/commit-gate.sh
       - name: Commit gate tests
@@ -229,15 +233,27 @@ jobs:
           tag="sha-$SHA"
 
           # Sets status (the registry's answer for the tag) and digest.
+          # The token asks for pull,push, as docker push itself does: for a
+          # package that does not exist yet GHCR refuses a pull-only token
+          # (403 anonymously) but grants the push scope to a token that may
+          # create the package, which is how the very first push works. A
+          # refused token request fails the job with its status code; it is
+          # never read as "the tag exists" or "the tag is absent".
           lookup() {
-            local token headers
+            local token headers body token_status
             headers=$(mktemp)
-            token=$(curl -sS -f -u "$ACTOR:$GITHUB_TOKEN" \
-              "https://ghcr.io/token?service=ghcr.io&scope=repository:$repo:pull" \
-              | jq -r '.token // empty')
-            if [ -z "$token" ]; then
-              echo "::error::GHCR gave no token for the lookup."; exit 1
+            body=$(mktemp)
+            token_status=$(curl -sS -o "$body" -w '%{http_code}' -u "$ACTOR:$GITHUB_TOKEN" \
+              "https://ghcr.io/token?service=ghcr.io&scope=repository:$repo:pull,push")
+            if [ "$token_status" != 200 ]; then
+              echo "::error::GHCR refused the token request (status $token_status)."; exit 1
             fi
+            token=$(jq -r '.token // empty' < "$body")
+            rm -f "$body"
+            if [ -z "$token" ]; then
+              echo "::error::GHCR answered the token request without a token."; exit 1
+            fi
+            echo "::add-mask::$token"
             status=$(curl -sS -I -o /dev/null -D "$headers" -w '%{http_code}' \
               -H "Authorization: Bearer $token" \
               -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
@@ -290,6 +306,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: dev
+    # No checkout, and nothing here calls the GitHub API. contents: read is
+    # kept from the top level rather than narrowed to {}: whether the
+    # environment's deployment record needs anything from the token is not
+    # verified.
     steps:
       # First, so a misconfigured environment fails loudly by secret name.
       - name: Check the environment secrets
@@ -307,6 +327,11 @@ jobs:
               missing=1
             fi
           done
+          # The poll later uses curl --proto '=https'; fail early and by name.
+          if [ -n "${APP_URL:-}" ] && [[ $APP_URL != https://* ]]; then
+            echo "::error::The secret APP_URL must start with https://."
+            missing=1
+          fi
           exit "$missing"
 
       # Sends the one-line request of the interface and maps the exit status to
@@ -380,12 +405,16 @@ jobs:
           READY_INTERVAL: "10"
         run: |
           set -u
+          if [[ $APP_URL != https://* ]]; then
+            echo "::error::The secret APP_URL must start with https://."
+            exit 1
+          fi
           url="${APP_URL%/}/ready"
           code=000
           attempt=0
           while [ "$attempt" -lt "$READY_ATTEMPTS" ]; do
             attempt=$((attempt + 1))
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$url" 2>/dev/null) || true
+            code=$(curl -s --proto '=https' -o /dev/null -w '%{http_code}' --max-time 5 "$url" 2>/dev/null) || true
             echo "attempt $attempt of $READY_ATTEMPTS: /ready returned $code"
             if [ "$code" = 200 ]; then
               break
