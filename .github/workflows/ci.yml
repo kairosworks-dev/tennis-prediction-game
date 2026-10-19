@@ -1,14 +1,35 @@
-# CI: the same checks a developer runs, through the same make targets.
+# CI and the path to the dev environment (issue 6).
 #
 #   check        make check on Node, uv and a Postgres service container
 #   commit-gate  agent-hooks/commit-gate.sh over the lines the change adds
 #   integration  make docker-build, then make test-integration (compose stack)
+#   image        builds the Dockerfile once, pushes it to GHCR as
+#                sha-<full commit sha> and exposes its digest
+#   deploy-dev   asks the dev server, over SSH, to run that digest
 #
-# The job ids and names are a stable interface: the deploy (issue 6) lists all
-# three under needs:, and the headless CI agent (issue 16) fetches logs by name.
-# The jobs are independent on purpose, so one red job never hides the others.
+# The job ids and names are a stable interface: image lists check, commit-gate
+# and integration under needs:, and the headless CI agent (issue 16) fetches
+# logs by name. The three gate jobs are independent on purpose, so one red job
+# never hides the others.
 #
-# No repository secrets and no widened token: this file only reads the code.
+# Triggers: push (every branch), pull_request (to main) and workflow_dispatch
+# (no inputs). Two rules keep a deploy off every branch:
+#   1. image and deploy-dev run only when github.ref is refs/heads/main. A push
+#      to a branch, a pull request and a dispatch run from a branch start the
+#      three gate jobs and nothing else.
+#   2. deploy-dev runs only on a dispatch from main (step A of issue 6). Step B
+#      adds the push to main; the dispatch then stays as a manual redeploy.
+# A red gate job means image and therefore deploy-dev never start.
+#
+# Permissions: contents: read for the whole file. image alone adds
+# packages: write, to push to GHCR with the run's GITHUB_TOKEN. No other job
+# gets it. The five dev secrets (DEPLOY_SSH_KEY, DEPLOY_SSH_HOST,
+# DEPLOY_SSH_USER, DEPLOY_SSH_KNOWN_HOSTS, APP_URL) are secrets of the GitHub
+# environment dev and are read only by deploy-dev, always through env:. The
+# workflow never talks to Coolify and holds no Coolify token: it sends one line
+# to a restricted entry point on the server (the interface is in the README,
+# Deploy). Nothing in a log or summary names the host, the user or the URL.
+#
 # Every action is pinned to a full commit SHA; the version is in the comment.
 name: CI
 
@@ -17,12 +38,18 @@ on:
     branches: ["**"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 # A newer run of the same workflow and ref replaces an older one in progress,
-# except on main, where every run completes.
+# except on main, where a run that has started is never cancelled. A run that
+# is still waiting is another matter: GitHub keeps one running and one pending
+# run per group, so a newer pending run replaces an older pending one. When
+# pushes to main land faster than runs finish, the superseded commit is never
+# built or deployed and the newest one is. A dispatch from main shares the
+# group and can replace a pending push run, and be replaced by one.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -112,22 +139,27 @@ jobs:
           if [ "$EVENT_NAME" = "pull_request" ]; then
             # Changes made by the pull request itself, since it left the base.
             base=$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")
-            range="pull request"
+            range="the pull request"
           else
             base=""
-            # Changes made by this push. A new branch (all-zeros before) or a
-            # force-push (before no longer exists) falls back to origin/main.
+            # Changes made by this push. A new branch (all-zeros before), a
+            # force-push (before no longer exists) and a dispatch (no before)
+            # fall back to origin/main; on main that range is empty.
             if ! printf '%s' "$PUSH_BEFORE" | grep -Eq '^0+$' \
                && git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
               base=$(git merge-base "$PUSH_BEFORE" "$PUSH_AFTER" 2>/dev/null || true)
-              range="push"
+              range="the push"
             fi
             if [ -z "$base" ]; then
               base=$(git merge-base origin/main "$PUSH_AFTER")
-              range="branch since origin/main"
+              range="the branch since origin/main"
+              # A dispatch (or a re-run) on main: the commit is origin/main.
+              if [ "$base" = "$(git rev-parse "$PUSH_AFTER")" ]; then
+                range="an empty range (this commit is origin/main)"
+              fi
             fi
           fi
-          echo "commit-gate: scanning added lines of the $range, base $base"
+          echo "commit-gate: scanning added lines of $range, base $base"
           git reset --soft "$base"
           agent-hooks/commit-gate.sh
       - name: Commit gate tests
@@ -157,3 +189,248 @@ jobs:
       # tears it down itself and prints the app logs when a test fails.
       - name: make test-integration
         run: make test-integration
+
+  # Builds and publishes the image deployed to dev. Runs after the gate on main
+  # only (a push, or a dispatch from main). The tag is sha-<full commit sha> and
+  # is never overwritten: if it already exists (a re-run, or a dispatch on the
+  # same commit) nothing is built or pushed and the existing digest is reused.
+  # There is no latest and no other moving tag.
+  image:
+    name: image
+    needs: [check, commit-gate, integration]
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # A job-level block replaces the top-level one, so contents is repeated.
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.publish.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Publish the image
+        id: publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          repo=$(printf '%s' "$REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          name="ghcr.io/$repo"
+          case "$SHA" in
+            *[!0-9a-f]*) echo "::error::The commit sha is not 40 lowercase hex characters."; exit 1 ;;
+          esac
+          if [ "${#SHA}" -ne 40 ]; then
+            echo "::error::The commit sha is not 40 lowercase hex characters."; exit 1
+          fi
+          tag="sha-$SHA"
+
+          # Sets status (the registry's answer for the tag) and digest.
+          # The token asks for pull,push, as docker push itself does: for a
+          # package that does not exist yet GHCR refuses a pull-only token
+          # (403 anonymously) but grants the push scope to a token that may
+          # create the package, which is how the very first push works. A
+          # refused token request fails the job with its status code; it is
+          # never read as "the tag exists" or "the tag is absent".
+          lookup() {
+            local token headers body token_status
+            headers=$(mktemp)
+            body=$(mktemp)
+            token_status=$(curl -sS -o "$body" -w '%{http_code}' -u "$ACTOR:$GITHUB_TOKEN" \
+              "https://ghcr.io/token?service=ghcr.io&scope=repository:$repo:pull,push")
+            if [ "$token_status" != 200 ]; then
+              echo "::error::GHCR refused the token request (status $token_status)."; exit 1
+            fi
+            token=$(jq -r '.token // empty' < "$body")
+            rm -f "$body"
+            if [ -z "$token" ]; then
+              echo "::error::GHCR answered the token request without a token."; exit 1
+            fi
+            echo "::add-mask::$token"
+            status=$(curl -sS -I -o /dev/null -D "$headers" -w '%{http_code}' \
+              -H "Authorization: Bearer $token" \
+              -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
+              "https://ghcr.io/v2/$repo/manifests/$tag")
+            digest=$(tr -d '\r' < "$headers" | awk 'tolower($1) == "docker-content-digest:" { print $2 }')
+            rm -f "$headers"
+          }
+
+          lookup
+          case "$status" in
+            200) outcome="reused the existing tag; nothing built or pushed" ;;
+            404)
+              printf '%s' "$GITHUB_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+              docker build \
+                --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$REPOSITORY" \
+                --label "org.opencontainers.image.revision=$SHA" \
+                -t "$name:$tag" .
+              docker push "$name:$tag"
+              lookup
+              if [ "$status" != 200 ]; then
+                echo "::error::The pushed tag is not visible in GHCR (status $status)."; exit 1
+              fi
+              outcome="built and pushed"
+              ;;
+            *) echo "::error::GHCR answered $status for the tag lookup."; exit 1 ;;
+          esac
+
+          if ! printf '%s' "$digest" | grep -Eq '^sha256:[0-9a-f]{64}$'; then
+            echo "::error::GHCR returned no valid digest for the tag."; exit 1
+          fi
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          {
+            echo "### image"
+            echo
+            echo "- Commit: \`$SHA\`"
+            echo "- Image: \`$name@$digest\`"
+            echo "- Result: $outcome"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "image: $outcome"
+
+  # Asks the dev server to run the digest image built above. In step A it runs
+  # only on a dispatch from main; the environment's main-only deployment-branch
+  # rule is the GitHub-side guard for the same thing. The secrets belong to the
+  # environment dev. Re-running this job from an older run redeploys that run's
+  # commit: that is intended and is how a rollback stays possible.
+  deploy-dev:
+    name: deploy-dev
+    needs: image
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: dev
+    # No checkout, and nothing here calls the GitHub API. contents: read is
+    # kept from the top level rather than narrowed to {}: whether the
+    # environment's deployment record needs anything from the token is not
+    # verified.
+    steps:
+      # First, so a misconfigured environment fails loudly by secret name.
+      - name: Check the environment secrets
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          missing=0
+          for name in DEPLOY_SSH_KEY DEPLOY_SSH_HOST DEPLOY_SSH_USER DEPLOY_SSH_KNOWN_HOSTS APP_URL; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::The secret $name is empty or missing in the dev environment."
+              missing=1
+            fi
+          done
+          # The poll later uses curl --proto '=https'; fail early and by name.
+          if [ -n "${APP_URL:-}" ] && [[ $APP_URL != https://* ]]; then
+            echo "::error::The secret APP_URL must start with https://."
+            missing=1
+          fi
+          exit "$missing"
+
+      # Sends the one-line request of the interface and maps the exit status to
+      # a fixed sentence. No -v, no set -x; ssh's stderr is discarded, because
+      # it can contain the host name. Host-key checking is on, against the
+      # known_hosts file written from the secret: no scan, no trust on first use.
+      - name: Deploy the digest
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          REPOSITORY: ${{ github.repository }}
+          DIGEST: ${{ needs.image.outputs.digest }}
+          SSH_TIMEOUT: "600"
+        run: |
+          set -u
+          repo=$(printf '%s' "$REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          request="deploy ghcr.io/$repo@$DIGEST"
+          request_pattern='^deploy ghcr\.io/[a-z0-9._-]+/[a-z0-9._-]+@sha256:[0-9a-f]{64}$'
+          answer_pattern='^(ok|error: [a-z-]+)$'
+          if [[ ! $request =~ $request_pattern ]]; then
+            echo "::error::The deploy request does not match the interface; nothing was sent."
+            exit 1
+          fi
+
+          dir=$(mktemp -d)
+          trap 'rm -rf "$dir"' EXIT
+          umask 077
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$dir/key"
+          printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" > "$dir/known_hosts"
+          chmod 600 "$dir/key" "$dir/known_hosts"
+
+          set +e
+          answer=$(timeout "$SSH_TIMEOUT" ssh -F /dev/null -T \
+            -i "$dir/key" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$dir/known_hosts" \
+            -o GlobalKnownHostsFile=/dev/null \
+            -o ConnectTimeout=15 \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" "$request" 2>/dev/null)
+          code=$?
+          set -e
+
+          if [[ $answer =~ $answer_pattern ]]; then
+            echo "Server answer: $answer"
+          fi
+          case "$code" in
+            0)   echo "The server accepted the deployment." ;;
+            255) echo "::error::The connection or the host-key check failed." ;;
+            10)  echo "::error::The server rejected the request." ;;
+            11)  echo "::error::The deployment failed on the server." ;;
+            12)  echo "::error::The server gave up waiting for the deployment (its own timeout)." ;;
+            *)   echo "::error::Unexpected exit code $code." ;;
+          esac
+          [ "$code" -eq 0 ]
+
+      # Until the server swaps containers the old version answers /ready, so
+      # this poll starts only after the server has reported the deployment done.
+      # curl's own error text contains the host name and is never shown.
+      - name: Wait for /ready
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          SHA: ${{ github.sha }}
+          DIGEST: ${{ needs.image.outputs.digest }}
+          READY_ATTEMPTS: "24"
+          READY_INTERVAL: "10"
+        run: |
+          set -u
+          if [[ $APP_URL != https://* ]]; then
+            echo "::error::The secret APP_URL must start with https://."
+            exit 1
+          fi
+          url="${APP_URL%/}/ready"
+          code=000
+          attempt=0
+          while [ "$attempt" -lt "$READY_ATTEMPTS" ]; do
+            attempt=$((attempt + 1))
+            code=$(curl -s --proto '=https' -o /dev/null -w '%{http_code}' --max-time 5 "$url" 2>/dev/null) || true
+            echo "attempt $attempt of $READY_ATTEMPTS: /ready returned $code"
+            if [ "$code" = 200 ]; then
+              break
+            fi
+            if [ "$attempt" -lt "$READY_ATTEMPTS" ]; then
+              sleep "$READY_INTERVAL"
+            fi
+          done
+          {
+            echo "### deploy-dev"
+            echo
+            echo "- Commit: \`$SHA\`"
+            echo "- Digest: \`$DIGEST\`"
+            echo "- /ready: $code"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$code" != 200 ]; then
+            echo "::error::/ready did not return 200 after $READY_ATTEMPTS attempts (last status $code)."
+            exit 1
+          fi

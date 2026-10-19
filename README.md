@@ -197,8 +197,8 @@ Open <http://localhost:8000> and sign in as `you@example.com` or
 `organiser@example.com` with the demo password `deuce-demo-password`; the game
 list shows the seeded Roland Garros 2026 game. The app waits for Postgres to be
 healthy, migrates, seeds (on every start; it is idempotent) and serves. This is
-the stack for development, tests and CI only; the deployment builds the
-image directly (issue #6). The image itself is described in
+the stack for development, tests and CI only; the deployment pulls the image
+CI built (see [Deploy](#deploy)). The image itself is described in
 [Build and run the image](#build-and-run-the-image).
 
 Every variable has a development-only default, so a `.env` file is optional;
@@ -319,26 +319,108 @@ before any request unless `INTEGRATION_ALLOW_REMOTE=1` is set.
 #### CI
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml), a workflow named `CI`,
-runs on every push to any branch and on every pull request targeting `main`.
-Its three jobs are independent (none `needs:` another), so one red job does not
-hide the verdicts of the others, and the deploy (issue #6) will depend on all
-three. The names are a stable interface: do not rename them.
+runs on every push to any branch, on every pull request targeting `main` and
+on a manual dispatch (`workflow_dispatch`, no inputs). Its first three jobs are
+independent (none `needs:` another), so one red job does not hide the verdicts
+of the others, and the `image` job depends on all three. The names are a stable
+interface: do not rename them.
 
 | Job | Runs | Local equivalent |
 |---|---|---|
 | `check` | `npm ci` and `uv sync --locked` (lockfiles only), then `make check` on Node 24, uv 0.12.10 and a `postgres:16` service container. `TEST_DATABASE_URL` points at a throwaway database on that service, so the backend suite runs against memory, SQLite **and** Postgres (its pytest summary reports 0 skipped), and the contract drift test runs here. | `make check` (add `TEST_DATABASE_URL` for the Postgres run) |
-| `commit-gate` | `agent-hooks/commit-gate.sh` over the lines the change **adds**: for a pull request, since it left its base branch; for a push, since the previous tip (a new branch or a force-push falls back to the merge-base with `origin/main`). Then `agent-hooks/test-hooks.sh`. A hit prints the file and the pattern name, never the line. | `make hooks`, then commit; `agent-hooks/test-hooks.sh` |
+| `commit-gate` | `agent-hooks/commit-gate.sh` over the lines the change **adds**: for a pull request, since it left its base branch; for a push, since the previous tip (a new branch, a force-push or a dispatch falls back to the merge-base with `origin/main`, which is empty on `main`). Then `agent-hooks/test-hooks.sh`. A hit prints the file and the pattern name, never the line. | `make hooks`, then commit; `agent-hooks/test-hooks.sh` |
 | `integration` | `make docker-build` as its own step (so a broken Dockerfile or a `uv.lock` that disagrees with `pyproject.toml` fails with a clear name), then `make test-integration` on its own compose project. | `make docker-build` and `make test-integration` |
+| `image` | After the three jobs above are green, on `main` only (a push, or a dispatch from `main`): builds the `Dockerfile` once and pushes it to GHCR as `sha-<commit>`, or reuses that tag if it already exists. Its output is the image digest. | `make docker-build` (no push) |
+| `deploy-dev` | On a dispatch from `main` only, after `image`: asks the dev server to run that digest, then waits for `/ready`. See [Deploy](#deploy). | none |
 
-The workflow uses no repository secrets and a read-only token
-(`permissions: contents: read`), and every action is pinned to a full commit
-SHA. Dependabot proposes updates to those pins weekly, on branches named
+A push to another branch, a pull request and a dispatch run from a branch start
+the first three jobs and nothing else. The workflow uses no repository secrets
+and a read-only token by default (`permissions: contents: read`); only `image`
+adds `packages: write`, and the five secrets of the `dev` environment are read
+by `deploy-dev` alone. Every action is pinned to a full commit SHA.
+Dependabot proposes updates to those pins weekly, on branches named
 `dependabot/…` (outside the `issue-<n>/…` naming); each proposal changes the
 SHA and the `# vX.Y.Z` comment together, CI runs on it like on any pull
 request, and the author reviews and merges it himself, with no auto-merge.
 CI runs only the generic commit-gate patterns:
 `agent-hooks/private-patterns.txt` is gitignored and absent there, so the
 author's own name list still runs only locally, through `make hooks`.
+
+### Deploy
+
+**Dev** is the first deployed environment. It runs the image CI built, never a
+rebuild from the repository and never `docker-compose.yml`.
+
+- **What updates dev.** A dispatch of the `CI` workflow from `main` (Actions,
+  *Run workflow*, branch `main`) runs the gate, `image` and `deploy-dev`. A push
+  to `main` runs the gate and `image` only; making a push to `main` deploy
+  automatically is the last step of issue #6. A run on any other branch never
+  builds, pushes or deploys.
+- **The image.** `ghcr.io/<owner>/<repo>:sha-<full 40-character commit sha>`,
+  lower case, one tag per commit, never overwritten and with no `latest` or
+  other moving tag. It carries the `org.opencontainers.image.source` and
+  `.revision` labels. If the tag already exists (a re-run, or a dispatch on the
+  same commit) `image` builds and pushes nothing and reuses its digest. The
+  environment is told to run the **digest**,
+  `ghcr.io/<owner>/<repo>@sha256:<64 hex>`, which names the exact bytes.
+- **Secrets.** Five environment secrets of the GitHub environment `dev`, read
+  only by `deploy-dev`: `DEPLOY_SSH_KEY`, `DEPLOY_SSH_HOST`, `DEPLOY_SSH_USER`,
+  `DEPLOY_SSH_KNOWN_HOSTS` and `APP_URL`. If one is empty, or `APP_URL` does not start with
+  `https://`, the job fails first, naming it. The workflow never holds a database URL, a session secret or a
+  token of the hosting platform; those live only on the server.
+- **Variables of the dev application.**
+
+  | Variable | Dev application |
+  |---|---|
+  | `DATABASE_URL` | **set**, the managed Postgres' internal URL. Unset, the image falls back to SQLite in `/data`, which has no volume: the app starts, `/ready` is 200 and the data is lost at every redeploy |
+  | `SESSION_SECRET` | **set**, a long random value made for this environment. The container refuses to start without it |
+  | `COOKIE_SECURE` | **set to `true`**: the URL is HTTPS |
+  | `EMAIL_PROVIDER` | **must not be set.** Unset is `discard`; `console` would print registrants' addresses and tokens to the logs of a public environment |
+  | `REPOSITORY_BACKEND`, `FRONTEND_DIR` | do not set; the image sets them |
+  | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `APP_PORT` | do not set; compose-only variables |
+
+  The platform's environment store is filled one variable at a time, never by
+  pasting `.env.example` or `docker-compose.yml`.
+
+- **The interface to the server.** GitHub reaches the server over SSH, as a
+  deploy user whose key is limited to one forced command. That script is the
+  author's, is not in this repository and is the only thing that calls the
+  hosting platform. The pipeline depends on this interface and nothing else.
+  - *Request.* Exactly one line, as the SSH command, and no arguments after it:
+    `deploy ghcr.io/<owner>/<repo>@sha256:<64 lowercase hex>`, matching
+    `^deploy ghcr\.io/[a-z0-9._-]+/[a-z0-9._-]+@sha256:[0-9a-f]{64}$`. The
+    workflow checks its own string against that pattern and fails the job
+    without connecting if it does not match. The server rejects anything that
+    does not match in full, and accepts only its one configured image name.
+  - *Answer.* One line on stdout, `ok` or `error: <word>`, and an exit status:
+    `0` for `ok`, `10` a rejected request, `11` a failed deployment, `12` the
+    script's own timeout (shorter than the workflow's 10 minutes for the call).
+    It never uses `255`, which `ssh` itself returns when the connection or the
+    host-key check fails.
+  - *What the workflow does with it.* It prints one fixed sentence per status:
+    `255` the connection or host-key check failed; `10` the server rejected the
+    request; `11` the deployment failed on the server; `12` the server gave up
+    waiting for the deployment; anything else (a call that outlives the
+    workflow's timeout ends with `124`) is "unexpected exit code N". It shows the
+    server's answer line only if it matches `^(ok|error: [a-z-]+)$`, and
+    discards `ssh` error output, which can contain the host name. The host key
+    is checked against the pinned `DEPLOY_SSH_KNOWN_HOSTS`; there is no scan and
+    no trust on first use. After exit `0` it polls `GET /ready` on `APP_URL`
+    every 10 seconds, up to 24 times, and fails the job unless it gets 200. The
+    job summary gives the commit, the digest and the `/ready` status; it never
+    prints a URL, host, user or key.
+- **Dev may be reset at will.** It runs demo data only, and the demo organiser
+  account is public (see the demo accounts above), so anyone can change outcomes
+  there. Recovery is resetting the dev database.
+- **Re-running an old run redeploys that commit.** Re-running `deploy-dev` from
+  an older run deploys that run's image. This is intended and keeps a rollback
+  possible. Migrations run on container start and are not reversed, so an older
+  image runs against the newer schema; keep migrations backward compatible.
+- **Limits.** The image deployed is built from the same commit after the gate is
+  green, but it is not byte-for-byte the image `integration` tested on its own
+  runner. Pushes to `main` that land while a run is still going replace the run
+  that is merely waiting, so a superseded commit is never built or deployed; the
+  newest one is.
 
 ### API documentation
 
