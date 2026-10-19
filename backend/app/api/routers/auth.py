@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Request, Response
 
 from app.api import schemas
 from app.api.deps import SESSION_COOKIE, AuthServiceDep, OptionalUser, sign_session
@@ -10,13 +10,14 @@ from app.api.deps import SESSION_COOKIE, AuthServiceDep, OptionalUser, sign_sess
 router = APIRouter(tags=["auth"])
 
 
-def _set_session(response: Response, user_id: str) -> None:
+def _set_session(request: Request, response: Response, user_id: str) -> None:
     response.set_cookie(
         SESSION_COOKIE,
         sign_session(user_id),
         httponly=True,
         samesite="lax",
         path="/",
+        secure=request.app.state.cookie_secure,
     )
 
 
@@ -28,10 +29,10 @@ def _set_session(response: Response, user_id: str) -> None:
     summary="Create an account",
 )
 def register(
-    body: schemas.RegisterRequest, response: Response, auth: AuthServiceDep
+    body: schemas.RegisterRequest, request: Request, response: Response, auth: AuthServiceDep
 ) -> schemas.AuthenticatedUser:
     user = auth.register(body.email, body.password, body.display_name)
-    _set_session(response, user.id)
+    _set_session(request, response, user.id)
     return schemas.AuthenticatedUser(
         user=schemas.UserSchema.model_validate(user), requires_email_verification=True
     )
@@ -44,10 +45,10 @@ def register(
     summary="Sign in",
 )
 def login(
-    body: schemas.LoginRequest, response: Response, auth: AuthServiceDep
+    body: schemas.LoginRequest, request: Request, response: Response, auth: AuthServiceDep
 ) -> schemas.AuthenticatedUser:
     user = auth.login(body.email, body.password)
-    _set_session(response, user.id)
+    _set_session(request, response, user.id)
     return schemas.AuthenticatedUser(
         user=schemas.UserSchema.model_validate(user),
         requires_email_verification=user.email_verified_at is None,
@@ -55,8 +56,15 @@ def login(
 
 
 @router.post("/auth/logout", operation_id="logout", status_code=204, summary="Sign out")
-def logout(response: Response) -> None:
-    response.delete_cookie(SESSION_COOKIE, path="/")
+def logout(request: Request, response: Response) -> None:
+    # The deletion carries the attributes of the cookie it deletes.
+    response.delete_cookie(
+        SESSION_COOKIE,
+        path="/",
+        httponly=True,
+        samesite="lax",
+        secure=request.app.state.cookie_secure,
+    )
 
 
 @router.get(
