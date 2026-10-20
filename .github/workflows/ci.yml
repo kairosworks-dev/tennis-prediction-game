@@ -26,12 +26,12 @@
 # packages: write, to push to GHCR with the run's GITHUB_TOKEN. No other job
 # gets it. The five dev secrets (DEPLOY_SSH_KEY, DEPLOY_SSH_HOST,
 # DEPLOY_SSH_USER, DEPLOY_SSH_KNOWN_HOSTS, APP_URL) are secrets of the GitHub
-# environment dev and are read only by deploy-dev, always through env: (a
-# composite action cannot read secrets.*, so deploy-dev hands them to the
-# action through the env: of its step). The workflow never talks to Coolify and
-# holds no Coolify token: it sends one line to a restricted entry point on the
-# server (the interface is in the README, Deploy). Nothing in a log or summary
-# names the host, the user or the URL.
+# environment dev and are read only by deploy-dev (a composite action cannot
+# read secrets.*, so deploy-dev passes them to the action as inputs, with:).
+# The workflow never talks to Coolify and holds no Coolify token: it sends one
+# line to a restricted entry point on the server (the interface is in the
+# README, Deploy). Nothing in a log or summary names the host, the user or the
+# URL.
 #
 # Production is not deployed from this file. It is promoted by hand with
 # promote.yml, which checks that a commit passed this workflow and ran on dev,
@@ -329,18 +329,17 @@ jobs:
         with:
           persist-credentials: false
       # A composite action cannot read secrets.*, so the five secrets of the
-      # environment are handed over through this step's env:. The action checks
-      # them first (failing by name), sends the request, polls /ready and
-      # writes the summary headed deploy-dev.
+      # environment are passed to it as inputs. The action checks them first
+      # (failing by name), sends the request, polls /ready and writes the
+      # summary headed deploy-dev. This step has no env:.
       - name: Deploy
         uses: ./.github/actions/deploy
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
-          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
-          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
-          APP_URL: ${{ secrets.APP_URL }}
         with:
+          deploy-ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          deploy-ssh-host: ${{ secrets.DEPLOY_SSH_HOST }}
+          deploy-ssh-user: ${{ secrets.DEPLOY_SSH_USER }}
+          deploy-ssh-known-hosts: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          app-url: ${{ secrets.APP_URL }}
           environment: dev
           digest: ${{ needs.image.outputs.digest }}
           commit: ${{ github.sha }}

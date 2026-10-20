@@ -6,13 +6,15 @@
 # summary. Both callers use it so the security-relevant step exists once.
 #
 # How the values arrive:
-#   - The five secrets (DEPLOY_SSH_KEY, DEPLOY_SSH_HOST, DEPLOY_SSH_USER,
-#     DEPLOY_SSH_KNOWN_HOSTS, APP_URL) arrive only through the env: of the
-#     calling step, as the secrets of that job's environment. A composite action
-#     cannot read secrets.*, and they are not inputs, so they cannot appear in
-#     the action's own input listing.
-#   - Everything else is an input. Every input reaches the shell through env:,
-#     never through ${{ }} inside a run: block.
+#   - Every value is an input, the five secrets included (deploy-ssh-key,
+#     deploy-ssh-host, deploy-ssh-user, deploy-ssh-known-hosts, app-url). A
+#     composite action cannot read secrets.*, so the calling step passes them
+#     with with:, from the secrets of its job's environment. The action does not
+#     depend on the caller's env: reaching its steps.
+#   - Inside the action each input is mapped into the env: of the step that
+#     needs it, and only that step (under the variable names the scripts use:
+#     DEPLOY_SSH_KEY and so on). ${{ inputs.* }} sits only in env:, never in a
+#     run: block.
 #   - The action never prints github.sha. In promote that is the tip of main,
 #     not the promoted commit, so the caller passes the commit to print.
 #
@@ -26,6 +28,21 @@ description: >-
   then wait for its /ready.
 
 inputs:
+  deploy-ssh-key:
+    description: The private key of the environment's deploy user (a secret).
+    required: true
+  deploy-ssh-host:
+    description: The host of the environment's deploy entry point (a secret).
+    required: true
+  deploy-ssh-user:
+    description: The deploy user (a secret).
+    required: true
+  deploy-ssh-known-hosts:
+    description: The pinned known_hosts line of the host (a secret).
+    required: true
+  app-url:
+    description: The https URL of the environment's application (a secret).
+    required: true
   environment:
     description: >-
       Name of the GitHub environment the caller runs in (dev or production).
@@ -49,6 +66,11 @@ runs:
       shell: bash
       env:
         ENVIRONMENT_NAME: ${{ inputs.environment }}
+        DEPLOY_SSH_KEY: ${{ inputs.deploy-ssh-key }}
+        DEPLOY_SSH_HOST: ${{ inputs.deploy-ssh-host }}
+        DEPLOY_SSH_USER: ${{ inputs.deploy-ssh-user }}
+        DEPLOY_SSH_KNOWN_HOSTS: ${{ inputs.deploy-ssh-known-hosts }}
+        APP_URL: ${{ inputs.app-url }}
       run: |
         missing=0
         for name in DEPLOY_SSH_KEY DEPLOY_SSH_HOST DEPLOY_SSH_USER DEPLOY_SSH_KNOWN_HOSTS APP_URL; do
@@ -70,6 +92,10 @@ runs:
     - name: Deploy the digest
       shell: bash
       env:
+        DEPLOY_SSH_KEY: ${{ inputs.deploy-ssh-key }}
+        DEPLOY_SSH_HOST: ${{ inputs.deploy-ssh-host }}
+        DEPLOY_SSH_USER: ${{ inputs.deploy-ssh-user }}
+        DEPLOY_SSH_KNOWN_HOSTS: ${{ inputs.deploy-ssh-known-hosts }}
         REPOSITORY: ${{ github.repository }}
         DIGEST: ${{ inputs.digest }}
         SSH_TIMEOUT: "600"
@@ -125,6 +151,7 @@ runs:
     - name: Wait for /ready
       shell: bash
       env:
+        APP_URL: ${{ inputs.app-url }}
         COMMIT: ${{ inputs.commit }}
         DIGEST: ${{ inputs.digest }}
         SUMMARY_HEADING: ${{ inputs.summary-heading }}

@@ -236,17 +236,17 @@ jobs:
         with:
           persist-credentials: false
       # A composite action cannot read secrets.*, so the five secrets of the
-      # production environment are handed over through this step's env:. The
-      # commit to print is the promoted one; the action never prints github.sha.
+      # production environment are passed to it as inputs. The commit to print
+      # is the promoted one; the action never prints github.sha. This step has
+      # no env:.
       - name: Deploy
         uses: ./.github/actions/deploy
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
-          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
-          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
-          APP_URL: ${{ secrets.APP_URL }}
         with:
+          deploy-ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          deploy-ssh-host: ${{ secrets.DEPLOY_SSH_HOST }}
+          deploy-ssh-user: ${{ secrets.DEPLOY_SSH_USER }}
+          deploy-ssh-known-hosts: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          app-url: ${{ secrets.APP_URL }}
           environment: production
           digest: ${{ needs.verify.outputs.digest }}
           commit: ${{ inputs.sha }}
