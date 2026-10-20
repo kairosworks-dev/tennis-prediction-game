@@ -17,8 +17,8 @@
 #   1. image and deploy-dev run only when github.ref is refs/heads/main. A push
 #      to a branch, a pull request and a dispatch run from a branch start the
 #      three gate jobs and nothing else.
-#   2. deploy-dev runs only on a dispatch from main (step A of issue 6). Step B
-#      adds the push to main; the dispatch then stays as a manual redeploy.
+#   2. deploy-dev runs on a push to main, which deploys dev, and on a dispatch
+#      from main, which is a manual redeploy of the tip.
 # A red gate job means image and therefore deploy-dev never start.
 #
 # Permissions: contents: read for the whole file. image alone adds
@@ -294,15 +294,18 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo "image: $outcome"
 
-  # Asks the dev server to run the digest image built above. In step A it runs
-  # only on a dispatch from main; the environment's main-only deployment-branch
-  # rule is the GitHub-side guard for the same thing. The secrets belong to the
-  # environment dev. Re-running this job from an older run redeploys that run's
-  # commit: that is intended and is how a rollback stays possible.
+  # Asks the dev server to run the digest image built above. A push to main
+  # deploys dev; a dispatch from main is a manual redeploy. The environment's
+  # main-only deployment-branch rule is the GitHub-side guard for the same
+  # thing. The secrets belong to the environment dev. Re-running this job from
+  # an older run redeploys that run's commit: that is intended and is how a
+  # rollback stays possible.
   deploy-dev:
     name: deploy-dev
     needs: image
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: dev
