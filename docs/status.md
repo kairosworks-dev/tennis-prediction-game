@@ -182,10 +182,10 @@ the earlier 14-criterion version (D18).
 Criteria 8 and 9 reached 2 and 3 on 20 October with #55: the rubric (v2) gives 2
 for "deployed and reachable at a public URL, or there's a clear demo with the
 deployment", and 3 for "CI runs tests, CD deploys to dev, and there's a manual
-deploy to production". Both rest on the author's proof run of #55 (the merge push
-re-proving dev through the shared action, then a manual promote of that same
-commit with its approval); if the proof run is red, this text and the scores
-are corrected.
+deploy to production". Both were settled by the proof run of #55 on 20 October:
+the merge push re-proved dev through the shared action, and a manual promote of
+the same commit was approved
+([recorded on the issue](https://github.com/kairosworks-dev/tennis-prediction-game/issues/55#issuecomment-6300030238)).
 
 Criterion 6 reached 2 on 17 October with #54: `make test` runs the frontend
 and backend unit tests and then the integration tests against the compose stack,
@@ -214,8 +214,7 @@ change it.
    land before the deploy), and #7 (secure cookie), done 19 October; then #6
    (deploy to dev: step A, the image job and a deploy started by hand, merged 19
    October; step B, the deploy on every push to `main`, done), #55 (dev
-   and production: the promote workflow and the shared deploy action are built;
-   the author's proof run remains),
+   and production: done 20 October, proof run green),
    #56, #57, #58, then #23 (README), #43 to #45 (integration
    coverage) and #25
    (clean-clone run and submission). #12 to #14 (process, workflows, commit
