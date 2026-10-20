@@ -172,12 +172,12 @@ the earlier 14-criterion version (D18).
 | 5 | Application | 2 | 2 | none |
 | 6 | Testing | 2 | 2 | done: #54 (`make test` runs unit and integration tests); more coverage: #43 to #45 |
 | 7 | Containerization | 2 | 2 | none |
-| 8 | Deployment | 0 | 2 | #6 (with #7, #11) |
-| 9 | CI/CD | 1 | **3** | #6 (step A merged 19 Oct; step B makes the deploy automatic: 2), #55 (3) |
+| 8 | Deployment | 0 | 2 | #6 and #7 done; still missing: a URL a reviewer can open (README, via #55 and #23) and the evidence in #11 |
+| 9 | CI/CD | 2 | **3** | done: #6 (every push to `main` deploys dev: 2); #55 (3) |
 | 10 | Observability | 1 | 2 | #56 (by hand) |
 | 11 | Alerting on user impact | 0 | 1 | #57 (by hand; #8 feeds it) |
 | 12 | On-call agent | 0 | 2 | #58 (by hand) |
-| | **Total** | **15 of 24** | **24** | |
+| | **Total** | **16 of 24** | **24** | |
 
 Criterion 6 reached 2 on 17 October with #54: `make test` runs the frontend
 and backend unit tests and then the integration tests against the compose stack,
@@ -204,7 +204,7 @@ change it.
    command), both done 17 October, as is #59 (the email provider, which had to
    land before the deploy), and #7 (secure cookie), done 19 October; then #6
    (deploy to dev: step A, the image job and a deploy started by hand, merged 19
-   October; step B, the automatic deploy, after the author's proof run), #55 (dev
+   October; step B, the deploy on every push to `main`, done), #55 (dev
    and production), #56, #57, #58, then #23 (README), #43 to #45 (integration
    coverage) and #25
    (clean-clone run and submission). #12 to #14 (process, workflows, commit
