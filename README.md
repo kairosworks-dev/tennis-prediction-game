@@ -331,7 +331,7 @@ interface: do not rename them.
 | `commit-gate` | `agent-hooks/commit-gate.sh` over the lines the change **adds**: for a pull request, since it left its base branch; for a push, since the previous tip (a new branch, a force-push or a dispatch falls back to the merge-base with `origin/main`, which is empty on `main`). Then `agent-hooks/test-hooks.sh`. A hit prints the file and the pattern name, never the line. | `make hooks`, then commit; `agent-hooks/test-hooks.sh` |
 | `integration` | `make docker-build` as its own step (so a broken Dockerfile or a `uv.lock` that disagrees with `pyproject.toml` fails with a clear name), then `make test-integration` on its own compose project. | `make docker-build` and `make test-integration` |
 | `image` | After the three jobs above are green, on `main` only (a push, or a dispatch from `main`): builds the `Dockerfile` once and pushes it to GHCR as `sha-<commit>`, or reuses that tag if it already exists. Its output is the image digest. | `make docker-build` (no push) |
-| `deploy-dev` | On a dispatch from `main` only, after `image`: asks the dev server to run that digest, then waits for `/ready`. See [Deploy](#deploy). | none |
+| `deploy-dev` | On `main` only (a push, or a dispatch from `main`), after `image`: asks the dev server to run that digest, then waits for `/ready`. See [Deploy](#deploy). | none |
 
 A push to another branch, a pull request and a dispatch run from a branch start
 the first three jobs and nothing else. The workflow uses no repository secrets
@@ -351,11 +351,11 @@ author's own name list still runs only locally, through `make hooks`.
 **Dev** is the first deployed environment. It runs the image CI built, never a
 rebuild from the repository and never `docker-compose.yml`.
 
-- **What updates dev.** A dispatch of the `CI` workflow from `main` (Actions,
-  *Run workflow*, branch `main`) runs the gate, `image` and `deploy-dev`. A push
-  to `main` runs the gate and `image` only; making a push to `main` deploy
-  automatically is the last step of issue #6. A run on any other branch never
-  builds, pushes or deploys.
+- **What updates dev.** A push to `main` runs the gate, `image` and
+  `deploy-dev`, with no manual step, so dev runs the newest commit that passed
+  the gate. A dispatch of the `CI` workflow from `main` (Actions, *Run
+  workflow*, branch `main`) does the same for the tip of `main`: it is a manual
+  redeploy. A run on any other branch never builds, pushes or deploys.
 - **The image.** `ghcr.io/<owner>/<repo>:sha-<full 40-character commit sha>`,
   lower case, one tag per commit, never overwritten and with no `latest` or
   other moving tag. It carries the `org.opencontainers.image.source` and
