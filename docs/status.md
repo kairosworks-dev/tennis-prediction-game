@@ -184,9 +184,8 @@ for "deployed and reachable at a public URL, or there's a clear demo with the
 deployment", and 3 for "CI runs tests, CD deploys to dev, and there's a manual
 deploy to production". Both rest on the author's proof run of #55 (the merge push
 re-proving dev through the shared action, then a manual promote of that same
-commit with its approval) and on the production address in README *Try it
-online*; if the proof run is red, or the address is not filled in, this text and
-the scores are corrected.
+commit with its approval); if the proof run is red, this text and the scores
+are corrected.
 
 Criterion 6 reached 2 on 17 October with #54: `make test` runs the frontend
 and backend unit tests and then the integration tests against the compose stack,
@@ -216,7 +215,7 @@ change it.
    (deploy to dev: step A, the image job and a deploy started by hand, merged 19
    October; step B, the deploy on every push to `main`, done), #55 (dev
    and production: the promote workflow and the shared deploy action are built;
-   the author's proof run and the production address in the README remain),
+   the author's proof run remains),
    #56, #57, #58, then #23 (README), #43 to #45 (integration
    coverage) and #25
    (clean-clone run and submission). #12 to #14 (process, workflows, commit
