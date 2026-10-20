@@ -40,6 +40,18 @@ when picking this up again.
 
 ---
 
+## Try it online
+
+The production deployment is at **<production URL, supplied by the author>**.
+
+It runs the demo seed: a game open for signup and a game in progress. Sign in
+as `you@example.com` to play, or as `organiser@example.com` to reach the
+results screen; the password for both is `deuce-demo-password`. These accounts
+are public, so anyone can change outcomes there. Production's data is wiped
+after the course.
+
+---
+
 ## Stack
 
 **Frontend** — React 18, TypeScript (strict), Vite, React Router, TanStack Query,
@@ -337,7 +349,7 @@ A push to another branch, a pull request and a dispatch run from a branch start
 the first three jobs and nothing else. The workflow uses no repository secrets
 and a read-only token by default (`permissions: contents: read`); only `image`
 adds `packages: write`, and the five secrets of the `dev` environment are read
-by `deploy-dev` alone. Every action is pinned to a full commit SHA.
+by `deploy-dev` alone. Every third-party action is pinned to a full commit SHA.
 Dependabot proposes updates to those pins weekly, on branches named
 `dependabot/…` (outside the `issue-<n>/…` naming); each proposal changes the
 SHA and the `# vX.Y.Z` comment together, CI runs on it like on any pull
@@ -348,8 +360,21 @@ author's own name list still runs only locally, through `make hooks`.
 
 ### Deploy
 
-**Dev** is the first deployed environment. It runs the image CI built, never a
-rebuild from the repository and never `docker-compose.yml`.
+Two environments run the image CI built, never a rebuild from the repository
+and never `docker-compose.yml`:
+
+| Environment | What updates it | Who triggers it |
+|---|---|---|
+| dev | The `deploy-dev` job of `CI`, on every push to `main` that passes the gate | Nobody: it is automatic. A dispatch of `CI` from `main` redeploys the tip |
+| production | The [`Promote`](.github/workflows/promote.yml) workflow, for one commit that passed CI and ran on dev | The author, by hand, then approves the run in the `production` environment |
+
+`deploy-dev` and the promote job share one deploy action,
+[`.github/actions/deploy`](.github/actions/deploy/action.yml), so the request,
+the host-key pinning, the fixed sentences and the `/ready` poll are the same for
+both. The interface to the server is described once, under *The interface to the
+server* below; the scripts on the server are not in this repository.
+
+**Dev** is the first deployed environment.
 
 - **What updates dev.** A push to `main` runs the gate, `image` and
   `deploy-dev`, with no manual step, so dev runs the newest commit that passed
@@ -421,6 +446,52 @@ rebuild from the repository and never `docker-compose.yml`.
   runner. Pushes to `main` that land while a run is still going replace the run
   that is merely waiting, so a superseded commit is never built or deployed; the
   newest one is.
+
+#### Production
+
+Production is deployed by hand, only through the `Promote` workflow, and only
+with a commit that already passed CI and ran on dev.
+
+- **Promote.** From a checkout of the repository, with `gh`:
+
+  ```bash
+  gh workflow run promote.yml -f sha=<sha>
+  ```
+
+  or *Run workflow* on `Promote` in Actions, branch `main`. `<sha>` is the full
+  40-character lower-case commit sha; anything else is refused before any
+  request. A dispatch from another branch starts nothing.
+- **Which sha dev is running.** The latest `dev` deployment, for example
+  `gh api "repos/<owner>/<repo>/deployments?environment=dev&per_page=1" --jq '.[0].sha'`
+  (the *Deployments* list of the repository shows the same). Any commit that dev
+  deployed successfully can be promoted, not only the latest one.
+- **What the workflow does.** Job `verify`, which holds none of production's
+  secrets, checks that a `CI` run on `main` for that commit concluded success,
+  that dev has a deployment of it with a `success` status in its history, and
+  that the tag `sha-<sha>` exists in GHCR (read anonymously, so it relies on the
+  package being public). It refuses with a fixed sentence naming the check, and
+  an error from GitHub or the registry is reported with its status code, never as
+  "not found". Only if all three hold does job `promote` start; it pauses for the
+  required reviewer of the `production` environment, then sends the same request
+  as `deploy-dev` for the digest of that tag and polls `/ready`. Its summary
+  gives the promoted commit, the digest and the `/ready` status: for the same
+  commit, the same digest as dev's summary.
+- **Secrets.** The `production` environment has the same five secret names as
+  `dev` and its own values, read only by the `promote` job. It accepts
+  deployments from `main` only and requires an approval for each run.
+- **Older commits.** Promoting a commit that is no longer dev's current one
+  works; this keeps a rollback possible. A commit that was superseded before it
+  was ever built and deployed has no dev deployment and is refused. Migrations
+  are not reversed by an older image, so keep them backward compatible.
+- **Production's application** follows the variable table above, with its own
+  values (its own database, its own `SESSION_SECRET`).
+- **Limit: tag overwrite.** A GHCR tag can be overwritten in principle. The
+  `image` job never overwrites one, so it takes a deliberate action by the
+  maintainer or a stolen credential. The named, unbuilt upgrade is to have
+  `image` upload its digest as a run artifact and `verify` compare it with the
+  tag.
+- **Demo data.** Production runs the same image and the same demo seed as dev,
+  is never reset by the pipeline, and its data is wiped after the course.
 
 ### API documentation
 
