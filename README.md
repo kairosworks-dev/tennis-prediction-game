@@ -42,7 +42,7 @@ when picking this up again.
 
 ## Try it online
 
-The production deployment is at **<production URL, supplied by the author>**.
+The production deployment is at **https://deuce.kairosworks.dev**.
 
 It runs the demo seed: a game open for signup and a game in progress. Sign in
 as `you@example.com` to play, or as `organiser@example.com` to reach the
