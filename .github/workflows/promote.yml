@@ -1,0 +1,255 @@
+# Promote: the manual deploy to production (issue 55).
+#
+# Production changes only through this workflow. It deploys the image (by
+# digest) that already passed CI on main and ran on dev, and no other: never a
+# rebuild, never a moving tag. Started by hand:
+#
+#   gh workflow run promote.yml --ref main -f sha=<40 lowercase hex>
+#
+#   verify    read-only checks on the GitHub API and the registry, no
+#             environment, no checkout, none of the production secrets. For the
+#             given commit: (a) a CI run on main concluded success, (b) dev has
+#             a deployment with a success status in its history, (c) the tag
+#             sha-<commit> exists in GHCR. It outputs the digest of that tag.
+#   promote   needs verify, so the approval prompt of the production
+#             environment appears only for a commit that passed the checks. It
+#             sends the interface request (README, Deploy) through the local
+#             action .github/actions/deploy, the same one deploy-dev uses, with
+#             the production secrets. No GitHub API call, no Coolify call.
+#
+# Guards, two of them, as in ci.yml: both jobs run only when github.ref is
+# refs/heads/main (a dispatch from a branch starts neither), and the
+# production environment is restricted to main with a required reviewer.
+#
+# The sha input reaches the shell only through env:, is checked against 40
+# lowercase hex characters before anything else, and is never interpolated into
+# a run: block. promote checks out the dispatch ref (the tip of main), never
+# the promoted commit: the deploy action's code always comes from main, and only
+# the image comes from the promoted commit.
+#
+# Permissions: contents: read for the whole file. verify narrows to actions:
+# read and deployments: read (a job-level block replaces the top-level one);
+# promote repeats contents: read. There is no packages permission anywhere in
+# this file; the registry is read anonymously, so a private package would fail
+# check (c) loudly, which is accepted.
+#
+# Older commits can be promoted (a commit that passed CI and ran on dev, though
+# it is no longer dev's current one), which is what keeps a rollback possible.
+# A commit that a newer push superseded before it was ever built has no dev
+# deployment and is refused by check (b): that is correct. Migrations are not
+# reversed by an image rollback.
+#
+# Stated limit, tag overwrite. A GHCR tag can be overwritten in principle, and
+# verify resolves the tag, not a record of what CI pushed. The only automated
+# writer (the image job in ci.yml) checks before it pushes and never
+# overwrites, so an overwrite needs the maintainer's own deliberate action or a
+# stolen credential. Upgrade path, named and not built: the image job uploads
+# the digest as a run artifact, and verify downloads it from that commit's CI
+# run and fails when it differs from the tag's current digest.
+#
+# Every third-party action is pinned to a full commit SHA; the version is in
+# the comment. No new third-party action; the local deploy action is this
+# repository's own code.
+name: Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full commit sha (40 lowercase hex characters) to promote to production
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      deployments: read
+    outputs:
+      digest: ${{ steps.verify.outputs.digest }}
+    steps:
+      - name: Verify the commit
+        id: verify
+        env:
+          SHA: ${{ inputs.sha }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # First: the input, before any request.
+          case "$SHA" in
+            *[!0123456789abcdef]*) echo "::error::The sha input is not 40 lowercase hex characters; nothing was checked."; exit 1 ;;
+          esac
+          if [ "${#SHA}" -ne 40 ]; then
+            echo "::error::The sha input is not 40 lowercase hex characters; nothing was checked."; exit 1
+          fi
+
+          repo=$(printf '%s' "$REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          tmp=$(mktemp -d)
+          trap 'rm -rf "$tmp"' EXIT
+          body="$tmp/body"
+          headers="$tmp/headers"
+
+          # A GitHub API read. Sets api_status; the answer is in $body. A
+          # transport failure or any status but 200 (rate limit, missing
+          # token, no permission) is its own failure with the status code,
+          # never read as "no run", "no deployment" or "tag absent".
+          api() {
+            if ! api_status=$(curl -sS --proto '=https' --max-time 30 -o "$body" -w '%{http_code}' \
+                -H "Authorization: Bearer $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/repos/$REPOSITORY/$1" 2>/dev/null); then
+              echo "::error::The request for $2 could not be completed."; exit 1
+            fi
+            if [ "$api_status" != 200 ]; then
+              echo "::error::GitHub answered $api_status for $2."; exit 1
+            fi
+          }
+
+          # (a) A CI run on main for this commit concluded success. A run on a
+          # branch or for a pull request does not count.
+          api "actions/workflows/ci.yml/runs?branch=main&head_sha=$SHA&status=success&per_page=100" "the CI run lookup"
+          if ! runs=$(jq -r --arg sha "$SHA" '
+                .workflow_runs
+                | if type == "array" then
+                    [ .[] | select(.head_sha == $sha and .head_branch == "main" and .conclusion == "success"
+                                   and (.event == "push" or .event == "workflow_dispatch")) ] | length
+                  else error("unexpected shape") end' < "$body" 2>/dev/null) \
+             || ! printf '%s' "$runs" | grep -Eq '^[0-9]+$'; then
+            echo "::error::GitHub's answer to the CI run lookup could not be read."; exit 1
+          fi
+          if [ "$runs" -eq 0 ]; then
+            echo "::error::Check (a) failed: no CI run on main for this commit concluded success."; exit 1
+          fi
+          echo "Check (a) passed: a CI run on main for this commit concluded success."
+
+          # (b) Dev has a deployment of this commit with a success status
+          # anywhere in its history, not only as the latest status: a newer
+          # deployment may supersede it, and a rollback needs older commits.
+          api "deployments?environment=dev&sha=$SHA&per_page=100" "the dev deployment lookup"
+          if ! jq -e . < "$body" > /dev/null 2>&1 \
+             || ! ids=$(jq -r --arg sha "$SHA" '
+                if type == "array" then
+                  .[] | select(.sha == $sha and .environment == "dev") | .id
+                else error("unexpected shape") end' < "$body" 2>/dev/null); then
+            echo "::error::GitHub's answer to the dev deployment lookup could not be read."; exit 1
+          fi
+          succeeded=0
+          for id in $ids; do
+            if ! printf '%s' "$id" | grep -Eq '^[0-9]+$'; then
+              echo "::error::GitHub's answer to the dev deployment lookup could not be read."; exit 1
+            fi
+            api "deployments/$id/statuses?per_page=100" "the status history of a dev deployment"
+            if ! successes=$(jq -er '
+                  if type == "array" then [ .[] | select(.state == "success") ] | length
+                  else error("unexpected shape") end' < "$body" 2>/dev/null) \
+               || ! printf '%s' "$successes" | grep -Eq '^[0-9]+$'; then
+              echo "::error::GitHub's answer to the status history of a dev deployment could not be read."; exit 1
+            fi
+            if [ "$successes" -gt 0 ]; then
+              succeeded=1
+              break
+            fi
+          done
+          if [ "$succeeded" -ne 1 ]; then
+            echo "::error::Check (b) failed: this commit has no successful deployment to dev."; exit 1
+          fi
+          echo "Check (b) passed: this commit was deployed to dev."
+
+          # (c) The tag sha-<commit> exists in GHCR, read anonymously. The
+          # lookup is the one the image job does, so the digest is the one it
+          # pushed and deploy-dev sent. This relies on the package being
+          # public; if it ever goes private the token request is refused and
+          # the check fails with its status code.
+          token_status=$(curl -sS --proto '=https' --max-time 30 -o "$body" -w '%{http_code}' \
+            "https://ghcr.io/token?service=ghcr.io&scope=repository:$repo:pull" 2>/dev/null) || token_status=000
+          if [ "$token_status" != 200 ]; then
+            echo "::error::GHCR refused the anonymous token request (status $token_status)."; exit 1
+          fi
+          token=$(jq -r '.token // empty' < "$body" 2>/dev/null) || token=""
+          if [ -z "$token" ]; then
+            echo "::error::GHCR answered the token request without a token."; exit 1
+          fi
+          echo "::add-mask::$token"
+          tag_status=$(curl -sS -I --proto '=https' --max-time 30 -o /dev/null -D "$headers" -w '%{http_code}' \
+            -H "Authorization: Bearer $token" \
+            -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
+            "https://ghcr.io/v2/$repo/manifests/sha-$SHA" 2>/dev/null) || tag_status=000
+          case "$tag_status" in
+            200) ;;
+            404) echo "::error::Check (c) failed: the image tag for this commit does not exist in GHCR."; exit 1 ;;
+            *)   echo "::error::GHCR answered $tag_status for the tag lookup."; exit 1 ;;
+          esac
+          digest=$(tr -d '\r' < "$headers" | awk 'tolower($1) == "docker-content-digest:" { print $2 }')
+          # A whole-string match: a value with a second line (a header sent
+          # twice) is refused, which a line-based grep would let through.
+          if [[ ! $digest =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::GHCR returned no valid digest for the tag."; exit 1
+          fi
+          echo "Check (c) passed: the image tag for this commit exists."
+
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          {
+            echo "### verify"
+            echo
+            echo "- Commit: \`$SHA\`"
+            echo "- CI on main: success"
+            echo "- Dev deployment: success"
+            echo "- Image: \`ghcr.io/$repo@$digest\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  promote:
+    name: promote
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The secrets of this environment are read only in this job, and the job
+    # makes no GitHub API call. The environment's required reviewer is asked
+    # only now, after verify passed.
+    environment: production
+    permissions:
+      contents: read
+    # The one concurrency group of this workflow. It sits on this job, the only
+    # one with an effect on production, so two promotes never interleave and a
+    # deploy that has started is never cancelled. verify changes nothing and
+    # stays outside the group, so a refusal is not held up by someone else's
+    # unanswered approval; and a dispatch from a branch (both jobs skipped by
+    # their if) takes no part in it. GitHub keeps one running and one pending
+    # job per group, so a newer pending promote replaces an older pending one.
+    # Whether a job that waits for approval holds the group is unverified; the
+    # proof run of issue 55 tests it.
+    concurrency:
+      group: promote-production
+      cancel-in-progress: false
+    steps:
+      # The dispatch ref (the tip of main), never inputs.sha: this is the
+      # deploy action's code, and it must be main's.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # A composite action cannot read secrets.*, so the five secrets of the
+      # production environment are passed to it as inputs. The commit to print
+      # is the promoted one; the action never prints github.sha. This step has
+      # no env:.
+      - name: Deploy
+        uses: ./.github/actions/deploy
+        with:
+          deploy-ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          deploy-ssh-host: ${{ secrets.DEPLOY_SSH_HOST }}
+          deploy-ssh-user: ${{ secrets.DEPLOY_SSH_USER }}
+          deploy-ssh-known-hosts: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          app-url: ${{ secrets.APP_URL }}
+          environment: production
+          digest: ${{ needs.verify.outputs.digest }}
+          commit: ${{ inputs.sha }}
+          summary-heading: promote

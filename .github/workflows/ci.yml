@@ -5,7 +5,8 @@
 #   integration  make docker-build, then make test-integration (compose stack)
 #   image        builds the Dockerfile once, pushes it to GHCR as
 #                sha-<full commit sha> and exposes its digest
-#   deploy-dev   asks the dev server, over SSH, to run that digest
+#   deploy-dev   asks the dev server, over SSH, to run that digest, through the
+#                local action .github/actions/deploy (also used by promote)
 #
 # The job ids and names are a stable interface: image lists check, commit-gate
 # and integration under needs:, and the headless CI agent (issue 16) fetches
@@ -25,12 +26,20 @@
 # packages: write, to push to GHCR with the run's GITHUB_TOKEN. No other job
 # gets it. The five dev secrets (DEPLOY_SSH_KEY, DEPLOY_SSH_HOST,
 # DEPLOY_SSH_USER, DEPLOY_SSH_KNOWN_HOSTS, APP_URL) are secrets of the GitHub
-# environment dev and are read only by deploy-dev, always through env:. The
-# workflow never talks to Coolify and holds no Coolify token: it sends one line
-# to a restricted entry point on the server (the interface is in the README,
-# Deploy). Nothing in a log or summary names the host, the user or the URL.
+# environment dev and are read only by deploy-dev (a composite action cannot
+# read secrets.*, so deploy-dev passes them to the action as inputs, with:).
+# The workflow never talks to Coolify and holds no Coolify token: it sends one
+# line to a restricted entry point on the server (the interface is in the
+# README, Deploy). Nothing in a log or summary names the host, the user or the
+# URL.
 #
-# Every action is pinned to a full commit SHA; the version is in the comment.
+# Production is not deployed from this file. It is promoted by hand with
+# promote.yml, which checks that a commit passed this workflow and ran on dev,
+# then sends the same request to production through the same action.
+#
+# Every third-party action is pinned to a full commit SHA; the version is in
+# the comment. The local action .github/actions/deploy is this repository's own
+# code and is the one exception: it is read from the checked-out commit.
 name: CI
 
 on:
@@ -299,7 +308,10 @@ jobs:
   # main-only deployment-branch rule is the GitHub-side guard for the same
   # thing. The secrets belong to the environment dev. Re-running this job from
   # an older run redeploys that run's commit: that is intended and is how a
-  # rollback stays possible.
+  # rollback stays possible. The deploy itself is the local action
+  # .github/actions/deploy, shared with promote.yml, so the checkout below is
+  # needed to have it on disk (the action's code is that of the commit this run
+  # is for). Nothing here calls the GitHub API or the hosting platform.
   deploy-dev:
     name: deploy-dev
     needs: image
@@ -309,131 +321,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: dev
-    # No checkout, and nothing here calls the GitHub API. contents: read is
-    # kept from the top level rather than narrowed to {}: whether the
-    # environment's deployment record needs anything from the token is not
-    # verified.
+    # contents: read is kept from the top level rather than narrowed to {}:
+    # the checkout needs it, and whether the environment's deployment record
+    # needs anything from the token is not verified.
     steps:
-      # First, so a misconfigured environment fails loudly by secret name.
-      - name: Check the environment secrets
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
-          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
-          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
-          APP_URL: ${{ secrets.APP_URL }}
-        run: |
-          missing=0
-          for name in DEPLOY_SSH_KEY DEPLOY_SSH_HOST DEPLOY_SSH_USER DEPLOY_SSH_KNOWN_HOSTS APP_URL; do
-            if [ -z "${!name:-}" ]; then
-              echo "::error::The secret $name is empty or missing in the dev environment."
-              missing=1
-            fi
-          done
-          # The poll later uses curl --proto '=https'; fail early and by name.
-          if [ -n "${APP_URL:-}" ] && [[ $APP_URL != https://* ]]; then
-            echo "::error::The secret APP_URL must start with https://."
-            missing=1
-          fi
-          exit "$missing"
-
-      # Sends the one-line request of the interface and maps the exit status to
-      # a fixed sentence. No -v, no set -x; ssh's stderr is discarded, because
-      # it can contain the host name. Host-key checking is on, against the
-      # known_hosts file written from the secret: no scan, no trust on first use.
-      - name: Deploy the digest
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
-          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
-          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
-          REPOSITORY: ${{ github.repository }}
-          DIGEST: ${{ needs.image.outputs.digest }}
-          SSH_TIMEOUT: "600"
-        run: |
-          set -u
-          repo=$(printf '%s' "$REPOSITORY" | tr '[:upper:]' '[:lower:]')
-          request="deploy ghcr.io/$repo@$DIGEST"
-          request_pattern='^deploy ghcr\.io/[a-z0-9._-]+/[a-z0-9._-]+@sha256:[0-9a-f]{64}$'
-          answer_pattern='^(ok|error: [a-z-]+)$'
-          if [[ ! $request =~ $request_pattern ]]; then
-            echo "::error::The deploy request does not match the interface; nothing was sent."
-            exit 1
-          fi
-
-          dir=$(mktemp -d)
-          trap 'rm -rf "$dir"' EXIT
-          umask 077
-          printf '%s\n' "$DEPLOY_SSH_KEY" > "$dir/key"
-          printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" > "$dir/known_hosts"
-          chmod 600 "$dir/key" "$dir/known_hosts"
-
-          set +e
-          answer=$(timeout "$SSH_TIMEOUT" ssh -F /dev/null -T \
-            -i "$dir/key" \
-            -o BatchMode=yes \
-            -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=yes \
-            -o UserKnownHostsFile="$dir/known_hosts" \
-            -o GlobalKnownHostsFile=/dev/null \
-            -o ConnectTimeout=15 \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" "$request" 2>/dev/null)
-          code=$?
-          set -e
-
-          if [[ $answer =~ $answer_pattern ]]; then
-            echo "Server answer: $answer"
-          fi
-          case "$code" in
-            0)   echo "The server accepted the deployment." ;;
-            255) echo "::error::The connection or the host-key check failed." ;;
-            10)  echo "::error::The server rejected the request." ;;
-            11)  echo "::error::The deployment failed on the server." ;;
-            12)  echo "::error::The server gave up waiting for the deployment (its own timeout)." ;;
-            *)   echo "::error::Unexpected exit code $code." ;;
-          esac
-          [ "$code" -eq 0 ]
-
-      # Until the server swaps containers the old version answers /ready, so
-      # this poll starts only after the server has reported the deployment done.
-      # curl's own error text contains the host name and is never shown.
-      - name: Wait for /ready
-        env:
-          APP_URL: ${{ secrets.APP_URL }}
-          SHA: ${{ github.sha }}
-          DIGEST: ${{ needs.image.outputs.digest }}
-          READY_ATTEMPTS: "24"
-          READY_INTERVAL: "10"
-        run: |
-          set -u
-          if [[ $APP_URL != https://* ]]; then
-            echo "::error::The secret APP_URL must start with https://."
-            exit 1
-          fi
-          url="${APP_URL%/}/ready"
-          code=000
-          attempt=0
-          while [ "$attempt" -lt "$READY_ATTEMPTS" ]; do
-            attempt=$((attempt + 1))
-            code=$(curl -s --proto '=https' -o /dev/null -w '%{http_code}' --max-time 5 "$url" 2>/dev/null) || true
-            echo "attempt $attempt of $READY_ATTEMPTS: /ready returned $code"
-            if [ "$code" = 200 ]; then
-              break
-            fi
-            if [ "$attempt" -lt "$READY_ATTEMPTS" ]; then
-              sleep "$READY_INTERVAL"
-            fi
-          done
-          {
-            echo "### deploy-dev"
-            echo
-            echo "- Commit: \`$SHA\`"
-            echo "- Digest: \`$DIGEST\`"
-            echo "- /ready: $code"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$code" != 200 ]; then
-            echo "::error::/ready did not return 200 after $READY_ATTEMPTS attempts (last status $code)."
-            exit 1
-          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # A composite action cannot read secrets.*, so the five secrets of the
+      # environment are passed to it as inputs. The action checks them first
+      # (failing by name), sends the request, polls /ready and writes the
+      # summary headed deploy-dev. This step has no env:.
+      - name: Deploy
+        uses: ./.github/actions/deploy
+        with:
+          deploy-ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          deploy-ssh-host: ${{ secrets.DEPLOY_SSH_HOST }}
+          deploy-ssh-user: ${{ secrets.DEPLOY_SSH_USER }}
+          deploy-ssh-known-hosts: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          app-url: ${{ secrets.APP_URL }}
+          environment: dev
+          digest: ${{ needs.image.outputs.digest }}
+          commit: ${{ github.sha }}
+          summary-heading: deploy-dev

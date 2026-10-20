@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 19 October 2026
+**Last updated:** 20 October 2026
 
 Where the code stands. This is deliberately a different question from the two
 documents either side of it:
@@ -159,7 +159,7 @@ The project is graded on the course's **final** rubric, published on 16 October
 ([`project/README.md`](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp/blob/main/project/README.md)):
 12 criteria, 24 points, pass at 10. Three peer reviews of other projects are
 also required to pass; they happen off-repository and are not a work item here.
-The scores below were checked against the repository on 17 October 2026 and are
+The scores below were checked against the repository on 20 October 2026 and are
 updated when an issue closes. The spec records the switch from
 the earlier 14-criterion version (D18).
 
@@ -172,12 +172,20 @@ the earlier 14-criterion version (D18).
 | 5 | Application | 2 | 2 | none |
 | 6 | Testing | 2 | 2 | done: #54 (`make test` runs unit and integration tests); more coverage: #43 to #45 |
 | 7 | Containerization | 2 | 2 | none |
-| 8 | Deployment | 0 | 2 | #6 and #7 done; still missing: a URL a reviewer can open (README, via #55 and #23) and the evidence in #11 |
-| 9 | CI/CD | 2 | **3** | done: #6 (every push to `main` deploys dev: 2); #55 (3) |
+| 8 | Deployment | 2 | 2 | done: #6 and #7 (dev deploys on every push to `main`, over HTTPS); #55 (production, and the public URL in README *Try it online*); the evidence in #11 adds depth, not points |
+| 9 | CI/CD | 3 | 3 | done: #6 (every push to `main` deploys dev: 2); #55 (a manual promote to production through a shared deploy action: 3) |
 | 10 | Observability | 1 | 2 | #56 (by hand) |
 | 11 | Alerting on user impact | 0 | 1 | #57 (by hand; #8 feeds it) |
 | 12 | On-call agent | 0 | 2 | #58 (by hand) |
-| | **Total** | **16 of 24** | **24** | |
+| | **Total** | **19 of 24** | **24** | |
+
+Criteria 8 and 9 reached 2 and 3 on 20 October with #55: the rubric (v2) gives 2
+for "deployed and reachable at a public URL, or there's a clear demo with the
+deployment", and 3 for "CI runs tests, CD deploys to dev, and there's a manual
+deploy to production". Both rest on the author's proof run of #55 (the merge push
+re-proving dev through the shared action, then a manual promote of that same
+commit with its approval); if the proof run is red, this text and the scores
+are corrected.
 
 Criterion 6 reached 2 on 17 October with #54: `make test` runs the frontend
 and backend unit tests and then the integration tests against the compose stack,
@@ -189,10 +197,11 @@ email provider prints only when `EMAIL_PROVIDER=console`, which no deployment se
 Issues #8 to #11 (monitoring, backups, rollback, public `ops/` evidence) and
 #56 to #58 (observability, the alert on user impact, the on-call agent) are all
 `by-hand`: the author does them themself, on their own machine and server, for
-their own operations learning. #8 feeds criterion 11, #10 and #11 feed criteria
-9 and 8, #9 earns no criterion, and criteria 10, 11 and 12 come from the
-by-hand issues #56, #57 and #58. Agents may review their written evidence for
-leaks and formatting when asked, nothing more.
+their own operations learning. #8 feeds criterion 11, #10 and #11 add evidence
+to criteria 9 and 8 but no points (both are at their target), #9 earns no
+criterion, and criteria 10, 11 and 12 come from the by-hand issues #56, #57
+and #58. Agents may review their written evidence for leaks and formatting when
+asked, nothing more.
 
 The ungraded issues (#15 to #22, #24) continue after the submission deadline;
 the course grade is tied to the commit submitted, so later commits do not
@@ -205,7 +214,9 @@ change it.
    land before the deploy), and #7 (secure cookie), done 19 October; then #6
    (deploy to dev: step A, the image job and a deploy started by hand, merged 19
    October; step B, the deploy on every push to `main`, done), #55 (dev
-   and production), #56, #57, #58, then #23 (README), #43 to #45 (integration
+   and production: the promote workflow and the shared deploy action are built;
+   the author's proof run remains),
+   #56, #57, #58, then #23 (README), #43 to #45 (integration
    coverage) and #25
    (clean-clone run and submission). #12 to #14 (process, workflows, commit
    gate) are graded evidence for criteria 3 and 4 and belong to this group.

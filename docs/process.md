@@ -36,7 +36,7 @@ issue → PM grooms → author reviews → engineer builds → QA verifies
 4. QA verifies on that branch and posts `PASS` or `FAIL`.
 5. On `FAIL`: back to step 3 with the QA comment as input. After three `FAIL`s, stop and hand the issue to the author.
 6. On `PASS`: orchestrator opens a pull request (`Closes #n` in the body), CI runs, the author reviews, the orchestrator merges. Merging closes the issue.
-7. The author pushes `main`; the pipeline deploys.
+7. The author pushes `main`; the pipeline deploys dev. Production is promoted by hand with the promote workflow.
 
 ## Rules
 
