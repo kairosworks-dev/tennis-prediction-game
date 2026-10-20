@@ -190,7 +190,9 @@ jobs:
             *)   echo "::error::GHCR answered $tag_status for the tag lookup."; exit 1 ;;
           esac
           digest=$(tr -d '\r' < "$headers" | awk 'tolower($1) == "docker-content-digest:" { print $2 }')
-          if ! printf '%s' "$digest" | grep -Eq '^sha256:[0-9a-f]{64}$'; then
+          # A whole-string match: a value with a second line (a header sent
+          # twice) is refused, which a line-based grep would let through.
+          if [[ ! $digest =~ ^sha256:[0-9a-f]{64}$ ]]; then
             echo "::error::GHCR returned no valid digest for the tag."; exit 1
           fi
           echo "Check (c) passed: the image tag for this commit exists."
