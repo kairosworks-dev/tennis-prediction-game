@@ -1,0 +1,163 @@
+# The one deploy step, shared by deploy-dev (ci.yml) and promote (promote.yml).
+#
+# It sends the one-line request of the deploy interface (README, Deploy) to the
+# restricted entry point of one environment over SSH, maps the exit status to a
+# fixed sentence, then polls /ready of that environment and writes the job
+# summary. Both callers use it so the security-relevant step exists once.
+#
+# How the values arrive:
+#   - The five secrets (DEPLOY_SSH_KEY, DEPLOY_SSH_HOST, DEPLOY_SSH_USER,
+#     DEPLOY_SSH_KNOWN_HOSTS, APP_URL) arrive only through the env: of the
+#     calling step, as the secrets of that job's environment. A composite action
+#     cannot read secrets.*, and they are not inputs, so they cannot appear in
+#     the action's own input listing.
+#   - Everything else is an input. Every input reaches the shell through env:,
+#     never through ${{ }} inside a run: block.
+#   - The action never prints github.sha. In promote that is the tip of main,
+#     not the promoted commit, so the caller passes the commit to print.
+#
+# No echo of a secret or of anything derived from one, no set -x, no ssh -v, no
+# curl -v. ssh's stderr is discarded (it can contain the host name) and so is
+# curl's (same reason). No Coolify call and no Coolify credential: the script on
+# the server is the only thing that talks to the hosting platform.
+name: Deploy a digest
+description: >-
+  Ask an environment's deploy entry point, over SSH, to run an image digest,
+  then wait for its /ready.
+
+inputs:
+  environment:
+    description: >-
+      Name of the GitHub environment the caller runs in (dev or production).
+      Used only in messages.
+    required: true
+  digest:
+    description: The image digest to deploy, sha256:<64 lowercase hex>.
+    required: true
+  commit:
+    description: The commit to print in the job summary.
+    required: true
+  summary-heading:
+    description: The heading of the job summary.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # First, so a misconfigured environment fails loudly by secret name.
+    - name: Check the environment secrets
+      shell: bash
+      env:
+        ENVIRONMENT_NAME: ${{ inputs.environment }}
+      run: |
+        missing=0
+        for name in DEPLOY_SSH_KEY DEPLOY_SSH_HOST DEPLOY_SSH_USER DEPLOY_SSH_KNOWN_HOSTS APP_URL; do
+          if [ -z "${!name:-}" ]; then
+            echo "::error::The secret $name is empty or missing in the $ENVIRONMENT_NAME environment."
+            missing=1
+          fi
+        done
+        # The poll later uses curl --proto '=https'; fail early and by name.
+        if [ -n "${APP_URL:-}" ] && [[ $APP_URL != https://* ]]; then
+          echo "::error::The secret APP_URL must start with https://."
+          missing=1
+        fi
+        exit "$missing"
+
+    # Sends the one-line request of the interface and maps the exit status to
+    # a fixed sentence. Host-key checking is on, against the known_hosts file
+    # written from the secret: no scan, no trust on first use.
+    - name: Deploy the digest
+      shell: bash
+      env:
+        REPOSITORY: ${{ github.repository }}
+        DIGEST: ${{ inputs.digest }}
+        SSH_TIMEOUT: "600"
+      run: |
+        set -u
+        repo=$(printf '%s' "$REPOSITORY" | tr '[:upper:]' '[:lower:]')
+        request="deploy ghcr.io/$repo@$DIGEST"
+        request_pattern='^deploy ghcr\.io/[a-z0-9._-]+/[a-z0-9._-]+@sha256:[0-9a-f]{64}$'
+        answer_pattern='^(ok|error: [a-z-]+)$'
+        if [[ ! $request =~ $request_pattern ]]; then
+          echo "::error::The deploy request does not match the interface; nothing was sent."
+          exit 1
+        fi
+
+        dir=$(mktemp -d)
+        trap 'rm -rf "$dir"' EXIT
+        umask 077
+        printf '%s\n' "$DEPLOY_SSH_KEY" > "$dir/key"
+        printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" > "$dir/known_hosts"
+        chmod 600 "$dir/key" "$dir/known_hosts"
+
+        set +e
+        answer=$(timeout "$SSH_TIMEOUT" ssh -F /dev/null -T \
+          -i "$dir/key" \
+          -o BatchMode=yes \
+          -o IdentitiesOnly=yes \
+          -o StrictHostKeyChecking=yes \
+          -o UserKnownHostsFile="$dir/known_hosts" \
+          -o GlobalKnownHostsFile=/dev/null \
+          -o ConnectTimeout=15 \
+          -o ServerAliveInterval=30 \
+          -o ServerAliveCountMax=3 \
+          "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" "$request" 2>/dev/null)
+        code=$?
+        set -e
+
+        if [[ $answer =~ $answer_pattern ]]; then
+          echo "Server answer: $answer"
+        fi
+        case "$code" in
+          0)   echo "The server accepted the deployment." ;;
+          255) echo "::error::The connection or the host-key check failed." ;;
+          10)  echo "::error::The server rejected the request." ;;
+          11)  echo "::error::The deployment failed on the server." ;;
+          12)  echo "::error::The server gave up waiting for the deployment (its own timeout)." ;;
+          *)   echo "::error::Unexpected exit code $code." ;;
+        esac
+        [ "$code" -eq 0 ]
+
+    # Until the server swaps containers the old version answers /ready, so
+    # this poll starts only after the server has reported the deployment done.
+    # curl's own error text contains the host name and is never shown.
+    - name: Wait for /ready
+      shell: bash
+      env:
+        COMMIT: ${{ inputs.commit }}
+        DIGEST: ${{ inputs.digest }}
+        SUMMARY_HEADING: ${{ inputs.summary-heading }}
+        READY_ATTEMPTS: "24"
+        READY_INTERVAL: "10"
+      run: |
+        set -u
+        if [[ $APP_URL != https://* ]]; then
+          echo "::error::The secret APP_URL must start with https://."
+          exit 1
+        fi
+        url="${APP_URL%/}/ready"
+        code=000
+        attempt=0
+        while [ "$attempt" -lt "$READY_ATTEMPTS" ]; do
+          attempt=$((attempt + 1))
+          code=$(curl -s --proto '=https' -o /dev/null -w '%{http_code}' --max-time 5 "$url" 2>/dev/null) || true
+          echo "attempt $attempt of $READY_ATTEMPTS: /ready returned $code"
+          if [ "$code" = 200 ]; then
+            break
+          fi
+          if [ "$attempt" -lt "$READY_ATTEMPTS" ]; then
+            sleep "$READY_INTERVAL"
+          fi
+        done
+        {
+          echo "### $SUMMARY_HEADING"
+          echo
+          echo "- Commit: \`$COMMIT\`"
+          echo "- Digest: \`$DIGEST\`"
+          echo "- /ready: $code"
+        } >> "$GITHUB_STEP_SUMMARY"
+        if [ "$code" != 200 ]; then
+          echo "::error::/ready did not return 200 after $READY_ATTEMPTS attempts (last status $code)."
+          exit 1
+        fi
