@@ -226,8 +226,10 @@ jobs:
     # unanswered approval; and a dispatch from a branch (both jobs skipped by
     # their if) takes no part in it. GitHub keeps one running and one pending
     # job per group, so a newer pending promote replaces an older pending one.
-    # Whether a job that waits for approval holds the group is unverified; the
-    # proof run of issue 55 tests it.
+    # The proof run of issue 55 settled it: a job that waits for the production
+    # approval holds the group, so a later promote stays pending until the
+    # waiting one is approved or rejected. An unanswered approval therefore
+    # blocks every later promote.
     concurrency:
       group: promote-production
       cancel-in-progress: false

@@ -465,6 +465,10 @@ with a commit that already passed CI and ran on dev.
   `gh api "repos/<owner>/<repo>/deployments?environment=dev&per_page=1" --jq '.[0].sha'`
   (the *Deployments* list of the repository shows the same). Any commit that dev
   deployed successfully can be promoted, not only the latest one.
+- **Which sha production is running.** Read it from the summary of the
+  `promote` job, not from the *Deployments* list: GitHub records every
+  production deployment under the commit the promote run ran on (the tip of
+  `main`), not under the promoted commit.
 - **What the workflow does.** Job `verify`, which holds none of production's
   secrets, checks that a `CI` run on `main` for that commit concluded success,
   that dev has a deployment of it with a `success` status in its history, and
