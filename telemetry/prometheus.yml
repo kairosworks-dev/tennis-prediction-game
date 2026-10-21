@@ -1,0 +1,10 @@
+# Prometheus for the optional local telemetry stack (#56).
+# No scrape jobs: the Collector pushes metrics to the OTLP receiver
+# (/api/v1/otlp, switched on with --web.enable-otlp-receiver).
+storage:
+  tsdb:
+    # Pushed samples can arrive a little out of order (batching, retries).
+    out_of_order_time_window: 30m
+
+otlp:
+  promote_resource_attributes: [service.name]
