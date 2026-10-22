@@ -1,0 +1,11 @@
+# Provisioned at Grafana's start: the dashboards in /var/lib/grafana/dashboards
+# (telemetry/grafana/dashboards/ on the host) are present with no clicks.
+apiVersion: 1
+providers:
+  - name: place-a-prediction
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

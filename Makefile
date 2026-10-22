@@ -102,6 +102,45 @@ test-integration: docker-check ## Build the compose stack on its own project, te
 	if [ $$rc -ne 0 ]; then $(DOCKER) compose -p $(IT_PROJECT) logs app; fi; \
 	exit $$rc
 
+# The optional local telemetry stack (#56): the app and Postgres plus the
+# Collector, Prometheus, Loki, Tempo and Grafana, on 127.0.0.1 only. Nothing
+# else in this Makefile starts it. APP_PORT (default 8000) is read by Compose.
+TELEMETRY_COMPOSE = $(DOCKER) compose -f docker-compose.yml -f docker-compose.telemetry.yml
+TELEMETRY_VOLUMES = prometheus-data tempo-data loki-data grafana-data
+
+.PHONY: telemetry-up telemetry-down telemetry-reset telemetry-demo
+
+telemetry-up: docker-check ## Start the app, Postgres and the telemetry stack; return when healthy (Grafana on :3000)
+	$(TELEMETRY_COMPOSE) up -d --build --wait --wait-timeout 240
+	@echo "waiting for Grafana, Prometheus, Loki and Tempo to answer ..."
+	@for url in http://127.0.0.1:3000/api/health http://127.0.0.1:9090/-/ready \
+		http://127.0.0.1:3100/ready http://127.0.0.1:3200/ready; do \
+		n=0; until curl -fsS -o /dev/null "$$url" 2>/dev/null; do \
+			n=$$((n+1)); \
+			if [ $$n -ge 90 ]; then echo "not ready after 90 s: $$url" >&2; exit 1; fi; \
+			sleep 1; \
+		done; \
+	done
+	@echo ""
+	@echo "  Grafana  http://localhost:3000  (user admin; password: GRAFANA_ADMIN_PASSWORD, development default in docker-compose.telemetry.yml)"
+	@echo "  Dashboard 'Place a prediction'; run 'make telemetry-demo' to fill it."
+
+telemetry-down: docker-check ## Stop the stack, keeping the telemetry data
+	$(TELEMETRY_COMPOSE) down --remove-orphans
+
+telemetry-reset: docker-check ## Stop the stack and delete the telemetry volumes (not the database)
+	$(TELEMETRY_COMPOSE) down --remove-orphans
+	@project="$$($(TELEMETRY_COMPOSE) config --format json | python3 -c 'import json, sys; print(json.load(sys.stdin)["name"])')"; \
+	for volume in $(TELEMETRY_VOLUMES); do \
+		ids="$$($(DOCKER) volume ls -q \
+			--filter "label=com.docker.compose.project=$$project" \
+			--filter "label=com.docker.compose.volume=$$volume")"; \
+		if [ -n "$$ids" ]; then $(DOCKER) volume rm $$ids || exit 1; fi; \
+	done
+
+telemetry-demo: ## Drive the six-step journey against the running stack (REPEAT=n to repeat)
+	telemetry/demo-journey.sh
+
 lint: ## ESLint and ruff
 	cd frontend && npm run lint
 	cd backend && uv run ruff check .

@@ -27,6 +27,7 @@ from app.bootstrap import (
 from app.repositories.interfaces import Repositories
 from app.seed import seed_demo_game
 from app.services.errors import ServiceError
+from app.telemetry import setup_telemetry
 
 #: `build_repository_scope` and `build_repositories` live in `app.bootstrap`; they
 #: are re-exported so `from app.main import build_repository_scope` keeps working.
@@ -111,6 +112,9 @@ def create_app(
     static_dir = frontend_dir or Path(os.environ.get("FRONTEND_DIR", DEFAULT_FRONTEND_DIR))
     if (static_dir / "index.html").is_file():
         mount_frontend(app, static_dir)  # SPA served from the 404 handler
+
+    # Off unless OTEL_EXPORTER_OTLP_ENDPOINT is set (see app/telemetry).
+    setup_telemetry(app)
 
     return app
 

@@ -1,0 +1,79 @@
+# Optional local telemetry stack (#56). Never loaded by default:
+#   docker compose -f docker-compose.yml -f docker-compose.telemetry.yml up -d
+services:
+  
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.162.0@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./telemetry/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "127.0.0.1:4318:4318"
+  
+  prometheus:
+    image: prom/prometheus:v3.15.0@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=2d
+      - --web.enable-otlp-receiver
+    volumes:
+      - ./telemetry/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+
+  tempo:
+    image: grafana/tempo:2.10.8@sha256:f0561deb1c68ec44d6e6e7e4487f30106c4e5e768642077695b37958b105812a
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./telemetry/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "127.0.0.1:3200:3200"
+
+  loki:
+    image: grafana/loki:3.7.8@sha256:1107dd5274e0ada47e42472b7a7e71f3b2a2fe878878108f3e2f9e51528f0193
+    command: ["-config.file=/etc/loki/config.yaml"]
+    volumes:
+      - ./telemetry/loki.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/loki
+    ports:
+      - "127.0.0.1:3100:3100"
+
+  grafana:
+    image: grafana/grafana:13.2.4@sha256:dbbc38ea21103cefb50396340cd88afec779c7e070b0a7bf5a75b4ce46651d3f
+    depends_on:
+      - prometheus
+      - tempo
+      - loki
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      # Local demo only; override from the environment.
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-telemetry-dev-only-not-a-secret}
+    volumes:
+      - ./telemetry/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./telemetry/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./telemetry/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  app:
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_SERVICE_NAME: tennis-prediction-game
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=local-demo
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"
+      OTEL_SEMCONV_STABILITY_OPT_IN: http
+      OTEL_TRACES_SAMPLER: parentbased_always_on
+      LOG_FORMAT: json
+    ports: !override
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+
+volumes:
+  prometheus-data:
+  tempo-data:
+  loki-data:
+  grafana-data:

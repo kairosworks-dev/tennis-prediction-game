@@ -1,0 +1,22 @@
+# Tempo for the optional local telemetry stack (#56): one binary,
+# local disk, traces kept for about two days.
+stream_over_http_enabled: true
+server:
+  http_listen_port: 3200
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          # Inside the compose network only; the host never sees this port.
+          endpoint: 0.0.0.0:4318
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+compactor:
+  compaction:
+    block_retention: 48h
