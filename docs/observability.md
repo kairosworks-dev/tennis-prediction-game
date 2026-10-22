@@ -223,7 +223,7 @@ row in **Errors by route and status**; Loki has the `request completed` line wit
 status 500 and an ERROR record carrying only the exception type (for example
 `OperationalError`). Sign in before stopping Postgres, because signing in needs
 the database too. Start it again with `start postgres` and wait until it is
-healthy. The alert on exactly this is #57.
+healthy. The alert on exactly this is [`alerting.md`](alerting.md) (#57).
 
 ## When the Collector is down
 
