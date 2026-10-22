@@ -11,8 +11,9 @@ bets are argued over, and nobody is sure who is winning.
 
 **What this is.** One place where a group predicts a tournament and sees a
 leaderboard. One game covers one tournament. Before play begins each participant
-predicts how the tournament will go (who reaches the quarter-finals, who wins);
-while it runs they submit smaller predictions round by round. The organiser
+predicts how the tournament will go (who reaches the final rounds, who wins);
+while it runs they submit smaller predictions round by round, sometimes with an
+extra question or two. The organiser
 enters the real results, the app scores everyone, and the leaderboard updates.
 There is no money, no odds and no payout: it replaces a spreadsheet and a chat
 thread, not a bookmaker.
