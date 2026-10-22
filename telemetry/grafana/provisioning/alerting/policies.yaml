@@ -1,0 +1,12 @@
+# Where alerts go (#57): everything to the webhook, with no wait before the
+# first notification. The 12 h repeat keeps a still-firing alert from
+# notifying twice while a responder is working on it.
+apiVersion: 1
+policies:
+  - orgId: 1
+    receiver: responder-webhook
+    # One notification per alert and route.
+    group_by: [alertname, http_route]
+    group_wait: 0s
+    group_interval: 1m
+    repeat_interval: 12h
