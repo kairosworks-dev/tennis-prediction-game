@@ -23,10 +23,20 @@ services:
     ports:
       - "127.0.0.1:9090:9090"
 
+  tempo:
+    image: grafana/tempo:2.10.8@sha256:f0561deb1c68ec44d6e6e7e4487f30106c4e5e768642077695b37958b105812a
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./telemetry/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "127.0.0.1:3200:3200"
+
   grafana:
     image: grafana/grafana:13.2.4@sha256:dbbc38ea21103cefb50396340cd88afec779c7e070b0a7bf5a75b4ce46651d3f
     depends_on:
       - prometheus
+      - tempo
     environment:
       GF_SECURITY_ADMIN_USER: admin
       # Local demo only; override from the environment.
@@ -45,9 +55,11 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=local-demo
       OTEL_METRIC_EXPORT_INTERVAL: "5000"
       OTEL_SEMCONV_STABILITY_OPT_IN: http
+      OTEL_TRACES_SAMPLER: parentbased_always_on
     ports: !override
       - "127.0.0.1:${APP_PORT:-8000}:8000"
 
 volumes:
   prometheus-data:
+  tempo-data:
   grafana-data:
