@@ -89,9 +89,9 @@
       "title": "Requests by route and status",
       "gridPos": {
         "x": 0,
-        "y": 0,
-        "w": 12,
-        "h": 9
+        "y": 6,
+        "w": 24,
+        "h": 11
       },
       "datasource": {
         "type": "prometheus",
@@ -124,6 +124,12 @@
               "http_request_method": "Method",
               "http_response_status_code": "Status",
               "Value": "Requests"
+            },
+            "indexByName": {
+              "http_route": 0,
+              "http_request_method": 1,
+              "http_response_status_code": 2,
+              "Value": 3
             }
           }
         }
@@ -147,10 +153,10 @@
       "type": "stat",
       "title": "Errors by class",
       "gridPos": {
-        "x": 12,
+        "x": 0,
         "y": 0,
         "w": 6,
-        "h": 9
+        "h": 6
       },
       "datasource": {
         "type": "prometheus",
@@ -247,10 +253,10 @@
       "type": "table",
       "title": "Errors by route and status",
       "gridPos": {
-        "x": 18,
+        "x": 6,
         "y": 0,
-        "w": 6,
-        "h": 9
+        "w": 18,
+        "h": 6
       },
       "datasource": {
         "type": "prometheus",
@@ -282,6 +288,11 @@
               "http_route": "Route",
               "http_response_status_code": "Status",
               "Value": "Requests"
+            },
+            "indexByName": {
+              "http_route": 0,
+              "http_response_status_code": 1,
+              "Value": 2
             }
           }
         }
@@ -319,7 +330,7 @@
       "title": "Requests per minute by route",
       "gridPos": {
         "x": 0,
-        "y": 9,
+        "y": 17,
         "w": 12,
         "h": 8
       },
@@ -368,7 +379,7 @@
       "title": "p95 latency per route (since the app started)",
       "gridPos": {
         "x": 12,
-        "y": 9,
+        "y": 17,
         "w": 12,
         "h": 8
       },
@@ -418,7 +429,7 @@
       "title": "Logs",
       "gridPos": {
         "x": 0,
-        "y": 17,
+        "y": 25,
         "w": 24,
         "h": 11
       },
