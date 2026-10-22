@@ -44,13 +44,15 @@ Folders marked with an issue number arrive with that issue.
 
 The MVP was built in four sequential steps, each with a definition of done in spec Section 9. All four are **done** (frontend on mocks, `openapi.yaml`, FastAPI backend, SQLAlchemy persistence), to the narrowed screen surface of decision D14.
 
-**Now: the final-project phase**, graded on the course's final rubric (12 criteria, 24 points, pass at 10); [`docs/status.md`](docs/status.md) holds the score and which issue closes each gap. The work is to ship and operate the app: Postgres, containers, tests under one command, integration tests, dev and production deployment with CI/CD, observability, an alert on user impact, an on-call agent, and documentation. Observability, the alert and the on-call agent are by-hand work of the author (D20). The issues the final rubric no longer grades, among them the agent extension pack and the hardening artefacts, are done last (D18). Spec Section 9, step 5, holds the definition of done; **the work items are the GitHub Issues of this repository**, and [`docs/process.md`](docs/process.md) says how an issue moves from open to closed. Pick work from the issues, not from this file.
+**Now: the final-project phase**, graded on the course's final rubric (12 criteria, 24 points, pass at 10); [`docs/status.md`](docs/status.md) holds the score and which issue closes each gap. The work is to ship and operate the app: Postgres, containers, tests under one command, integration tests, dev and production deployment with CI/CD, observability, an alert on user impact, an on-call agent, and documentation. Observability, the alert and the on-call agent run as a local demo on the author's machine (D20) and are built by agents, the author reviewing (D21). The issues the final rubric no longer grades, among them the agent extension pack and the hardening artefacts, are done last (D18). Spec Section 9, step 5, holds the definition of done; **the work items are the GitHub Issues of this repository**, and [`docs/process.md`](docs/process.md) says how an issue moves from open to closed. Pick work from the issues, not from this file.
 
 **The screen surface stays narrowed** (decision D14, spec 13.1). Deferred: admin screens other than the outcome grid and recalculation; email verification, password reset, profile editing and account deletion; the draw view; the post-lock comparison view; the landing-page gallery and testimonials. Deferred means *not now*, not *never* — Section 4 still describes the intended product, so do not delete its requirements. The architecture is **not** narrowed: every hard rule below applies in full.
 
 ## By-hand ops tasks — not agent work
 
-Some issues carry the label **`by-hand`** (#8 monitoring and alerting, #9 backups, #10 rollback drill, #11 the public `ops/` evidence, #56 observability, #57 the alert on user impact, #58 the on-call responder). The author does these themself, on their own machine and server, as part of their own operations learning. Monitoring, observability, alerting and the on-call responder run on the author's own machine and server, with nothing running 24/7 and no paid API key for the responder (D20). **An agent does not do them**, does not script them in advance, and does not close them. An agent may review the written evidence for leaks and formatting when asked. The AI usage report records this split honestly.
+Some issues carry the label **`by-hand`** (#8 monitoring and alerting, done; #9 backups, #10 rollback drill, #11 the public `ops/` evidence, all after the submission). The author does these themself, on their own machine and server, as part of their own operations learning. **An agent does not do them**, does not script them in advance, and does not close them. An agent may review the written evidence for leaks and formatting when asked. The AI usage report records this split honestly.
+
+#56 observability, #57 the alert on user impact and #58 the on-call responder were by-hand work until 22 Oct 2026. Since D21 they are ordinary agent work under [`docs/process.md`](docs/process.md), the author reviewing; the checks #58 marks **(author)** stay the author's. They still run only on the author's machine, with nothing running 24/7 and no paid API key for the responder (D20).
 
 ## Public repository
 
@@ -217,7 +219,7 @@ Canonical, tool-agnostic locations; `.claude/` only links to them.
 - **The spec is silent.** Spec Section 14 lists the known open questions. If your question is there, ask. If it is not, make the smallest reasonable choice, implement it, and flag it in your summary.
 - **You need a new dependency.** Ask first. The *application* deliberately runs as one process with no scheduler, no queue and no external services (spec 7.1, principle 5). Platform services around it — the database server, the reverse proxy, the CI runner, the backup job — are not application dependencies and are in scope.
 - **Something is out of scope.** Spec Section 12 lists exclusions explicitly. Out of scope means out of scope, including "while I was in there anyway".
-- **The task is labelled `by-hand`.** It is not yours. Say so and stop.
+- **The task is labelled `by-hand`** (#8 to #11; not #56 to #58, see D21). It is not yours. Say so and stop.
 
 ## Scope reminders
 
