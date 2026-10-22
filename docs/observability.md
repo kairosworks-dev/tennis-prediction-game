@@ -254,6 +254,13 @@ Standard OpenTelemetry variables, set only by `docker-compose.telemetry.yml`:
 the Collector is the contrib build (it has the `transform` and `redaction`
 processors).
 
+A version is pinned only once its release is at least seven days old. On 22 Oct
+2026 that holds back three newer releases: Tempo 2.10.9 and 2.10.10 (20 and
+21 Oct) and Loki 3.7.9 (20 Oct) carry security fixes in their dependencies, and
+Collector 0.163.1 qualifies from 23 Oct. For a stack that binds only to
+`127.0.0.1` on a developer machine this is an accepted, known gap; raise the
+tags once they qualify (Loki and Tempo from 27 and 28 Oct).
+
 Files: `backend/app/telemetry/` (setup, allowlist, request log, JSON formatter),
 `docker-compose.telemetry.yml`, `telemetry/` (Collector, Prometheus, Loki, Tempo,
 Grafana provisioning and the dashboard, the demo script). The layout leaves room
