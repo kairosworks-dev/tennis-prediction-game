@@ -1,3 +1,10 @@
+# The OpenTelemetry Collector for the optional local telemetry stack (#56).
+#
+# Second layer of the PII guard. The app already drops every attribute that is
+# not on its allowlist (backend/app/telemetry/allowlist.py); the `transform`
+# processor below applies the same lists again, so a leak needs both layers to
+# fail, and `redaction` blocks anything shaped like an e-mail address in the
+# values that remain. A test keeps the lists here equal to the app's.
 receivers:
   otlp:
     protocols:
@@ -5,29 +12,60 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
+  transform/guard:
+    error_mode: ignore
+    trace_statements:
+      - context: resource
+        statements:
+          - keep_keys(resource.attributes, ["deployment.environment.name", "service.instance.id", "service.name", "service.namespace", "service.version", "telemetry.sdk.language", "telemetry.sdk.name", "telemetry.sdk.version"])
+      - context: span
+        statements:
+          - keep_keys(span.attributes, ["error.type", "exception.type", "http.request.method", "http.response.status_code", "http.route", "network.protocol.name", "network.protocol.version", "url.path", "url.scheme"])
+          # An exception puts "Type: message" in the status; keep the status code only.
+          - set(span.status.message, "") where span.status.code == STATUS_CODE_ERROR
+      - context: spanevent
+        statements:
+          - keep_keys(spanevent.attributes, ["error.type", "exception.type", "http.request.method", "http.response.status_code", "http.route", "network.protocol.name", "network.protocol.version", "url.path", "url.scheme"])
+    metric_statements:
+      - context: resource
+        statements:
+          - keep_keys(resource.attributes, ["deployment.environment.name", "service.instance.id", "service.name", "service.namespace", "service.version", "telemetry.sdk.language", "telemetry.sdk.name", "telemetry.sdk.version"])
+      - context: datapoint
+        statements:
+          - keep_keys(datapoint.attributes, ["http.request.method", "http.response.status_code", "http.route"])
+    log_statements:
+      - context: resource
+        statements:
+          - keep_keys(resource.attributes, ["deployment.environment.name", "service.instance.id", "service.name", "service.namespace", "service.version", "telemetry.sdk.language", "telemetry.sdk.name", "telemetry.sdk.version"])
+      - context: log
+        statements:
+          - keep_keys(log.attributes, ["duration_ms", "exception.type", "http.request.method", "http.response.status_code", "http.route"])
+  redaction:
+    allow_all_keys: true
+    blocked_values:
+      - '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
+    summary: silent
   batch: {}
 
 exporters:
-  debug:
-    verbosity: detailed
-  otlphttp/prometheus:
+  otlp_http/prometheus:
     endpoint: http://prometheus:9090/api/v1/otlp
-  otlphttp/tempo:
+  otlp_http/tempo:
     endpoint: http://tempo:4318
-  otlphttp/loki:
+  otlp_http/loki:
     endpoint: http://loki:3100/otlp
 
 service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [debug, otlphttp/prometheus]
+      processors: [transform/guard, redaction, batch]
+      exporters: [otlp_http/prometheus]
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [debug, otlphttp/tempo]
+      processors: [transform/guard, redaction, batch]
+      exporters: [otlp_http/tempo]
     logs:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [debug, otlphttp/loki]
+      processors: [transform/guard, redaction, batch]
+      exporters: [otlp_http/loki]
