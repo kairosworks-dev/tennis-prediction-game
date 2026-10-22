@@ -17,6 +17,9 @@ services:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=2d
       - --web.enable-otlp-receiver
+      # Injects a 0 sample at the start time the OTLP data point carries, so the
+      # first 5xx on a brand-new series is an increase of 1 (#57, docs/alerting.md).
+      - --enable-feature=created-timestamp-zero-ingestion
     volumes:
       - ./telemetry/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -51,9 +54,20 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       # Local demo only; override from the environment.
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-telemetry-dev-only-not-a-secret}
+      # The links in an alert notification (dashboardURL, panelURL) are built
+      # from this, so they open from outside the container (#57).
+      GF_SERVER_ROOT_URL: http://localhost:3000
+      # Where the alert's webhook contact point posts. Read by the provisioning
+      # file in telemetry/grafana/provisioning/alerting/. The default is the
+      # on-call responder (#58) running on the host.
+      RESPONDER_URL: ${RESPONDER_URL:-http://host.docker.internal:8001/alerts}
+    # host.docker.internal also resolves on Linux hosts.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./telemetry/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
       - ./telemetry/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./telemetry/grafana/provisioning/alerting:/etc/grafana/provisioning/alerting:ro
       - ./telemetry/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
     ports:
