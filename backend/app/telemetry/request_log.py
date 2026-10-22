@@ -1,9 +1,12 @@
-"""One "request completed" record per API request (#56).
+"""One "request completed" record per API request, and the X-Trace-Id header (#56).
 
 Runs inside the OpenTelemetry middleware, so the record is written while the
 server span's context is current and carries its trace and span IDs. Fields
 are fixed: method, route template, status, duration; an unhandled exception
 adds one ERROR record with the exception type only, never its message.
+
+Each response also carries `X-Trace-Id` (32 hex), the ID to look up in Tempo
+and Loki. It is an operational header, not part of openapi.yaml.
 """
 
 from __future__ import annotations
@@ -33,6 +36,11 @@ class RequestLogMiddleware:
             nonlocal status
             if message["type"] == "http.response.start":
                 status = message["status"]
+                context = trace.get_current_span().get_span_context()
+                if context.is_valid:
+                    headers = list(message.get("headers", []))
+                    headers.append((b"x-trace-id", format(context.trace_id, "032x").encode()))
+                    message = {**message, "headers": headers}
             await send(message)
 
         try:
