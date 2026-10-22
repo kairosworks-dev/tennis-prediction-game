@@ -2,41 +2,248 @@
 
 [![CI](https://github.com/kairosworks-dev/tennis-prediction-game/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kairosworks-dev/tennis-prediction-game/actions/workflows/ci.yml)
 
-A web application for running tennis prediction competitions among a group of friends.
-One competition covers one tournament. Participants predict the tournament outcome
-before play begins and submit smaller predictions round by round. Points accumulate
-into a leaderboard.
+A web application for running a tennis prediction game among a group of friends.
 
-No money, no odds, no payouts — this replaces a hand-maintained spreadsheet and a
-chat thread full of bets, not a bookmaker.
+**The problem.** A group that bets on a tournament for fun usually ends up with a
+hand-kept spreadsheet, a chat thread full of predictions, and one person adding
+up the points by hand after every round. Rules get re-explained each time, late
+bets are argued over, and nobody is sure who is winning.
 
-The authoritative specification is [`docs/product-and-technical-spec.md`](docs/product-and-technical-spec.md).
-Where the code currently stands against it — unmet definitions of done, known
-defects, open decisions — is [`docs/status.md`](docs/status.md).
+**What this is.** One place where a group predicts a tournament and sees a
+leaderboard. One game covers one tournament. Before play begins each participant
+predicts how the tournament will go (who reaches the quarter-finals, who wins);
+while it runs they submit smaller predictions round by round. The organiser
+enters the real results, the app scores everyone, and the leaderboard updates.
+There is no money, no odds and no payout: it replaces a spreadsheet and a chat
+thread, not a bookmaker.
+
+You can try it now at **https://deuce.kairosworks.dev** (see [Try it online](#try-it-online)),
+or run it yourself with one Docker command (see [Quickest way to try it](#quickest-way-to-try-it)).
+
+## Contents
+
+- [How the game works](#how-the-game-works)
+- [Status](#status)
+- [Architecture](#architecture)
+- [Try it online](#try-it-online)
+- [Prerequisites](#prerequisites)
+- [Quickest way to try it](#quickest-way-to-try-it)
+- [Local development without Docker](#local-development-without-docker)
+- [The image on its own](#the-image-on-its-own)
+- [Tests](#tests)
+- [CI](#ci)
+- [Deploy](#deploy)
+- [Configuration](#configuration)
+- [API documentation](#api-documentation)
+- [Observability](#observability)
+- [Alerting on user impact](#alerting-on-user-impact)
+- [On-call responder](#on-call-responder)
+- [Repository layout](#repository-layout)
+- [How it was built](#how-it-was-built)
+
+The authoritative specification is [`docs/product-and-technical-spec.md`](docs/product-and-technical-spec.md);
+where the code stands against it is [`docs/status.md`](docs/status.md).
 Instructions for coding agents are in [`AGENTS.md`](AGENTS.md).
+
+---
+
+## How the game works
+
+**Roles.** There are two. A **participant** registers, joins a game, places
+predictions and reads the leaderboard. The **organiser** (called *admin* in the
+spec) can do all of that and also enters the real results and triggers scoring
+(spec [section 3](docs/product-and-technical-spec.md#3-users-and-roles)).
+
+**Two kinds of bet.** *Tournament bets* are placed once per draw before the
+tournament starts. *Round bets* are placed while it runs, one bet group per round.
+A **bet group** is a set of questions that share one deadline and lock together.
+A Grand Slam game has two draws (ATP and WTA), so it asks the tournament questions
+twice. The point values below are the **default scoring profile** of spec
+[section 5](docs/product-and-technical-spec.md#5-game-rules-and-scoring); the
+spec makes every value editable per tournament.
+
+**The six tournament questions** (per draw, [5.1](docs/product-and-technical-spec.md#51-tournament-bets)):
+
+| Question | What you pick | Default points |
+|---|---|---|
+| Quarter-finalists | One player per draw section, 8 picks | 1 per correct pick |
+| Semi-finalists | 4 of your quarter-finalists | 2 per correct pick |
+| Finalists | 2 of your semi-finalists | 3 per correct pick |
+| Champion | 1 of your finalists | 5 |
+| Underperformer | One player seeded in the top 10 | 3 / 2 / 1 for an exit in round 1 / 2 / 3, otherwise 0 |
+| Breakout | One unseeded entrant | 2 / 3 / 4 / 5 / 7 for reaching round 4 / the quarter-final / the semi-final / the final / winning |
+
+**The two round questions** ([5.2](docs/product-and-technical-spec.md#52-round-bets)):
+
+| Question | What you pick | Default points |
+|---|---|---|
+| Featured match | The winner and the set score, for example a 3-1 win | 1 for the correct winner, 1 more for the exact set score |
+| Extra question | Whatever the organiser composes (a player, a match result, a number, a choice) | Set per question by the organiser |
+
+The set-score point is awarded only when the winner is also correct.
+
+**A worked example.** Ana's picks for one draw, scored against what actually happened:
+
+| Question | Ana's pick | What happened | Points |
+|---|---|---|---|
+| Quarter-finalists | 8 players | 6 of them reached the quarter-final | 6 x 1 = 6 |
+| Semi-finalists | 4 of those 8 | 3 of them reached the semi-final | 3 x 2 = 6 |
+| Finalists | 2 of those 4 | 1 of them reached the final | 1 x 3 = 3 |
+| Champion | 1 of those 2 (the finalist who got through) | that player won | 5 |
+| Underperformer | a top-10 seed | lost in round 2 | 2 |
+| Breakout | an unseeded entrant | reached the quarter-final | 3 |
+
+That is 6 + 6 + 3 + 5 + 2 + 3 = **25 points** from the tournament bets. In the
+quarter-final round Ana also answers the featured match: she picks player A to win
+3-1. A wins, but 3-2. The winner is right (1 point) and the set score is wrong (no
+point), so she scores **1** for the round, **26** in total. A participant who had
+picked A to win 3-2 would have scored 2; one who had picked B to win 3-1 would
+have scored 0, because the set-score point needs the correct winner. If Ben also
+has 26 and Cleo has 20, the leaderboard reads Ana 1st, Ben 1st, Cleo 3rd.
+
+**What follows from the rules.** Each claim is in the spec; the section is linked.
+
+- **A bet group locks at its deadline.** Until then a participant can edit
+  freely, and partial answers are saved as drafts. After it, the form is read-only
+  and the server rejects submissions ([4.4.2](docs/product-and-technical-spec.md#442-betting)).
+- **The backend enforces validation.** The pick chain (8 quarter-finalists, then 4,
+  then 2, then 1), seed limits for the underperformer, an unseeded breakout and legal
+  set scores are checked in the API; the UI only mirrors them for convenience
+  ([5.3](docs/product-and-technical-spec.md#53-validation-rules)).
+- **Scores are stored, not computed on read.** Each recalculation writes one score
+  entry per participant per question, with the points and a reason
+  ([5.4](docs/product-and-technical-spec.md#54-scoring-mechanics)).
+- **The organiser triggers recalculation by hand.** Entering results does not
+  rescore by itself; the organiser presses *Recalculate scores*, which is safe to
+  repeat ([4.5.4](docs/product-and-technical-spec.md#454-results-and-scoring)).
+- **Ties share a rank.** Two participants on the same total share a position and
+  the next position is skipped; there is no tie-breaker
+  ([4.4.4](docs/product-and-technical-spec.md#444-ranking)).
 
 ---
 
 ## Status
 
-Built in four sequential steps. Each step has a definition of done in Section 9 of
-the spec, and no step starts before the previous one meets it.
+This is the final project of the [AI Dev Tools Zoomcamp](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp).
+Per-criterion detail, known defects and open decisions are in [`docs/status.md`](docs/status.md).
 
-| Step | Scope | State |
-|---|---|---|
-| 1 | React frontend against a mocked service layer | **Done** |
-| 2 | `openapi.yaml` derived from the frontend service layer | **Done** |
-| 3 | FastAPI backend with in-memory repositories | **Done** |
-| 4 | SQLAlchemy and SQLite persistence | **Done** |
+**What works**
 
-All four are done, to the narrowed screen surface set by decision D14 — nineteen
-API operations rather than thirty-four, with the deferred screens recorded in
-spec section 13 rather than dropped. 215 tests pass; the backend suite runs
-twice, once against each repository implementation.
+- Landing page with a live teaser of the next open game.
+- Sign-up and sign-in with a session cookie.
+- The game list in three states (open for signup, running, finished), and joining an open game.
+- Placing tournament bets (with the pick chain validated) and round bets, up to the deadline.
+- My predictions and scores, with a reason for each award.
+- The leaderboard, with ties sharing a rank.
+- For the organiser: entering the outcome grid and question answers, and recalculating scores.
+- The same image runs on Postgres in a dev and a production environment, with CI
+  and a promote-by-hand workflow ([CI](#ci), [Deploy](#deploy)).
+- Observability ([Observability](#observability)), an alert on user impact
+  ([Alerting on user impact](#alerting-on-user-impact)) and an on-call responder
+  ([On-call responder](#on-call-responder)).
 
-Two definitions of done are still unmet and two defects are known.
-[`docs/status.md`](docs/status.md) lists them, and is the right place to start
-when picking this up again.
+**Not built yet**
+
+- Deferred by decision D14 ([spec section 13](docs/product-and-technical-spec.md#13-post-mvp-backlog)):
+  admin screens other than the outcome grid and recalculation (tournaments, draws and
+  questions are seeded by script), email verification, password reset, profile
+  editing, account deletion, the draw view, the post-lock comparison view, and the
+  landing-page gallery and testimonials.
+- CSRF protection and rate limiting on the auth endpoints.
+- Frontend types generated from `openapi.yaml`.
+- A Playwright end-to-end test.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+  subgraph runtime["Running system"]
+    browser["Browser"]
+    subgraph container["Container image"]
+      fe["Frontend: React, built by Vite, served by the backend at /"]
+      subgraph be["Backend: FastAPI under /api"]
+        api["api: routers, schemas, auth"]
+        services["services: use cases"]
+        domain["domain: entities, scoring, validation"]
+        repos["repositories: memory and SQLAlchemy"]
+        providers["providers: tennis data, email"]
+        api --> services
+        services --> domain
+        services --> repos
+        services --> providers
+      end
+    end
+    db[("Database: SQLite locally and in unit tests, Postgres in compose, CI and deployed")]
+    browser -->|"loads the app"| fe
+    browser -->|"HTTP /api, session cookie"| api
+    repos --> db
+  end
+  contract["openapi.yaml: the contract"]
+  contract -.->|"frontend service layer"| fe
+  contract -.->|"checked by the drift test"| api
+  subgraph cicd["CI/CD: GitHub Actions"]
+    check["check"]
+    gate["commit-gate"]
+    integration["integration"]
+    image["image: built once, pushed to GHCR"]
+    devdeploy["deploy-dev: automatic on every push to main"]
+    promote["promote: by hand, with approval"]
+    check --> image
+    gate --> image
+    integration --> image
+    image --> devdeploy
+    image --> promote
+  end
+  devdeploy --> devenv["dev environment"]
+  promote --> prodenv["production environment"]
+```
+
+**Frontend.** React 18 with TypeScript (strict), Vite, React Router, TanStack Query,
+React Hook Form with Zod and Tailwind CSS. Every call to the backend goes through
+one service layer with two interchangeable implementations, a mock on fixtures and
+an HTTP client, chosen by `VITE_API_CLIENT`. Vite builds it into static files that
+the backend serves in the image. Tested with Vitest and React Testing Library.
+
+**Backend.** FastAPI with Pydantic v2, SQLAlchemy 2.0, Alembic, Argon2 password hashing
+and session cookies. It is layered with dependencies pointing inward: `api` calls
+`services`, which orchestrate the `domain` (entities, the scoring engine and the
+validation rules, with no framework imports), the `repositories` and the `providers`.
+Tested with pytest and the httpx test client.
+
+**Database.** The repository layer is one SQLAlchemy implementation that serves both
+dialects, plus an in-memory one. SQLite is used locally and in the unit tests; Postgres
+is used in the compose stack, in CI and in the deployed environments. On SQLite the
+app creates missing tables itself; on Postgres Alembic owns the schema and the app
+refuses to start against an unmigrated database.
+
+**Containers.** One image holds the whole app: the backend serves the API under `/api`
+and the built frontend at `/`. The container migrates, seeds the demo game and starts
+uvicorn. `docker-compose.yml` runs that image next to a Postgres, for development,
+tests and CI.
+
+**CI/CD.** GitHub Actions runs `check` (lint, typecheck, unit tests), `commit-gate`
+and `integration` on every push. On `main`, once all three pass, `image` builds the
+image once and pushes it to GHCR; `deploy-dev` then deploys it to dev automatically.
+Production changes only through the `Promote` workflow, started by hand, approved in
+the `production` environment, and deploying the same image digest dev ran.
+
+**How it fits.** The browser loads the built frontend and talks to the backend over
+HTTP under `/api` with a session cookie. `openapi.yaml` is the agreement between the
+two sides, and a test fails if it and the FastAPI schema disagree. The same image is
+what CI tests, what compose runs and what both environments deploy.
+
+**Thin client, thick backend.** All validation, rule enforcement and scoring live
+server-side; the frontend duplicates validation for user experience only, and the
+backend is always the authority. Every external dependency (tennis data,
+authentication, email) sits behind an interface with a mock implementation, so no
+vendor outage can break the game. Scores are derived data: they can be deleted and
+recomputed at any time from predictions, the outcome grid and question outcomes.
+These follow the hard rules in [`AGENTS.md`](AGENTS.md#hard-rules): no HTTP outside the
+frontend service layer (rule 1), no business logic in the frontend (2), the contract
+(3), a framework-free domain (4), a pure scoring function (5), dependencies behind
+interfaces (6), rebuildable derived data (7) and the database as a URL (8).
 
 ---
 
@@ -50,46 +257,70 @@ results screen; the password for both is `deuce-demo-password`. These accounts
 are public, so anyone can change outcomes there. Production's data is wiped
 after the course.
 
----
+**Nothing is sent.** The app has no email provider that sends mail. It has two
+mock implementations, `console` (prints to the app's output) and `discard` (writes
+nothing, and the default when `EMAIL_PROVIDER` is unset), so no email leaves the
+app. The compose dev stack and `make run` set `console`.
 
-## Stack
-
-**Frontend** — React 18, TypeScript (strict), Vite, React Router, TanStack Query,
-React Hook Form with Zod, Tailwind CSS. Tested with Vitest and React Testing
-Library. (Playwright is specified for one end-to-end path per role and is not
-built yet — see [`docs/status.md`](docs/status.md).)
-
-**Backend** — FastAPI, Pydantic v2, SQLAlchemy 2.0 with SQLite, Alembic, Argon2
-password hashing, session cookies. Tested with pytest and the httpx test client.
-
-`openapi.yaml` at the repository root is the single agreement between the two.
+Anyone can register on the public site. Email verification is not built, so a
+registration changes nothing visible beyond a new account.
 
 ---
 
-## Repository layout
+## Prerequisites
 
-```
-/backend               FastAPI application, domain layer, repositories, tests
-/frontend              React application and its service layer
-/docs
-  product-and-technical-spec.md   requirements, decisions, scope, backlog
-  status.md                       where the code stands against that spec
-  ai-usage-report.md              how this was built, and what it taught
-  design/                         Claude Design artboards (source for the canvas)
-AGENTS.md              instructions for coding agents — read this first
-CLAUDE.md              points at AGENTS.md
-Makefile               make run, make test, make test-unit, make check
-/.github/workflows     CI (ci.yml): check, commit-gate, integration
-Dockerfile             one image: backend serving the built frontend
-docker-compose.yml     app + Postgres for dev, test and CI
-.env.example           optional compose settings, placeholders only
-openapi.yaml           the agreement between frontend and backend
-README.md              this file
+| You want to | You need |
+|---|---|
+| Run the app: [Quickest way to try it](#quickest-way-to-try-it), [The image on its own](#the-image-on-its-own) | Docker with the compose plugin. Nothing else: no Node, no uv. |
+| Develop without Docker: [Local development](#local-development-without-docker), `make run`, `make test-unit`, `make check` | **Node 20+** and **[uv](https://docs.astral.sh/uv/)** |
+| Run every test: `make test`, `make test-integration` | Docker, and uv (the integration suite uses the backend's pytest and httpx) |
+
+---
+
+## Quickest way to try it
+
+The whole stack, app and Postgres, with one command and no setup:
+
+```bash
+docker compose up --build
 ```
 
+Open <http://localhost:8000> and sign in as `you@example.com` or
+`organiser@example.com` with the demo password `deuce-demo-password`; the game
+list shows the seeded Roland Garros 2026 game. The app waits for Postgres to be
+healthy, migrates, seeds (on every start; it is idempotent) and serves. This is
+the stack for development, tests and CI only; the deployments pull the image
+CI built (see [Deploy](#deploy)). The image itself is described in
+[The image on its own](#the-image-on-its-own).
+
+**Port 8000 taken?** Publish the app on another host port:
+
+```bash
+APP_PORT=8001 docker compose up --build   # then open http://localhost:8001
+```
+
+Every variable has a development-only default, so a `.env` file is optional;
+copy `.env.example` to `.env` to change one (see [Configuration](#configuration)).
+The dev stack sets `EMAIL_PROVIDER=console`, so it prints the verification line
+(address and token) to the app's output: `docker compose logs app`. The image
+itself does not.
+
+- `docker compose down` stops the stack and **keeps** the data (named volume
+  `pgdata`). `docker compose down -v` also deletes it; the next `up` starts
+  empty, migrates and re-seeds.
+- **The Postgres password is applied only when the volume is first created.**
+  Changing `POSTGRES_USER`, `POSTGRES_PASSWORD` or `POSTGRES_DB` against an
+  existing volume makes the app exit non-zero within `PGCONNECT_TIMEOUT` with
+  the error in `docker compose logs app`; run `docker compose down -v` to change
+  it.
+- Postgres is not published to the host. To look inside:
+  `docker compose exec postgres psql -U tennis tennis`.
+- There is no restart policy: a failed migration stops the app instead of
+  looping.
+
 ---
 
-## Running it locally
+## Local development without Docker
 
 Requires **Node 20+** and **[uv](https://docs.astral.sh/uv/)**.
 
@@ -100,7 +331,7 @@ make run
 
 `make run` migrates the database, seeds a demo game, starts the backend on
 **:8000** and the frontend on **:5173** pointed at it, and Ctrl-C stops both.
-Open http://localhost:5173.
+Open http://localhost:5173. It uses SQLite.
 
 Sign in as `you@example.com` to play, or `organiser@example.com` to reach the
 results screen. Password for both: `deuce-demo-password`.
@@ -109,13 +340,29 @@ results screen. Password for both: `deuce-demo-password`.
 
 | | |
 |---|---|
+| `make install` | Install both packages (`npm install`, `uv sync`) |
 | `make run` | Backend and frontend together, on SQLite |
 | `make run-mock` | Frontend alone on in-memory fixtures — no backend, no database |
+| `make run-backend` | Backend alone, on SQLite (`db` first; auto-reload) |
+| `make run-frontend` | Frontend alone, against a backend that is already running |
+| `make db` | Migrate and seed the database (a no-op if already seeded) |
 | `make reset-db` | Throw the database away and rebuild it from empty |
 | `make test` | Every test: Vitest, pytest, then the integration tests (needs Docker) |
 | `make test-unit` | Vitest and pytest only (no Docker) |
-| `make check` | Lint, typecheck and every unit test (no Docker) |
+| `make test-frontend`, `make test-backend` | One half of the unit tests |
 | `make test-integration` | Build the compose stack on a separate project, test it over HTTP, tear it down |
+| `make lint`, `make typecheck` | ESLint and ruff; `tsc --noEmit` |
+| `make check` | Lint, typecheck, every unit test and the commit-gate tests (no Docker) |
+| `make docker-build` | Build the container image |
+| `make hooks` | Enable the commit gate (a git pre-commit hook) for this clone; contributors only |
+| `make clean` | Remove build output and the local database |
+
+**Port 8000 taken?** `make run` needs it: the frontend dev server proxies `/api` to
+`http://localhost:8000`, a fixed target in `frontend/vite.config.ts`, so the frontend
+only reaches a backend on 8000, and setting `BACKEND_PORT` alone does not move the
+pair. Use the Docker path above with `APP_PORT`, or `make run-mock` (no backend at all).
+`make run-backend BACKEND_PORT=<port>` starts the backend alone on another port, for
+`curl` or <http://localhost:8001/docs>.
 
 ### Running it without make
 
@@ -136,20 +383,13 @@ layer exists for. Set it in `frontend/.env` to make a choice stick.
 
 ### Database
 
-Configuration is environment variables:
-
-- `DATABASE_URL` selects the database. Default: `sqlite:///./tennis.db`.
-  Postgres example: `postgresql+psycopg://postgres:postgres@localhost:5433/tennis`.
-  Bare `postgresql://` and `postgres://` URLs are accepted and rewritten to
-  `postgresql+psycopg://` (the installed driver) in one place, `create_db_engine`;
-  Alembic uses the same rewrite.
-- `REPOSITORY_BACKEND` is `memory` (default) or `sqlalchemy`; `sqlite` is kept
-  as an alias for `sqlalchemy`. The dialect comes from `DATABASE_URL` alone.
-  Any other value stops start-up with an error.
-- `EMAIL_PROVIDER` is `console` or `discard`. Unset or empty means `discard`: nothing
-  is written anywhere. `console` prints the verification line to stderr (address and
-  token), for a machine you control; `make run` and `make run-backend` set it.
-  Any other value stops start-up with an error.
+`DATABASE_URL` selects the database. Default: `sqlite:///./tennis.db`.
+Postgres example: `postgresql+psycopg://postgres:postgres@localhost:5433/tennis`.
+Bare `postgresql://` and `postgres://` URLs are accepted and rewritten to
+`postgresql+psycopg://` (the installed driver) in one place, `create_db_engine`;
+Alembic uses the same rewrite. `REPOSITORY_BACKEND` is `memory` (default) or
+`sqlalchemy`; `sqlite` is kept as an alias for `sqlalchemy`. The dialect comes from
+`DATABASE_URL` alone. Any other value stops start-up with an error.
 
 On SQLite the app creates missing tables itself. On any other URL it does not:
 Alembic owns the schema, and starting against an unmigrated database fails
@@ -166,7 +406,9 @@ REPOSITORY_BACKEND=sqlalchemy uv run uvicorn app.main:app --port 8000
 
 A second run of the seed script prints "Demo game roland-garros-2026 already present; nothing to do."
 
-### Build and run the image
+---
+
+## The image on its own
 
 One image holds the whole app: the backend serves the API under `/api` and the
 built frontend at `/`. It needs Docker only.
@@ -177,75 +419,21 @@ docker run --rm -p 8000:8000 -e SESSION_SECRET=change-me tennis-prediction-game
 ```
 
 Open <http://localhost:8000> and sign in as `you@example.com` with the demo
-password. At start the container migrates its database, runs the idempotent demo
-seed (on every start, for now) and then starts uvicorn; if the migration fails
-it exits non-zero. It runs as a non-root user (UID 10001).
+password (use `-p 8001:8000` if 8000 is taken). At start the container migrates its
+database, runs the idempotent demo seed (on every start, for now) and then starts
+uvicorn; if the migration fails it exits non-zero. It runs as a non-root user (UID 10001).
 
 By default the data is a SQLite file at `/data/tennis.db`. **Without a volume it
 is lost when the container is removed.** To keep it, mount a volume on `/data`
 (`-v tennis-data:/data`; a bind mount must be writable by UID 10001).
 
-| Variable | In the image | Meaning |
-|---|---|---|
-| `SESSION_SECRET` | **required**, no default | Signs the session cookie. The container refuses to start without it. |
-| `DATABASE_URL` | `sqlite:////data/tennis.db` | Any SQLAlchemy URL; a bare `postgresql://` URL works. An unreachable database makes the container exit non-zero within `PGCONNECT_TIMEOUT` (10 s by default), with the error in `docker logs`. |
-| `REPOSITORY_BACKEND` | `sqlalchemy` | See the backend conventions. |
-| `EMAIL_PROVIDER` | unset, which means `discard` | `discard` or `console`. The default never writes an address or a token to the output; set `console` only on a machine you control. Any other value stops start-up. A deployed environment leaves it unset, and the pipeline never sets it. |
-| `COOKIE_SECURE` | unset, which means `false` | `true` marks the session cookie `Secure`, for a deployment behind HTTPS; `false` is for plain HTTP and local use only. Any other value (`True`, `1`, `yes`) stops start-up. |
-| `FRONTEND_DIR` | `/app/static` | Where the built frontend lives; served only if it exists. |
-
 `GET /health` (process is up, no database) and `GET /ready` (database answers)
 are the container's probes; neither is part of `openapi.yaml` (decision D17).
+The variables the image reads are in [Configuration](#configuration).
 
-### Run with Docker
+---
 
-The whole stack, app and Postgres, with one command and no setup:
-
-```bash
-docker compose up --build
-```
-
-Open <http://localhost:8000> and sign in as `you@example.com` or
-`organiser@example.com` with the demo password `deuce-demo-password`; the game
-list shows the seeded Roland Garros 2026 game. The app waits for Postgres to be
-healthy, migrates, seeds (on every start; it is idempotent) and serves. This is
-the stack for development, tests and CI only; the deployment pulls the image
-CI built (see [Deploy](#deploy)). The image itself is described in
-[Build and run the image](#build-and-run-the-image).
-
-Every variable has a development-only default, so a `.env` file is optional;
-copy `.env.example` to `.env` to change one.
-
-| Variable | Default | Meaning |
-|---|---|---|
-| `SESSION_SECRET` | `compose-dev-only-not-a-secret` | Signs the session cookie. Local and CI use only, never a deployment. |
-| `POSTGRES_USER` | `tennis` | Postgres user. |
-| `POSTGRES_PASSWORD` | `tennis` | Postgres password. |
-| `POSTGRES_DB` | `tennis` | Database name. |
-| `APP_PORT` | `8000` | Host port the app is published on (`APP_PORT=8001 docker compose up`). |
-| `EMAIL_PROVIDER` | `console` | The dev stack prints the verification line (address and token) to the app's output, see `docker compose logs app`. |
-
-The dev stack prints the verification line on purpose (`EMAIL_PROVIDER=console`);
-the image does not.
-
-`DATABASE_URL` is assembled from the three `POSTGRES_*` values and can be
-overridden whole. `COOKIE_SECURE` is left unset: the stack is plain HTTP on
-localhost.
-
-- `docker compose down` stops the stack and **keeps** the data (named volume
-  `pgdata`). `docker compose down -v` also deletes it; the next `up` starts
-  empty, migrates and re-seeds.
-- **The Postgres password is applied only when the volume is first created.**
-  Changing `POSTGRES_USER`, `POSTGRES_PASSWORD` or `POSTGRES_DB` against an
-  existing volume makes the app exit non-zero within `PGCONNECT_TIMEOUT` with
-  the error in `docker compose logs app`; run `docker compose down -v` to change
-  it.
-- Postgres is not published to the host. To look inside:
-  `docker compose exec postgres psql -U tennis tennis`.
-- There is no restart policy: a failed migration stops the app instead of
-  looping.
-
-### Tests
+## Tests
 
 **One command.** `make test` runs every test the project has, in this order:
 the Vitest suite, the backend pytest suite, then the integration tests over
@@ -268,7 +456,7 @@ There are two suites, and they answer different questions.
 | Covers | scoring, validation, repositories, every endpoint's rules, the UI | the key workflows end to end: sign-in, registration, joining, predicting, refusal of locked groups and of non-organisers, organiser results through to score and ranking, recalculation |
 | Takes | about a minute | about 15 seconds once the image is cached, longer on a cold build |
 
-#### Unit
+### Unit
 
 ```bash
 cd frontend && npm run test && npm run lint && npm run typecheck
@@ -279,7 +467,9 @@ cd backend && uv run pytest && uv run ruff check .
 ```
 
 The backend suite runs against the in-memory repositories and against SQLAlchemy
-on SQLite. With `TEST_DATABASE_URL` set it also runs against Postgres. To add a Postgres run, point `TEST_DATABASE_URL` at a throwaway database
+on SQLite. With `TEST_DATABASE_URL` set it also runs against Postgres. To add a
+Postgres run, start the throwaway Postgres from [Database](#database) and create a
+throwaway database in it
 (`docker exec tennis-pg psql -U postgres -c "create database tennis_test"`):
 
 ```bash
@@ -291,7 +481,7 @@ Each Postgres test drops and recreates every table, and the suite refuses a
 parameter is skipped. `tests/test_contract_drift.py` fails if
 `openapi.yaml` and the backend disagree about any operation.
 
-#### Integration
+### Integration
 
 ```bash
 make test-integration
@@ -328,7 +518,9 @@ is 90 seconds, overridable with `READY_TIMEOUT`. The tests register accounts and
 change scores, so a host other than `localhost` or `127.0.0.1` aborts the run
 before any request unless `INTEGRATION_ALLOW_REMOTE=1` is set.
 
-#### CI
+---
+
+## CI
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml), a workflow named `CI`,
 runs on every push to any branch, on every pull request targeting `main` and
@@ -353,20 +545,41 @@ by `deploy-dev` alone. Every third-party action is pinned to a full commit SHA.
 Dependabot proposes updates to those pins weekly, on branches named
 `dependabot/…` (outside the `issue-<n>/…` naming); each proposal changes the
 SHA and the `# vX.Y.Z` comment together, CI runs on it like on any pull
-request, and the author reviews and merges it himself, with no auto-merge.
+request, and the author reviews and merges it, with no auto-merge.
 CI runs only the generic commit-gate patterns:
 `agent-hooks/private-patterns.txt` is gitignored and absent there, so the
 author's own name list still runs only locally, through `make hooks`.
 
-### Deploy
+---
 
-Two environments run the image CI built, never a rebuild from the repository
-and never `docker-compose.yml`:
+## Deploy
+
+**In short:** dev is deployed automatically on every push to `main`; production is
+promoted by hand, with an approval, and runs the same image digest that CI built
+and dev ran. Both run the image CI built, never a rebuild from the repository and
+never `docker-compose.yml`.
 
 | Environment | What updates it | Who triggers it |
 |---|---|---|
 | dev | The `deploy-dev` job of `CI`, on every push to `main` that passes the gate | Nobody: it is automatic. A dispatch of `CI` from `main` redeploys the tip |
 | production | The [`Promote`](.github/workflows/promote.yml) workflow, for one commit that passed CI and ran on dev | The author, by hand, then approves the run in the `production` environment |
+
+To promote a commit to production, from a checkout with `gh`:
+
+```bash
+gh workflow run promote.yml -f sha=<sha>
+```
+
+`<sha>` is the full 40-character lower-case commit sha of a commit that passed `CI`
+and was deployed to dev. [`ci.yml`](.github/workflows/ci.yml) has the jobs `check`,
+`commit-gate`, `integration`, `image` and `deploy-dev`;
+[`promote.yml`](.github/workflows/promote.yml) has `verify` (read-only checks that
+the commit passed CI, ran on dev and has an image) and `promote` (waits for the
+approval, then deploys). The details of both environments, the request sent to
+the server and the limits are below.
+
+<details>
+<summary>Deploy details: dev, production, the server interface and limits</summary>
 
 `deploy-dev` and the promote job share one deploy action,
 [`.github/actions/deploy`](.github/actions/deploy/action.yml), so the request,
@@ -447,7 +660,7 @@ server* below; the scripts on the server are not in this repository.
   that is merely waiting, so a superseded commit is never built or deployed; the
   newest one is.
 
-#### Production
+### Production
 
 Production is deployed by hand, only through the `Promote` workflow, and only
 with a commit that already passed CI and ran on dev.
@@ -497,24 +710,105 @@ with a commit that already passed CI and ran on dev.
 - **Demo data.** Production runs the same image and the same demo seed as dev,
   is never reset by the pipeline, and its data is wiped after the course.
 
-### API documentation
+</details>
+
+---
+
+## Configuration
+
+Configuration is environment variables. Every default below is for development; none
+of these values is a secret.
+
+| Variable | Default | Where | Meaning |
+|---|---|---|---|
+| `DATABASE_URL` | `sqlite:///./tennis.db`; the image sets `sqlite:////data/tennis.db`; compose builds a Postgres URL from the `POSTGRES_*` values | backend, image, compose | Any SQLAlchemy URL; a bare `postgresql://` URL works. An unreachable database makes the container exit non-zero within `PGCONNECT_TIMEOUT` (10 s by default), with the error in `docker logs`. |
+| `REPOSITORY_BACKEND` | `memory` in the code; the image sets `sqlalchemy`; `make run` sets `sqlite` (an alias) | backend, image | `memory` or `sqlalchemy`. Any other value stops start-up. |
+| `SESSION_SECRET` | none in the image, which **refuses to start** without it; compose uses the placeholder `compose-dev-only-not-a-secret`; a bare backend (tests, `make run`) uses a development-only value | image, compose, backend | Signs the session cookie. The placeholders are for local and CI use only, never a deployment. |
+| `COOKIE_SECURE` | unset, which means `false` | backend, image | `true` marks the session cookie `Secure`, for a deployment behind HTTPS; `false` is for plain HTTP and local use only. Any other value (`True`, `1`, `yes`) stops start-up. Compose leaves it unset. |
+| `EMAIL_PROVIDER` | unset, which means `discard`; compose and `make run` set `console` | backend, image, compose | `discard` writes nothing; `console` prints the verification line (address and token) to stderr, for a machine you control. Neither sends mail. Any other value stops start-up. Neither the image nor the pipeline sets it. |
+| `FRONTEND_DIR` | `/app/static` (set by the image) | image | Where the built frontend lives; served only if it exists. |
+| `APP_PORT` | `8000` | compose | Host port the app is published on (`APP_PORT=8001 docker compose up`). |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | `tennis` each | compose | Postgres user, password and database name. Applied only when the `pgdata` volume is first created. |
+| `VITE_API_CLIENT` | `mock` | frontend | `mock` (fixtures, no backend) or `http` (the real API). `make run` and the image build use `http`. Set it in `frontend/.env` to make a choice stick. |
+| `PGCONNECT_TIMEOUT` | `10` (set by the image entrypoint) | image | Seconds to wait for an unreachable Postgres before the container exits. |
+
+`.env.example` at the root holds the compose values (`SESSION_SECRET`,
+`POSTGRES_*`, `APP_PORT`, `EMAIL_PROVIDER`) and is optional. The variables of the
+test targets (`TEST_DATABASE_URL`, `IT_PROJECT`, `IT_PORT`, `APP_URL`) are in [Tests](#tests).
+
+---
+
+## API documentation
 
 With the backend running, http://localhost:8000/docs serves the generated
 OpenAPI UI. The committed contract is [`openapi.yaml`](openapi.yaml) and it is
 the source of truth — the drift check exists to keep the two honest.
 
-## Architecture in one paragraph
+---
 
-Thin client, thick backend. All validation, rule enforcement and scoring live
-server-side; the frontend duplicates validation for user experience only, and the
-backend is always the authority. Every external dependency — tennis data,
-authentication, email — sits behind an interface with a mock implementation, so
-no vendor outage can break the game. Scores are derived data: they can be deleted
-and recomputed at any time from predictions, the outcome grid and question
-outcomes.
+## Observability
+
+An optional local telemetry stack for looking inside the running app. It is not
+needed to run, test or deploy the app. What it is and how to start it:
+[`docs/observability.md`](docs/observability.md).
+
+## Alerting on user impact
+
+An alert that fires when users are affected. What it watches and how to read it:
+[`docs/alerting.md`](docs/alerting.md).
+
+## On-call responder
+
+The on-call responder handles that alert. How it works and how it is run:
+[`incident-response/README.md`](incident-response/README.md).
 
 ---
 
-## Context
+## Repository layout
 
-Built for Module 2 of the [AI Dev Tools Zoomcamp](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp) by Alexey Grigorev and the DataTalks.Club, as an exercise in a controlled AI-assisted workflow: spec first, then frontend, then contract, then backend, then persistence — verifying each step before starting the next. The AI usage log is in [`docs/ai-usage-report.md`](docs/ai-usage-report.md).
+```
+/backend               FastAPI application, domain layer, repositories, unit tests
+/frontend              React application and its service layer
+/tests/integration     integration tests, run over HTTP against the compose stack
+/docs
+  product-and-technical-spec.md   requirements, decisions, scope, backlog
+  status.md                       where the code stands against that spec
+  process.md                      how an issue moves from open to closed
+  team/                           the role definitions: pm, software-engineer, qa-engineer
+  task-template.md                the template for a new issue
+  ai-usage-report.md              how this was built, and what it taught
+  permissions.md, demo.md         permissions note; the extension-pack demo
+  design/                         Claude Design artboards (source for the canvas)
+/agent-capabilities    reusable workflows and subagent definitions (tool-agnostic)
+/agent-hooks           guardrail scripts, including the commit gate
+/ops                   sanitised operational evidence
+/.claude               links into agent-capabilities/ and the hook wiring
+/.github
+  workflows/ci.yml        CI: check, commit-gate, integration, image, deploy-dev
+  workflows/promote.yml   Promote: verify, promote (production, by hand)
+  actions/deploy          the deploy action both workflows share
+  dependabot.yml          weekly updates to the pinned actions
+AGENTS.md              instructions for coding agents — read this first
+CLAUDE.md              points at AGENTS.md
+Makefile               make run, make test, make test-unit, make check, and more
+Dockerfile             one image: backend serving the built frontend
+docker-entrypoint.sh   the image's start-up: migrate, seed, serve
+docker-compose.yml     app + Postgres for dev, test and CI
+.env.example           optional compose settings, placeholders only
+openapi.yaml           the agreement between frontend and backend
+product-spec.md        pointer to docs/product-and-technical-spec.md
+README.md              this file
+```
+
+---
+
+## How it was built
+
+This is the final project of the [AI Dev Tools Zoomcamp](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp)
+by Alexey Grigorev and the DataTalks.Club. It was built spec first, then the
+frontend on a mocked service layer, then the contract, the backend and persistence,
+and then shipped and operated: containers, tests under one command, CI/CD and
+deployment. An agent team with defined roles (product manager, engineer, QA,
+API reviewer) did the work an issue at a time: see [`AGENTS.md`](AGENTS.md),
+[`docs/process.md`](docs/process.md) and the usage log
+[`docs/ai-usage-report.md`](docs/ai-usage-report.md).
