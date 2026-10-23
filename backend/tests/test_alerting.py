@@ -172,6 +172,23 @@ class TestNotification:
         assert receiver["settings"]["httpMethod"] == "POST"
         assert receiver["disableResolveMessage"] is False
 
+    def test_the_contact_point_authorizes_with_a_bearer_token_from_the_environment(self) -> None:
+        (point,) = _yaml(f"{ALERTING}/contact-points.yaml")["contactPoints"]
+        (receiver,) = point["receivers"]
+        settings = receiver["settings"]
+        # Grafana's own authorization settings, not a hand-built header.
+        assert settings["authorization_scheme"] == "Bearer"
+        assert settings["authorization_credentials"] == "${RESPONDER_TOKEN}"
+        assert "headers" not in settings and "httpHeaders" not in settings
+
+    def test_no_token_value_is_in_a_provisioning_file_or_the_overlay(self) -> None:
+        files = [*(REPO / ALERTING).glob("*.yaml"), REPO / "docker-compose.telemetry.yml"]
+        for path in files:
+            for line in path.read_text().splitlines():
+                if "RESPONDER_TOKEN" in line and not line.lstrip().startswith("#"):
+                    # only the variable is named, never a value (a long hex or base64 string)
+                    assert not re.search(r"[0-9a-fA-F]{32,}", line), (path, line)
+
     def test_the_policy_sends_everything_there_without_waiting(self) -> None:
         (point,) = _yaml(f"{ALERTING}/contact-points.yaml")["contactPoints"]
         (policy,) = _yaml(f"{ALERTING}/policies.yaml")["policies"]
@@ -189,6 +206,11 @@ class TestNotification:
         assert "host.docker.internal:host-gateway" in grafana["extra_hosts"]
         mount = f"./{ALERTING}:/etc/grafana/provisioning/alerting:ro"
         assert mount in grafana["volumes"]
+
+    def test_the_grafana_service_passes_the_token_with_an_empty_default(self) -> None:
+        env = _yaml("docker-compose.telemetry.yml")["services"]["grafana"]["environment"]
+        # Empty unless set, so a plain `make telemetry-up` still works.
+        assert env["RESPONDER_TOKEN"] == "${RESPONDER_TOKEN:-}"
 
     def test_prometheus_injects_a_zero_so_the_first_5xx_counts(self) -> None:
         # Without it a brand-new 5xx series has one sample and increase() says 0.
