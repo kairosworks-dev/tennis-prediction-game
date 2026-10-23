@@ -119,12 +119,13 @@ one `oncall/...` branch and one `gh pr create`. The agent never sees a token.
 - The responder's only guard besides the loopback binding is the shared secret
   `RESPONDER_TOKEN`. A leaked token, or any local process that has it, can start
   a run (which still ends in a reviewed pull request at most).
-- Inside its worktree the model can edit any file that is not denied, and its
-  tests run as code: `pytest` executes whatever the agent wrote, with the
-  agent's allow-listed environment, including on the responder's own re-run.
-  The Bash rules are not a sandbox for that code; the bounds are the
-  environment allow-list, the worktree, the responder's checks and the
-  author's review.
+- **Known limit.** The agent may edit tests and run pytest, so code it writes
+  runs outside the deny list: the list limits the commands the agent types,
+  not the code it runs through the test runner (also on the responder's own
+  re-run, which uses the agent's allow-listed environment). An OS-level
+  sandbox is a follow-up; today it would block commit signing. Until then the
+  bounds are the environment allow-list, the worktree, the responder's checks
+  and the author's review.
 - A prompt-injection attempt in alert or log text is bounded by this
   configuration and by the responder's checks, not by the prompt. The prompt
   marks that text as data, but that is advice to the model, not enforcement.
