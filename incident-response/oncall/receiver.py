@@ -35,6 +35,11 @@ class AlertHandler(BaseHTTPRequestHandler):
         and our own log line says more without any header."""
 
     def _answer(self, code: int, body: Dict[str, Any]) -> None:
+        # The method and path as sent (no query string, no header), cut short.
+        # Logged before the answer goes out, so a caller that has its answer
+        # can rely on the line being there.
+        path = urlsplit(self.path).path[:200]
+        self.server.responder.log(f"{self.command} {path} -> {code} {body.get('message', body.get('status'))}")
         data = json.dumps(body).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
@@ -43,9 +48,6 @@ class AlertHandler(BaseHTTPRequestHandler):
             self.send_header("WWW-Authenticate", 'Bearer realm="responder"')
         self.end_headers()
         self.wfile.write(data)
-        # The method and path as sent (no query string, no header), cut short.
-        path = urlsplit(self.path).path[:200]
-        self.server.responder.log(f"{self.command} {path} -> {code} {body.get('message', body.get('status'))}")
 
     def _authorised(self) -> bool:
         header = self.headers.get("Authorization", "")
