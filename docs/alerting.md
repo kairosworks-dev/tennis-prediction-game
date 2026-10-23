@@ -101,11 +101,11 @@ and series that had never had a 5xx, on a stack started from empty volumes.
 Two consequences, both visible in the recorded run:
 
 - `increase()` extrapolates, so one request reads between about 1 and 2 (2.08
-  in the recorded run). The description therefore says "about N". The rule
+  in a first run, 1.22 in the recorded one). The description therefore says "about N". The rule
   fires on any value above 0 and the count is for orientation only; Loki has
   the exact requests.
 - The 0 leaves the window two minutes after the 5xx, so the instance resolves
-  about two minutes after the last 5xx (125 s in the recorded run).
+  about two minutes after the last 5xx (122 s in the recorded run).
 
 If the flag stops working (a Prometheus upgrade that changes it), the fallback
 is an expression that does not depend on it, for example
@@ -145,28 +145,63 @@ provisioning (the overlay passes it on, default
 `http://host.docker.internal:8001/alerts`, where the responder of #58 listens on
 the host). Change the variable and restart Grafana; no file changes. The Grafana
 service has `extra_hosts: ["host.docker.internal:host-gateway"]` so the name also
-resolves on Linux. No credentials or tokens are involved.
+resolves on Linux.
 
-Grafana's **Test** button on the contact point posts a `TestAlert` to that URL.
-The demo does the same through the HTTP API (Grafana 13 moved it to
+**The responder token.** The webhook authenticates with Grafana's own webhook
+authorization settings: `authorization_scheme: Bearer` and
+`authorization_credentials: ${RESPONDER_TOKEN}` in `contact-points.yaml`, so
+every request carries `Authorization: Bearer <RESPONDER_TOKEN>`. The token is a
+local shared value for one session, not a secret kept anywhere: generate it in
+the shell, start the stack and the responder (or the demo) from that same shell,
+and no file holds it.
+
+```bash
+export RESPONDER_TOKEN=$(openssl rand -hex 32)
+```
+
+The overlay passes `RESPONDER_TOKEN` to Grafana from the environment, **empty by
+default**, so a plain `make telemetry-up` with the variable unset still works
+(the clean-clone case). What Grafana 13.2.4 does with scheme `Bearer` and empty
+credentials, observed on a stack started that way: no provisioning error, the
+contact point loads (the saved integration has no `authorization_credentials`
+secure field) and the rule is Normal; a notification is delivered **with no
+`Authorization` header at all** (neither `Bearer ` nor an empty value). A
+responder that requires the token therefore answers such a request 401, which is
+the intended outcome of forgetting to export it. Grafana keeps the credentials
+encrypted and shows them as `[REDACTED]` through its API.
+
+Grafana's **Test** button on the contact point posts a `TestAlert` to that URL,
+with the stored token. The demo does the same through the HTTP API, sending the
+saved integration with its secure fields flagged, so Grafana fills in the
+credentials it holds and the token never passes through the script (Grafana 13 moved it to
 `POST /apis/notifications.alerting.grafana.app/v1beta1/namespaces/default/receivers/<name>/test`).
 
 ## Run the demo
 
 ```bash
-RESPONDER_URL=http://host.docker.internal:8001/alerts make telemetry-up   # the default; any port will do
-make telemetry-alert-demo
+export RESPONDER_TOKEN=$(openssl rand -hex 32)   # per shell session; no file holds it
+export RESPONDER_URL=http://host.docker.internal:8001/alerts   # the default; any port will do
+make telemetry-up
+make telemetry-alert-demo                        # from the same shell
 make telemetry-down
 ```
 
 `make telemetry-alert-demo` (`telemetry/alert-demo.py`, Python 3 standard
 library only, optional like the stack) needs the stack started with the same
-`RESPONDER_URL` it sees, because Grafana reads it at start. The script starts a
-listener on that URL's port (a stand-in for the responder; stop the responder of
-#58 first if it uses the same port), and then:
+`RESPONDER_URL` and `RESPONDER_TOKEN` it sees, because Grafana reads both at
+start. It refuses to start when `RESPONDER_TOKEN` is unset or empty, and prints
+the `export` line. The script starts a listener on the URL's port (a stand-in
+for the responder; stop the responder of #58 first if it uses the same port).
+Like the responder will, the listener accepts a request only when its
+`Authorization` header is exactly `Bearer <RESPONDER_TOKEN>` (compared with
+`hmac.compare_digest`) and answers 401 to any other, which is not counted as a
+delivery. Then it:
 
-1. checks the contact point is provisioned and points at `RESPONDER_URL`, and
-   that Grafana's test delivery reaches the listener exactly once;
+1. proves that with two requests of its own, one with no token and one with a
+   wrong token, both answered 401 and not counted; checks the contact point is
+   provisioned, points at `RESPONDER_URL` and uses the Bearer scheme with stored
+   credentials; and checks that Grafana's test delivery reaches the listener,
+   with the right token, exactly once;
 2. checks the rule is Normal, signs in as the seeded participant
    (`you@example.com`), and sends the 4xx set to the journey's prediction route:
    **401** (no session cookie), **404** (unknown question), **422** (invalid
@@ -184,7 +219,7 @@ listener on that URL's port (a stand-in for the responder; stop the responder of
 7. prints `Normal -> Firing -> Normal` with times and the bodies.
 
 Postgres is started again however the script ends. It takes about three
-minutes. Settings, all optional: `RESPONDER_URL`, `LISTEN_HOST` (default
+minutes. Settings: `RESPONDER_TOKEN` (required) and, optional, `RESPONDER_URL`, `LISTEN_HOST` (default
 `127.0.0.1`; a Linux host needs `0.0.0.0` so the container can reach it),
 `BASE_URL` (default `http://127.0.0.1:${APP_PORT:-8000}`), `GRAFANA_URL`,
 `GRAFANA_ADMIN_PASSWORD`, `DEMO_EMAIL`, `DEMO_PASSWORD`, `DOCKER`.
@@ -197,8 +232,19 @@ Notes from running it:
   created. If a stack was first started with another `GRAFANA_ADMIN_PASSWORD`,
   the script (and the API calls above) get a 401: `make telemetry-reset`
   starts Grafana again from nothing.
-- A Grafana restarted with a new `RESPONDER_URL` needs no reset;
-  `docker compose ... up -d grafana` is enough.
+- A Grafana restarted with a new `RESPONDER_URL` or `RESPONDER_TOKEN` needs no
+  reset; `docker compose ... up -d grafana` is enough. Grafana applies the new
+  Alertmanager configuration only after about 60 s, so the first notification
+  within about a minute of such a restart can still go to the old URL (or carry
+  the old token). A fresh `make telemetry-up` is not affected.
+- A demo run with another `RESPONDER_TOKEN` than the stack was started with
+  fails at the test delivery (the listener refuses it with 401), not later.
+- Right after Grafana starts it can log one `level=error` line, `Failed to
+  evaluate rule ... [plugin.notRegistered] plugin not registered`, because the
+  rule is first evaluated a moment before the Prometheus datasource plugin is
+  registered. Grafana retries within a second and the rule is healthy; it is an
+  evaluation retry, not a provisioning error (seen once on a clean start with
+  no token).
 
 ## Runbook
 
@@ -275,76 +321,89 @@ Look at `alertname` and the labels.
 
 ## One recorded run
 
-22 Oct 2026, a stack started from empty telemetry volumes (so no earlier 5xx
-series), the stand-in receiver on port 18001
+23 Oct 2026, a stack started from empty telemetry volumes (so no earlier 5xx
+series) with a fresh `RESPONDER_TOKEN`, the stand-in receiver on port 18001
 (`RESPONDER_URL=http://host.docker.internal:18001/alerts`), the app on port 18080.
 Times are UTC. `make telemetry-alert-demo`, console output unedited except that
 the long `message`, `silenceURL`, `valueString`, `commonLabels` and
-`commonAnnotations` fields of the two bodies are left out (they repeat the rest):
+`commonAnnotations` fields of the two bodies are left out (they repeat the rest).
+The script prints no request headers, so the `Authorization: Bearer <redacted>`
+header of each request is not in this record, and the token appears nowhere in it:
 
 ```text
-17:43:59  listener on 127.0.0.1:18001 (RESPONDER_URL=http://host.docker.internal:18001/alerts)
-17:43:59  ok    the webhook contact point is provisioned
-17:43:59  ok    the contact point posts to RESPONDER_URL (restart the stack with the same RESPONDER_URL if not)
-17:43:59  ok    Grafana's contact-point test is accepted (200)
-17:43:59  ok    the test notification reached the listener exactly once
-17:43:59  rule state: Normal  {'(no route)': 'Normal (NoData)'}
-17:43:59  ok    the rule is Normal before any traffic from this script (is Normal)
-17:43:59  ok    sign in as the seeded participant answers 200 (got 200)
-17:43:59  sending the 4xx set to the journey's prediction route
-17:43:59  ok    PUT prediction, 401  no session cookie: answered 401
-17:43:59  ok    PUT prediction, 404  unknown question: answered 404
-17:43:59  ok    PUT prediction, 422  invalid payload: answered 422
-17:43:59  ok    PUT prediction, 403  question of a closed group: answered 403
-17:43:59  waiting three evaluations (35 s) to see the rule stay Normal
-17:44:35  ok    4xx never fires it: no notification reached the listener
-17:44:35  stopping Postgres
-17:44:36  the one failing PUT answered 500 in 12 ms
-17:44:36  ok    the request with the database stopped answers a 5xx
-17:44:36  ok    it fails fast (under 5 s), it does not hang
-17:44:37  Postgres is back, the app answers /ready
-17:44:37  polling the rule
-17:44:41  rule state: Firing  {'(no route)': 'Normal (NoData)', '/api/tournaments/{tournament_id}/questions/{question_id}/prediction': 'Alerting'}
-17:46:40  rule state: Normal  {'/api/tournaments/{tournament_id}/questions/{question_id}/prediction': 'Normal'}
-17:46:40  ok    Firing 5 s after the failing request
-17:46:40  ok    within 90 s
-17:46:40  ok    back to Normal 125 s after the failing request
-17:46:40  ok    within 240 s of the 5xx
-17:46:40  ok    exactly one firing notification (got 1)
-17:46:40  ok    exactly one resolved notification (got 1)
-17:46:40  ok    the labels name the journey, the kind and the route template
-17:46:40  ok    the window (2m) is an annotation
-17:46:40  ok    runbook_url points at the Runbook section
-17:46:40  ok    dashboardURL names the dashboard
-17:46:40  ok    panelURL names panel 3
-17:46:40  ok    dashboardURL opens (http://localhost:3000/d/place-a-prediction?from=1792687480000&orgId=1&to=1792691080027)
-17:46:40  ok    panelURL opens (http://localhost:3000/d/place-a-prediction?from=1792687480000&orgId=1&to=1792691080027&viewPanel=3)
+10:13:40  listener on 127.0.0.1:18001 (RESPONDER_URL=http://host.docker.internal:18001/alerts)
+10:13:40  ok    the listener answers 401 to a request with no token
+10:13:40  ok    the listener answers 401 to a request with a wrong token
+10:13:40  ok    and counts neither as a delivery
+10:13:40  ok    the webhook contact point is provisioned
+10:13:40  ok    the contact point posts to RESPONDER_URL (restart the stack with the same RESPONDER_URL if not)
+10:13:40  ok    the contact point authorizes with the Bearer scheme
+10:13:40  ok    Grafana returns the stored contact point (200)
+10:13:40  ok    it holds credentials (RESPONDER_TOKEN was set when the stack started)
+10:13:41  ok    Grafana's contact-point test is accepted (200)
+10:13:41  ok    the test notification, with the right token, reached the listener exactly once
+10:13:41  rule state: Normal  {'(no route)': 'Normal (NoData)'}
+10:13:41  ok    the rule is Normal before any traffic from this script (is Normal)
+10:13:41  ok    sign in as the seeded participant answers 200 (got 200)
+10:13:41  sending the 4xx set to the journey's prediction route
+10:13:41  ok    PUT prediction, 401  no session cookie: answered 401
+10:13:41  ok    PUT prediction, 404  unknown question: answered 404
+10:13:41  ok    PUT prediction, 422  invalid payload: answered 422
+10:13:41  ok    PUT prediction, 403  question of a closed group: answered 403
+10:13:41  waiting three evaluations (35 s) to see the rule stay Normal
+10:14:17  ok    4xx never fires it: no notification reached the listener
+10:14:17  stopping Postgres
+10:14:17  the one failing PUT answered 500 in 18 ms
+10:14:17  ok    the request with the database stopped answers a 5xx
+10:14:17  ok    it fails fast (under 5 s), it does not hang
+10:14:19  Postgres is back, the app answers /ready
+10:14:19  polling the rule
+10:14:21  rule state: Firing  {'(no route)': 'Normal (NoData)', '/api/tournaments/{tournament_id}/questions/{question_id}/prediction': 'Alerting'}
+10:16:20  rule state: Normal  {'/api/tournaments/{tournament_id}/questions/{question_id}/prediction': 'Normal'}
+10:16:20  ok    Firing 3 s after the failing request
+10:16:20  ok    within 90 s
+10:16:20  ok    back to Normal 122 s after the failing request
+10:16:20  ok    within 240 s of the 5xx
+10:16:20  ok    exactly one firing notification (got 1)
+10:16:20  ok    exactly one resolved notification (got 1)
+10:16:20  ok    no request was refused for a wrong or missing token
+10:16:20  ok    the labels name the journey, the kind and the route template
+10:16:20  ok    the window (2m) is an annotation
+10:16:20  ok    runbook_url points at the Runbook section
+10:16:20  ok    dashboardURL names the dashboard
+10:16:20  ok    panelURL names panel 3
+10:16:20  ok    dashboardURL opens (http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750460018)
+10:16:20  ok    panelURL opens (http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750460018&viewPanel=3)
 
 State transitions of the rule
-  17:43:59  Normal  {'(no route)': 'Normal (NoData)'}
-  17:44:41  Firing  {'(no route)': 'Normal (NoData)', '/api/tournaments/{tournament_id}/questions/{question_id}/prediction': 'Alerting'}
-  17:46:40  Normal  {'/api/tournaments/{tournament_id}/questions/{question_id}/prediction': 'Normal'}
+  10:13:41  Normal  {'(no route)': 'Normal (NoData)'}
+  10:14:21  Firing  {'(no route)': 'Normal (NoData)', '/api/tournaments/{tournament_id}/questions/{question_id}/prediction': 'Alerting'}
+  10:16:20  Normal  {'/api/tournaments/{tournament_id}/questions/{question_id}/prediction': 'Normal'}
   Normal -> Firing -> Normal
 ```
 
 What it shows:
 
-- **Normal -> Firing -> Normal.** Firing at 17:44:41, 5 s after the failing
-  request at 17:44:36, which answered 500 in 12 ms (limit: 90 s). Normal again at
-  17:46:40, 125 s after it (limit: 240 s). The 4xx set before it (401, 404, 422,
+- **The token is checked.** The listener answered 401 to a request with no token
+  and to one with a wrong token, and counted neither as a delivery. Grafana's
+  test notification and both alert notifications carried the right token (none
+  was refused: "no request was refused for a wrong or missing token").
+- **Normal -> Firing -> Normal.** Firing at 10:14:21, 3 s after the failing
+  request at 10:14:17, which answered 500 in 18 ms (limit: 90 s). Normal again at
+  10:16:20, 122 s after it (limit: 240 s). The 4xx set before it (401, 404, 422,
   403) and the three evaluations after it left the rule Normal and the listener
   empty.
-- **One notification each way.** One `firing` POST at 17:44:40, one `resolved`
-  at 17:46:40, nothing else. The firing body carries the route template as
+- **One notification each way.** One `firing` POST at 10:14:20, one `resolved`
+  at 10:16:20, nothing else. The firing body carries the route template as
   `http_route`, the `window` (`2m`), a `runbook_url`, and `dashboardURL` and
   `panelURL` (the script opens both with a 200). The first `5xx` on a series
   that never had one fired it, which is the point of the zero injection: the
-  value of the query was 2.08, for one request (see above).
+  value of the query was 1.22, for one request (see above).
 - **Within the run, no second `firing`**, which holds until the 12 h repeat
   interval; the demo does not wait ten minutes.
 
 ```text
-Received at 17:44:40, POST /alerts (firing)
+Received at 10:14:20, POST /alerts (firing)
 {
   "receiver": "responder-webhook",
   "status": "firing",
@@ -361,21 +420,21 @@ Received at 17:44:40, POST /alerts (firing)
         "severity": "page"
       },
       "annotations": {
-        "description": "Participants got server errors (HTTP 5xx) on /api/tournaments/{tournament_id}/questions/{question_id}/prediction: about 2 in the last 2m. Status class 5xx, any count above 0 fires.",
+        "description": "Participants got server errors (HTTP 5xx) on /api/tournaments/{tournament_id}/questions/{question_id}/prediction: about 1 in the last 2m. Status class 5xx, any count above 0 fires.",
         "runbook_url": "https://github.com/kairosworks-dev/tennis-prediction-game/blob/main/docs/alerting.md#runbook",
         "summary": "5xx responses on /api/tournaments/{tournament_id}/questions/{question_id}/prediction",
         "window": "2m"
       },
-      "startsAt": "2026-10-22T17:44:40Z",
+      "startsAt": "2026-10-23T10:14:20Z",
       "endsAt": "0001-01-01T00:00:00Z",
       "generatorURL": "http://localhost:3000/alerting/grafana/journey-5xx/view?orgId=1",
       "fingerprint": "23ce3e9960198439",
-      "dashboardURL": "http://localhost:3000/d/place-a-prediction?from=1792687480000&orgId=1&to=1792691080027",
-      "panelURL": "http://localhost:3000/d/place-a-prediction?from=1792687480000&orgId=1&to=1792691080027&viewPanel=3",
+      "dashboardURL": "http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750460018",
+      "panelURL": "http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750460018&viewPanel=3",
       "ruleUID": "journey-5xx",
       "values": {
-        "A": 2.081665765278529,
-        "B": 2.081665765278529,
+        "A": 1.2222832052689354,
+        "B": 1.2222832052689354,
         "C": 1
       },
       "orgId": 1
@@ -395,7 +454,7 @@ Received at 17:44:40, POST /alerts (firing)
   "state": "alerting"
 }
 
-Received at 17:46:40, POST /alerts (resolved)
+Received at 10:16:20, POST /alerts (resolved)
 {
   "receiver": "responder-webhook",
   "status": "resolved",
@@ -417,12 +476,12 @@ Received at 17:46:40, POST /alerts (resolved)
         "summary": "5xx responses on /api/tournaments/{tournament_id}/questions/{question_id}/prediction",
         "window": "2m"
       },
-      "startsAt": "2026-10-22T17:44:40Z",
-      "endsAt": "2026-10-22T17:46:40Z",
+      "startsAt": "2026-10-23T10:14:20Z",
+      "endsAt": "2026-10-23T10:16:20Z",
       "generatorURL": "http://localhost:3000/alerting/grafana/journey-5xx/view?orgId=1",
       "fingerprint": "23ce3e9960198439",
-      "dashboardURL": "http://localhost:3000/d/place-a-prediction?from=1792687480000&orgId=1&to=1792691200000",
-      "panelURL": "http://localhost:3000/d/place-a-prediction?from=1792687480000&orgId=1&to=1792691200000&viewPanel=3",
+      "dashboardURL": "http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750580000",
+      "panelURL": "http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750580000&viewPanel=3",
       "ruleUID": "journey-5xx",
       "values": {
         "A": 0,
@@ -474,14 +533,22 @@ The two bodies are the `firing` and the `resolved` POST the listener received, i
   returns the 401, 403, 404, 422 and 500 rows of the demo for the prediction
   route, and the selector matches all six routes after the journey demo of
   `observability.md`.
-- **The contact point's test delivery** reaches the listener (done by every run
-  of the script; the body is `TestAlert`).
+- **The contact point's test delivery** reaches the listener with the right
+  `Authorization` header (done by every run of the script; the body is
+  `TestAlert`).
+- **The clean-clone case, token unset.** From empty volumes with
+  `RESPONDER_TOKEN` unset: Grafana started, the three files loaded with no
+  provisioning error, the contact point was listed with scheme `Bearer` and no
+  credentials, the rule was Normal, and the demo refused to run with the
+  instruction to export a token. A real 5xx with that stack was delivered with
+  no `Authorization` header (see the responder token above).
 
 ## What changed outside this file
 
 `docker-compose.telemetry.yml`: the `prometheus` service gets one flag
 (`--enable-feature=created-timestamp-zero-ingestion`); the `grafana` service
-gets `GF_SERVER_ROOT_URL`, `RESPONDER_URL`, `extra_hosts` and the read-only
+gets `GF_SERVER_ROOT_URL`, `RESPONDER_URL`, `RESPONDER_TOKEN` (empty by
+default), `extra_hosts` and the read-only
 mount of `telemetry/grafana/provisioning/alerting`. The dashboard's panel 3
 query gets the route selector. Nothing in `backend/app`, `frontend/` or the
 default stack changed.
