@@ -61,6 +61,10 @@ services:
       # file in telemetry/grafana/provisioning/alerting/. The default is the
       # on-call responder (#58) running on the host.
       RESPONDER_URL: ${RESPONDER_URL:-http://host.docker.internal:8001/alerts}
+      # The bearer token the webhook sends; the responder checks the same value.
+      # Empty by default so that a plain `make telemetry-up` works. Set it per
+      # shell session: export RESPONDER_TOKEN=$(openssl rand -hex 32)
+      RESPONDER_TOKEN: ${RESPONDER_TOKEN:-}
     # host.docker.internal also resolves on Linux hosts.
     extra_hosts:
       - "host.docker.internal:host-gateway"
