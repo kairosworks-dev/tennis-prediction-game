@@ -49,15 +49,20 @@ container cannot reach a loopback-bound port on the host, that is reported on
 The responder refuses to start without `RESPONDER_TOKEN` (at least 16
 characters). Every `POST /alerts` must carry `Authorization: Bearer <the same
 value>`; anything else is answered 401 before the body is read. The comparison
-is constant-time (`hmac.compare_digest`). The value lives in your shell only,
-never in a file:
+is constant-time (`hmac.compare_digest`).
+
+The token is a local shared value, generated per shell session; no file holds
+it:
 
 ```bash
-export RESPONDER_TOKEN="$(openssl rand -hex 32)"
+export RESPONDER_TOKEN=$(openssl rand -hex 32)
 ```
 
-Export the same value in the shell that starts the telemetry stack, so that
-Grafana's contact point (#57) sends it. The token is never written into an
+Start the telemetry stack and the responder from that shell. Compose passes
+`RESPONDER_TOKEN` from the environment to Grafana, whose webhook contact point
+(#57) sends it with its own authorization settings (scheme `Bearer`,
+credentials `${RESPONDER_TOKEN}`). A stack started from a shell without it
+still starts, but its notifications get 401. The token is never written into an
 incident folder, the prompt, the log or the agent's environment.
 
 ## Settings
@@ -133,15 +138,16 @@ belongs in this repository.
   with the worktree), so the gate sees it; the agent's settings deny reading it.
 - #56 (telemetry stack) and #57 (the alert rule and its webhook contact point)
   on the branch you run the stack from. The contact point calls
-  `http://host.docker.internal:8001/alerts` with
-  `Authorization: Bearer ${RESPONDER_TOKEN}`.
+  `http://host.docker.internal:8001/alerts` with Grafana's webhook
+  authorization (scheme `Bearer`, credentials `${RESPONDER_TOKEN}`, from the
+  environment of the shell that started the stack).
 - The label `on-call-agent` exists on GitHub (Author steps).
 
 ## Checks that need no stack
 
 ```bash
 make test-responder                     # unit tests, also part of make check
-export RESPONDER_TOKEN="$(openssl rand -hex 32)"
+export RESPONDER_TOKEN=$(openssl rand -hex 32)
 echo "$RESPONDER_TOKEN"                 # to copy into the second shell
 make responder                          # shell 1: stays in the foreground
 ```
@@ -245,11 +251,15 @@ commands use `APP_PORT=8080`, change it to any free port.
    runs), then `git push origin demo/oncall-fault` (the pull request's base must
    exist on GitHub). CI runs on that push and is green: the existing tests do
    not catch the fault.
-2. **Token.** `export RESPONDER_TOKEN="$(openssl rand -hex 32)"` in two shells.
+2. **Token** (shell 1): `export RESPONDER_TOKEN=$(openssl rand -hex 32)`. The
+   stack and the responder are both started from this shell.
 3. **Stack** (shell 1, on `demo/oncall-fault`): `APP_PORT=8080 make telemetry-up`.
-   Grafana on `http://localhost:3000`; the alert rule is **Normal**.
-4. **Responder** (shell 2): `git fetch origin`, then
-   `RESPONDER_BASE_REF=demo/oncall-fault make responder`.
+   It returns once the stack is healthy. Grafana on `http://localhost:3000`; the
+   alert rule is **Normal**.
+4. **Responder** (shell 1): `git fetch origin`, then
+   `RESPONDER_BASE_REF=demo/oncall-fault make responder`. It stays in the
+   foreground; run the remaining commands in a second shell (they need no
+   token).
 5. **Contact point test.** In Grafana, *Alerting > Contact points*, the
    responder's contact point, *Test*. The responder logs
    `200 ignored: test notification`; nothing else happens.
