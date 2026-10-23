@@ -1,0 +1,50 @@
+{
+  "_recorded": "Recorded by #57 on 23 Oct 2026 from Grafana 13.2.4 (docs/alerting.md, One recorded run); the fields that record leaves out (message, silenceURL, valueString, commonLabels, commonAnnotations) are left out here too.",
+  "receiver": "responder-webhook",
+  "status": "resolved",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "5xx on the place-a-prediction journey",
+        "grafana_folder": "Place a prediction",
+        "http_route": "/api/tournaments/{tournament_id}/questions/{question_id}/prediction",
+        "journey": "place-a-prediction",
+        "kind": "http-5xx",
+        "service": "tennis-prediction-game",
+        "severity": "page"
+      },
+      "annotations": {
+        "description": "Participants got server errors (HTTP 5xx) on /api/tournaments/{tournament_id}/questions/{question_id}/prediction: about 0 in the last 2m. Status class 5xx, any count above 0 fires.",
+        "runbook_url": "https://github.com/kairosworks-dev/tennis-prediction-game/blob/main/docs/alerting.md#runbook",
+        "summary": "5xx responses on /api/tournaments/{tournament_id}/questions/{question_id}/prediction",
+        "window": "2m"
+      },
+      "startsAt": "2026-10-23T10:14:20Z",
+      "endsAt": "2026-10-23T10:16:20Z",
+      "generatorURL": "http://localhost:3000/alerting/grafana/journey-5xx/view?orgId=1",
+      "fingerprint": "23ce3e9960198439",
+      "dashboardURL": "http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750580000",
+      "panelURL": "http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750580000&viewPanel=3",
+      "ruleUID": "journey-5xx",
+      "values": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
+      "orgId": 1
+    }
+  ],
+  "groupLabels": {
+    "alertname": "5xx on the place-a-prediction journey",
+    "http_route": "/api/tournaments/{tournament_id}/questions/{question_id}/prediction"
+  },
+  "externalURL": "http://localhost:3000/",
+  "appVersion": "13.2.4",
+  "version": "1",
+  "groupKey": "{}:{alertname=\"5xx on the place-a-prediction journey\", http_route=\"/api/tournaments/{tournament_id}/questions/{question_id}/prediction\"}",
+  "truncatedAlerts": 0,
+  "orgId": 1,
+  "title": "[RESOLVED] 5xx on the place-a-prediction journey /api/tournaments/{tournament_id}/questions/{question_id}/prediction (Place a prediction place-a-prediction http-5xx tennis-prediction-game page)",
+  "state": "ok"
+}

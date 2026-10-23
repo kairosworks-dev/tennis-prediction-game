@@ -49,6 +49,7 @@ issue → PM grooms → author reviews → engineer builds → QA verifies
 
 - **Trunk-based.** `main` is always deployable; the pipeline deploys what `main` points to.
 - One short-lived branch per issue, `issue-<n>/<short-description>`, merged by pull request after `PASS`. Documentation-only changes commit straight to `main`.
+- Branches named `oncall/...` come from the on-call responder (`incident-response/`, #58), not from an issue, and are exempt from the `issue-<n>/...` naming; their pull request body names the alert, and the author reviews and merges them like any other.
 - Who commits: the engineer on the issue branch; the orchestrator merges; the author pushes `main`.
 - Conventional commits, one logical change per commit (see `AGENTS.md`).
 - **Worktrees:** two issues run in parallel only when they touch disjoint files, each in its own git worktree; the orchestrator merges one at a time and deletes the worktree. Default is sequential.
