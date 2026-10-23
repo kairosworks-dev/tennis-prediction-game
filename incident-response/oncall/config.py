@@ -29,8 +29,12 @@ PR_LABEL = "on-call-agent"
 
 #: Claude Code's print mode, flags checked against `claude --help` (2.1.303).
 #: {settings} and {incident_dir} are filled in per run. The prompt goes on stdin.
+#: --setting-sources project,local keeps the author's user-level settings (and
+#: any allow rules in them) out of the agent's run; the project settings stay,
+#: because they wire the commit gate's pre-tool door.
 DEFAULT_AGENT_CMD = (
     "claude -p --settings {settings} --add-dir {incident_dir}"
+    " --setting-sources project,local"
     " --permission-mode dontAsk --permission-prompts none"
     " --output-format stream-json --verbose --no-session-persistence --strict-mcp-config"
 )

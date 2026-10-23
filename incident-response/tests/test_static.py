@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
 import unittest
 from string import Template
 
-from oncall import publish
+from oncall import config, publish
 
 from .fakes import RESPONDER
 
@@ -54,6 +55,17 @@ class TestAgentSettings(unittest.TestCase):
         hook = SETTINGS["hooks"]["PreToolUse"][0]
         self.assertEqual(hook["matcher"], "Bash")
         self.assertIn("agent-hooks/claude-pre-tool.sh", hook["hooks"][0]["command"])
+
+
+class TestDefaultAgentCommand(unittest.TestCase):
+    def test_it_is_print_mode_with_the_shipped_settings_and_no_user_settings(self) -> None:
+        argv = shlex.split(config.DEFAULT_AGENT_CMD)
+        self.assertEqual(argv[:2], ["claude", "-p"])
+        self.assertEqual(argv[argv.index("--setting-sources") + 1], "project,local")
+        self.assertEqual(argv[argv.index("--settings") + 1], "{settings}")
+        self.assertEqual(argv[argv.index("--permission-mode") + 1], "dontAsk")
+        self.assertEqual(argv[argv.index("--permission-prompts") + 1], "none")
+        config.check_agent_cmd(config.DEFAULT_AGENT_CMD)  # names no forbidden flag
 
 
 class TestMandate(unittest.TestCase):

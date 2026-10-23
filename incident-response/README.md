@@ -84,12 +84,16 @@ against `claude --help` of version 2.1.303; the prompt goes on stdin:
 
 ```
 claude -p --settings {settings} --add-dir {incident_dir}
+  --setting-sources project,local
   --permission-mode dontAsk --permission-prompts none
   --output-format stream-json --verbose --no-session-persistence --strict-mcp-config
 ```
 
 `{settings}` becomes this folder's `agent-settings.json`, `{incident_dir}` the
-incident folder. `--permission-prompts none` means nobody answers a prompt:
+incident folder. `--setting-sources project,local` loads the project settings
+(they wire the commit gate's pre-tool door) and leaves your user-level settings,
+and any allow rules in them, out of the agent's run. `--permission-prompts none`
+means nobody answers a prompt:
 anything not allowed is denied. Not used, on purpose, and refused at start-up
 if a custom command names them: `--bare` and `--safe-mode` (they switch hooks
 off, and with them the commit gate's door), `--restricted` (it ignores the
@@ -311,6 +315,7 @@ login or GitHub:
   ```bash
   echo 'Run exactly these two shell commands, one after the other, and show their output: git status, then git push --dry-run origin HEAD' \
     | claude -p --settings "<main checkout>/incident-response/agent-settings.json" \
+        --setting-sources project,local \
         --permission-mode dontAsk --permission-prompts none \
         --output-format stream-json --verbose --no-session-persistence --strict-mcp-config \
     | tee refusal.jsonl

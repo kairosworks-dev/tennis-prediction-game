@@ -64,7 +64,8 @@ whether to publish, and publishes itself. Full description:
 [`incident-response/README.md`](../incident-response/README.md).
 
 **How it is started.** `claude -p --settings incident-response/agent-settings.json
---add-dir <incident folder> --permission-mode dontAsk --permission-prompts none
+--add-dir <incident folder> --setting-sources project,local
+--permission-mode dontAsk --permission-prompts none
 --output-format stream-json --verbose --no-session-persistence
 --strict-mcp-config`, prompt on stdin, working directory the worktree, an
 allow-listed environment (`PATH`, `HOME`, `USER`, `LOGNAME`, `LANG`, `TERM`,
@@ -98,9 +99,9 @@ permission checks off.
 | deny `Read(./incident-response/demo/**)`, `Read(./agent-hooks/private-patterns.txt)`, `Read(~/.ssh/**)`, `Read(~/.config/gh/**)`, `Read(~/.gitconfig)`, `Read(~/.config/git/**)` | Not the demo fault (anti-cheat), not the author's private patterns, not credentials |
 
 The deny list is mostly a second wall: under `dontAsk` anything not allowed is
-already refused. It matters where another settings source (the author's user
-settings) allows more, because a deny rule wins over an allow rule from any
-source. The responder enforces the important lines again in ordinary code: it
+already refused. The author's user-level settings are not loaded
+(`--setting-sources project,local`); should another source ever allow more, a
+deny rule wins over an allow rule from any source. The responder enforces the important lines again in ordinary code: it
 publishes only a branch whose diff touches none of the denied paths, adds or
 changes a test, has nothing uncommitted, and passes its own `uv run pytest`; it
 pushes only that branch with an explicit refspec and never with `--force`; and
