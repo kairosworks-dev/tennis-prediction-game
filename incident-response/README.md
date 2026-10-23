@@ -118,11 +118,17 @@ belongs in this repository.
 - `gh` logged in (`gh auth status`) with access to this repository; the
   responder uses it for `gh pr create`, and `git` with your login for the push.
 - The coding agent CLI installed and logged in (`claude --version`).
-- The commit gate enabled in the main checkout (`make hooks`). The responder
-  creates its worktree from the main checkout, so the worktree inherits the
-  relative `core.hooksPath` and both doors of the gate accept it; if the
-  worktree's `core.hooksPath` does not resolve to its own `agent-hooks/`, the
-  run escalates and no agent starts. Your private pattern list, if your
+- The commit gate enabled in the main checkout (`make hooks`). The agent's
+  commits pass both doors of the gate. The pre-tool door runs
+  `$CLAUDE_PROJECT_DIR/agent-hooks/claude-pre-tool.sh` and accepts a commit
+  only when `core.hooksPath`, read with `git -C` in the script's own folder,
+  resolves to that same folder. The headless CLI runs in the responder's
+  worktree, which is its project dir, so `core.hooksPath` read there must
+  resolve to the worktree's own `agent-hooks/`. That is why the responder
+  creates the worktree with `git -C <main worktree> worktree add` (it inherits
+  the relative `agent-hooks`), then checks it, and escalates without an agent
+  otherwise. This is the expected behaviour, to be confirmed by the refusal
+  check under *Author steps*. Your private pattern list, if your
   checkout has one, is linked into the worktree (a gitignored symlink, gone
   with the worktree), so the gate sees it; the agent's settings deny reading it.
 - #56 (telemetry stack) and #57 (the alert rule and its webhook contact point)
@@ -192,11 +198,13 @@ The run, in order:
    between `<<<BEGIN UNTRUSTED INCIDENT DATA ...>>>` and `<<<END ...>>>`
    markers. Every file in the folder, and the prompt, is redacted (session
    cookie values, e-mail addresses, bearer tokens, the responder's token).
-6. A git worktree outside the repository, created from the main checkout on a
-   new branch `oncall/<alert-slug>-<UTC timestamp>` from `RESPONDER_BASE_REF`
-   (`--no-track`, from the base's commit id, so git records no upstream). The
-   responder checks the worktree's `core.hooksPath`, links the private pattern
-   list, and runs `uv sync` in `backend/`.
+6. A git worktree outside the repository, created with
+   `git -C <main worktree> worktree add` on a new branch
+   `oncall/<alert-slug>-<UTC timestamp>` from `RESPONDER_BASE_REF` (`--no-track`,
+   from the base's commit id, so git records no upstream). The responder checks
+   that the worktree's `core.hooksPath` resolves to its own `agent-hooks/` (what
+   the pre-tool door will require, see *Prerequisites*), links the private
+   pattern list, and runs `uv sync` in `backend/`.
 7. The agent runs in the worktree, the incident folder added with `--add-dir`
    and made read-only for the run, with the allow-listed environment and the
    time limit. Its whole output is saved (`agent-output.jsonl`,

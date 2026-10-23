@@ -1,11 +1,20 @@
 """The isolated checkout the agent works in.
 
-A git worktree outside the repository, on a new `oncall/...` branch, created
-from the main checkout so that it inherits the relative `core.hooksPath` and
-the commit gate's two doors accept it. The author's checkout, branch and
-uncommitted work are never touched, and no git configuration is written: the
-branch starts from the base's commit id with --no-track, so git records no
-upstream for it.
+A git worktree outside the repository, on a new `oncall/...` branch. The
+author's checkout, branch and uncommitted work are never touched, and no git
+configuration is written: the branch starts from the base's commit id with
+--no-track, so git records no upstream for it.
+
+Why the commit gate's pre-tool door accepts the agent's commits there
+(expected; the author's refusal check confirms it): the door runs
+`$CLAUDE_PROJECT_DIR/agent-hooks/claude-pre-tool.sh`, reads `core.hooksPath`
+with `git -C <the script's own folder>`, and accepts a commit only when that
+value resolves to the same folder. The headless CLI started in the worktree has
+the worktree as its project dir, so `core.hooksPath` read there must resolve to
+the worktree's own `agent-hooks/`. The responder creates the worktree with
+`git -C <main worktree> worktree add`, so it inherits the main checkout's
+relative `agent-hooks`, and then checks exactly that, escalating without an
+agent otherwise.
 """
 
 from __future__ import annotations
@@ -60,7 +69,8 @@ def read_hooks_path(commands: Commands, where: Path, env: Dict[str, str]) -> str
 
 
 def hooks_resolve_to_own(commands: Commands, worktree: Path, env: Dict[str, str]) -> bool:
-    """The same test the pre-tool door makes: hooksPath is this checkout's agent-hooks."""
+    """The test the pre-tool door makes when it runs from `<worktree>/agent-hooks`:
+    `core.hooksPath`, read in the worktree, resolves to that same folder."""
     result = _git(commands, worktree, env, "config", "--type=path", "--get", "core.hooksPath")
     value = result.stdout.strip() if result.ok else ""
     if not value:
@@ -114,8 +124,8 @@ def prepare(
     if not hooks_resolve_to_own(commands, path, env):
         raise WorkspaceError(
             "core.hooksPath in the new worktree does not resolve to its own agent-hooks, so "
-            "the commit gate's pre-tool door would refuse every commit (run `make hooks` in "
-            "the main checkout). No agent was started."
+            "the pre-tool door, which runs from that folder, would refuse the agent's commits "
+            "(run `make hooks` in the main checkout). No agent was started."
         )
 
     source = main / PRIVATE_PATTERNS

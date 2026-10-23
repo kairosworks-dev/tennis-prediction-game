@@ -87,7 +87,7 @@ settings file.
 | `defaultMode: dontAsk`, `disableBypassPermissionsMode: disable` | Anything not allowed below is denied; bypass mode cannot be turned on |
 | allow `Read(./**)`, `Edit(./**)` | Read and edit files inside the worktree (`./` is the working directory) |
 | allow `Bash(git status ...)`, `Bash(git diff)`, `--stat`, `--cached`/`--staged` (with `--stat` or `-- <path>`), `Bash(git diff -- *)` | Look at its own changes, and nothing older |
-| allow `Bash(git add *)`, `Bash(git commit *)` | Commit on its branch; the commit passes git's `pre-commit` and the pre-tool door, both wired as for any agent (the door also in this file's `hooks`) |
+| allow `Bash(git add *)`, `Bash(git commit *)` | Commit on its branch; the commit passes git's `pre-commit` and the pre-tool door, both wired as for any agent (the door also in this file's `hooks`). The door, run from `<worktree>/agent-hooks`, accepts a commit only when `core.hooksPath` read there resolves to that folder; the responder creates the worktree from the main checkout so it does, checks it, and escalates otherwise (expected; confirmed by the author's refusal check) |
 | allow `Bash(make test-backend)`, `Bash(uv run --directory backend pytest ...)`, `Bash(uv run --directory backend ruff ...)`, `Bash(uv run pytest ...)`, `Bash(uv run ruff ...)` | Run the backend tests and the linter |
 | deny `Bash(git push ...)` | No push; the responder pushes after its checks |
 | deny `Bash(git config ...)`, `Bash(git -c *)`, `Bash(git -C *)`, `--git-dir`, `--work-tree`, `--config-env` | No configuration change, no pointing git at another repository |
