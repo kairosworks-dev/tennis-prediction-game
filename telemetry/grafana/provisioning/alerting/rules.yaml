@@ -1,0 +1,91 @@
+# The alert on user impact (#57): a 5xx on any route of the key journey.
+# Provisioned at Grafana's start; not editable in the UI. What it measures and
+# why: docs/alerting.md.
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: journey-place-a-prediction
+    folder: Place a prediction
+    # Evaluated every 10 s (Grafana's smallest interval).
+    interval: 10s
+    rules:
+      - uid: journey-5xx
+        title: 5xx on the place-a-prediction journey
+        condition: C
+        data:
+          # A: 5xx responses in the last 2 minutes, one series per route.
+          # The route selector below (http_route=~"...") is the six journey
+          # routes of docs/observability.md; the dashboard's "Errors by route and
+          # status" panel (panel 3) carries the same expression.
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              refId: A
+              datasource:
+                type: prometheus
+                uid: prometheus
+              expr: >-
+                sum by (http_route) (increase(http_server_request_duration_seconds_count{http_route=~"/api/auth/login|/api/tournaments|/api/tournaments/{tournament_id}|/api/tournaments/{tournament_id}/bet-groups|/api/tournaments/{tournament_id}/bet-groups/{bet_group_id}/questions|/api/tournaments/{tournament_id}/questions/{question_id}/prediction", http_response_status_code=~"5.."}[2m]))
+              instant: true
+              range: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              datasource:
+                type: __expr__
+                uid: __expr__
+              type: reduce
+              expression: A
+              reducer: last
+              settings:
+                mode: dropNN
+          # C: firing when the count is greater than 0 ("any", not a rate).
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              datasource:
+                type: __expr__
+                uid: __expr__
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+        # No 5xx series at all (a quiet stack) is normal, not "No data".
+        noDataState: OK
+        # A datasource that cannot be queried shows as Error, never as healthy.
+        execErrState: Error
+        # One evaluation that sees a 5xx fires; there is no Pending stop.
+        for: 0s
+        isPaused: false
+        labels:
+          journey: place-a-prediction
+          service: tennis-prediction-game
+          kind: http-5xx
+          severity: page
+        annotations:
+          # The same annotations are copied onto the DatasourceError alert that
+          # execErrState: Error makes Grafana send, which has no route label and no
+          # values; the conditions keep that text readable.
+          summary: >-
+            {{ if $labels.http_route }}5xx responses on {{ $labels.http_route }}{{ else }}The 5xx alert could not be evaluated{{ end }}
+          description: >-
+            {{ if $labels.http_route }}Participants got server errors (HTTP 5xx) on
+            {{ $labels.http_route }}: about {{ printf "%.0f" $values.B.Value }} in the last 2m.
+            Status class 5xx, any count above 0 fires.{{ else }}The query behind the rule
+            failed, so the 5xx count is unknown. This is not an application incident; see
+            the Runbook.{{ end }}
+          window: 2m
+          runbook_url: https://github.com/kairosworks-dev/tennis-prediction-game/blob/main/docs/alerting.md#runbook
+          # Grafana's provisioning names for the dashboard and panel link: the
+          # notification then carries dashboardURL and panelURL.
+          __dashboardUid__: place-a-prediction
+          __panelId__: "3"

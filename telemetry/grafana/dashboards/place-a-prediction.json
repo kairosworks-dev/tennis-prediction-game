@@ -262,7 +262,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Click a row's route for its log lines (Explore on Loki, filtered on that route and status).",
+      "description": "Click a row's route for its log lines (Explore on Loki, filtered on that route and status). Only the six journey routes are counted, the same selector as the alert rule (alerting.md).",
       "targets": [
         {
           "refId": "A",
@@ -270,7 +270,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (http_route, http_response_status_code) (http_server_request_duration_seconds_count{http_response_status_code=~\"[45]..\", http_route=~\"$route\", http_response_status_code=~\"$status\"})",
+          "expr": "sum by (http_route, http_response_status_code) (http_server_request_duration_seconds_count{http_response_status_code=~\"[45]..\", http_route=~\"/api/auth/login|/api/tournaments|/api/tournaments/{tournament_id}|/api/tournaments/{tournament_id}/bet-groups|/api/tournaments/{tournament_id}/bet-groups/{bet_group_id}/questions|/api/tournaments/{tournament_id}/questions/{question_id}/prediction\", http_route=~\"$route\", http_response_status_code=~\"$status\"})",
           "legendFormat": "",
           "format": "table",
           "instant": true,

@@ -1,0 +1,20 @@
+# The webhook the alert posts to (#57). The URL comes from RESPONDER_URL, set on
+# the Grafana service in docker-compose.telemetry.yml (default: the on-call
+# responder of #58 on the host). Change the variable, not this file.
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: responder-webhook
+    receivers:
+      - uid: responder-webhook
+        type: webhook
+        settings:
+          url: ${RESPONDER_URL}
+          httpMethod: POST
+          # Grafana's own authorization settings: it sends
+          # "Authorization: Bearer <RESPONDER_TOKEN>". The value comes from the
+          # environment of the shell that started the stack; no file holds it.
+          authorization_scheme: Bearer
+          authorization_credentials: ${RESPONDER_TOKEN}
+        # Resolve messages stay on: a resolved notification follows the firing one.
+        disableResolveMessage: false
