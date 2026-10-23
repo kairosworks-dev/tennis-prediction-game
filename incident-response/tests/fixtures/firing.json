@@ -1,46 +1,50 @@
 {
-  "receiver": "on-call responder",
+  "_recorded": "Recorded by #57 on 23 Oct 2026 from Grafana 13.2.4 (docs/alerting.md, One recorded run); the fields that record leaves out (message, silenceURL, valueString, commonLabels, commonAnnotations) are left out here too.",
+  "receiver": "responder-webhook",
   "status": "firing",
   "alerts": [
     {
       "status": "firing",
       "labels": {
-        "alertname": "Prediction submit 5xx",
-        "grafana_folder": "Tennis Prediction Game",
+        "alertname": "5xx on the place-a-prediction journey",
+        "grafana_folder": "Place a prediction",
         "http_route": "/api/tournaments/{tournament_id}/questions/{question_id}/prediction",
-        "journey": "submit-prediction",
+        "journey": "place-a-prediction",
         "kind": "http-5xx",
         "service": "tennis-prediction-game",
         "severity": "page"
       },
       "annotations": {
-        "dashboardUid": "place-a-prediction",
-        "panelId": "4",
-        "description": "PUT /api/tournaments/{tournament_id}/questions/{question_id}/prediction answered 5xx 3 time(s) in the last 2m.",
-        "runbook_url": "https://github.com/OWNER/REPO/blob/main/docs/alerting.md#runbook",
-        "summary": "Participants get server errors when they submit a prediction",
+        "description": "Participants got server errors (HTTP 5xx) on /api/tournaments/{tournament_id}/questions/{question_id}/prediction: about 1 in the last 2m. Status class 5xx, any count above 0 fires.",
+        "runbook_url": "https://github.com/kairosworks-dev/tennis-prediction-game/blob/main/docs/alerting.md#runbook",
+        "summary": "5xx responses on /api/tournaments/{tournament_id}/questions/{question_id}/prediction",
         "window": "2m"
       },
-      "startsAt": "2026-10-22T17:37:50Z",
+      "startsAt": "2026-10-23T10:14:20Z",
       "endsAt": "0001-01-01T00:00:00Z",
-      "generatorURL": "http://localhost:3000/alerting/grafana/abc123/view",
-      "fingerprint": "5f0b7c1e9a2d4c33",
-      "silenceURL": "http://localhost:3000/alerting/silence/new",
-      "dashboardURL": "http://localhost:3000/d/place-a-prediction",
-      "panelURL": "http://localhost:3000/d/place-a-prediction?viewPanel=4",
-      "values": {"A": 3, "C": 1},
-      "valueString": "[ var='A' labels={http_route=/api/...} value=3 ]"
+      "generatorURL": "http://localhost:3000/alerting/grafana/journey-5xx/view?orgId=1",
+      "fingerprint": "23ce3e9960198439",
+      "dashboardURL": "http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750460018",
+      "panelURL": "http://localhost:3000/d/place-a-prediction?from=1792746860000&orgId=1&to=1792750460018&viewPanel=3",
+      "ruleUID": "journey-5xx",
+      "values": {
+        "A": 1.2222832052689354,
+        "B": 1.2222832052689354,
+        "C": 1
+      },
+      "orgId": 1
     }
   ],
-  "groupLabels": {"alertname": "Prediction submit 5xx"},
-  "commonLabels": {"alertname": "Prediction submit 5xx", "kind": "http-5xx"},
-  "commonAnnotations": {},
+  "groupLabels": {
+    "alertname": "5xx on the place-a-prediction journey",
+    "http_route": "/api/tournaments/{tournament_id}/questions/{question_id}/prediction"
+  },
   "externalURL": "http://localhost:3000/",
+  "appVersion": "13.2.4",
   "version": "1",
-  "groupKey": "{}:{alertname=\"Prediction submit 5xx\"}",
+  "groupKey": "{}:{alertname=\"5xx on the place-a-prediction journey\", http_route=\"/api/tournaments/{tournament_id}/questions/{question_id}/prediction\"}",
   "truncatedAlerts": 0,
   "orgId": 1,
-  "title": "[FIRING:1] Prediction submit 5xx",
-  "state": "alerting",
-  "message": "**Firing**"
+  "title": "[FIRING:1] 5xx on the place-a-prediction journey /api/tournaments/{tournament_id}/questions/{question_id}/prediction (Place a prediction place-a-prediction http-5xx tennis-prediction-game page)",
+  "state": "alerting"
 }

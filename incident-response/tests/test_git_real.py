@@ -19,7 +19,7 @@ from typing import Dict, List
 from oncall import publish, workspace
 from oncall.seams import CommandResult, Commands
 
-BRANCH = "oncall/prediction-submit-5xx-20261022T173830Z"
+BRANCH = "oncall/5xx-on-the-place-a-prediction-journey-20261023T101500Z"
 
 
 class GitOnly(Commands):

@@ -202,7 +202,7 @@ class TestAccepted(ReceiverCase):
         self.assertEqual(status, 202)
         self.assertEqual(body["status"], "accepted")
         self.assertLess(elapsed, 1.5, "the webhook must not wait for the agent")
-        self.assertEqual(body["incident"], "20261022T173830Z-prediction-submit-5xx")
+        self.assertEqual(body["incident"], "20261023T101500Z-5xx-on-the-place-a-prediction-journey")
         self.responder.join(30)
         self.assertEqual(self.responder.last_result.outcome, "published")
         self.assertIsNotNone(self.agent_record())
@@ -235,7 +235,7 @@ class TestAccepted(ReceiverCase):
         self.post(fixture("firing.json"))
         self.responder.join(30)
         later = copy.deepcopy(fixture("firing.json"))
-        later["alerts"][0]["startsAt"] = "2026-10-22T19:00:00Z"
+        later["alerts"][0]["startsAt"] = "2026-10-23T09:00:00Z"
         status, _ = self.post(later)
         self.responder.join(30)
         self.assertEqual(status, 202)

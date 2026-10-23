@@ -113,7 +113,7 @@ class TestDecision(RunCase):
         self.assertEqual(pr[pr.index("--head") + 1], branch)
         self.assertEqual(pr[pr.index("--label") + 1], "on-call-agent")
         body = (folder / "pr-body.md").read_text()
-        self.assertIn("Prediction submit 5xx", body)
+        self.assertIn("5xx on the place-a-prediction journey", body)
         self.assertNotIn(str(self.tmp), body, "no local path in the public pull request")
 
     def test_escalated_without_a_commit(self) -> None:
@@ -263,7 +263,7 @@ class TestRecorder(unittest.TestCase):
     """No command the publishing builds names main, uses --force, merge or config."""
 
     def commands(self, base_ref: str):
-        ws = Workspace(path=Path("/tmp/wt"), branch="oncall/prediction-submit-5xx-20261022T173830Z",
+        ws = Workspace(path=Path("/tmp/wt"), branch="oncall/5xx-on-the-place-a-prediction-journey-20261023T101500Z",
                        base_ref=base_ref, base_sha=SHA, main_root=Path("/tmp/main"))
         return publish.built_commands(ws, "fix(oncall): x", Path("/tmp/body.md"))
 

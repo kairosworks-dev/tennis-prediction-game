@@ -17,15 +17,15 @@ class TestClassify(unittest.TestCase):
         self.assertIsInstance(incident, Incident)
         assert isinstance(incident, Incident)
         self.assertEqual(incident.source, "alert")
-        self.assertEqual(incident.title, "Prediction submit 5xx")
+        self.assertEqual(incident.title, "5xx on the place-a-prediction journey")
         self.assertEqual(
             incident.endpoint, "/api/tournaments/{tournament_id}/questions/{question_id}/prediction"
         )
         start, end = incident.window
-        # startsAt 17:37:50 minus the 2m window minus a minute; now plus a minute.
-        self.assertEqual(start.isoformat(), "2026-10-22T17:34:50+00:00")
+        # startsAt 10:14:20 minus the 2m window minus a minute; now plus a minute.
+        self.assertEqual(start.isoformat(), "2026-10-23T10:11:20+00:00")
         self.assertEqual(end, FIXED_NOW + timedelta(minutes=1))
-        self.assertEqual(incident.key, "5f0b7c1e9a2d4c33@2026-10-22T17:37:50Z")
+        self.assertEqual(incident.key, "23ce3e9960198439@2026-10-23T10:14:20Z")
 
     def test_facts_are_the_allow_listed_fields_only(self) -> None:
         incident = classify(fixture("firing.json"), FIXED_NOW)
@@ -39,8 +39,8 @@ class TestClassify(unittest.TestCase):
     def test_names_are_safe_for_folders_and_branches(self) -> None:
         incident = classify(fixture("firing.json"), FIXED_NOW)
         assert isinstance(incident, Incident)
-        self.assertEqual(incident.id, "20261022T173830Z-prediction-submit-5xx")
-        self.assertEqual(incident.branch, "oncall/prediction-submit-5xx-20261022T173830Z")
+        self.assertEqual(incident.id, "20261023T101500Z-5xx-on-the-place-a-prediction-journey")
+        self.assertEqual(incident.branch, "oncall/5xx-on-the-place-a-prediction-journey-20261023T101500Z")
         self.assertRegex(incident.branch, BRANCH_PATTERN)
         self.assertEqual(slugify("../../etc; rm -rf /"), "etc-rm-rf")
         self.assertEqual(slugify("!!!"), "incident")
@@ -58,7 +58,7 @@ class TestClassify(unittest.TestCase):
         payload["alerts"] = [resolved, datasource] + payload["alerts"]
         incident = classify(payload, FIXED_NOW)
         assert isinstance(incident, Incident)
-        self.assertEqual(incident.title, "Prediction submit 5xx")
+        self.assertEqual(incident.title, "5xx on the place-a-prediction journey")
 
     def test_bad_bodies(self) -> None:
         for bad in (None, [], "x", {"alerts": None}, {"alerts": [{"labels": "x"}]}):
@@ -72,6 +72,15 @@ class TestClassify(unittest.TestCase):
         incident = classify(payload, FIXED_NOW)
         assert isinstance(incident, Incident)
         self.assertEqual(incident.window[0], FIXED_NOW - timedelta(minutes=6))
+
+    def test_the_recorded_alert_of_57_gives_its_facts(self) -> None:
+        incident = classify(fixture("firing.json"), FIXED_NOW)
+        assert isinstance(incident, Incident)
+        facts = dict(incident.facts)
+        self.assertEqual(facts["label.journey"], "place-a-prediction")
+        self.assertEqual(facts["label.kind"], "http-5xx")
+        self.assertEqual(facts["annotation.window"], "2m")
+        self.assertIn("docs/alerting.md#runbook", facts["annotation.runbook_url"])
 
     def test_an_old_start_is_capped_at_an_hour(self) -> None:
         payload = fixture("firing.json")

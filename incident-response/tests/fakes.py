@@ -29,7 +29,7 @@ FIXTURES = HERE / "fixtures"
 FAKE_AGENT = HERE / "fake_agent.py"
 #: A shared secret for tests only; built, so no assignment looks like a secret.
 TEST_BEARER = "unit-test-" + "x" * 24
-FIXED_NOW = datetime(2026, 10, 22, 17, 38, 30, tzinfo=timezone.utc)
+FIXED_NOW = datetime(2026, 10, 23, 10, 15, 0, tzinfo=timezone.utc)
 SHA = "0123456789abcdef0123456789abcdef01234567"
 
 
@@ -55,12 +55,12 @@ def loki_body(lines: List[Any]) -> Dict[str, Any]:
 
 DEFAULT_LOKI_LINES = [
     (
-        "1792690670000000000",
+        "1792750460000000000",
         "unhandled exception",
         {"severity_text": "ERROR", "exception_type": "IndexError", "trace_id": "01a4b234f394acc0093da023133ec03c"},
     ),
     (
-        "1792690670100000000",
+        "1792750460100000000",
         "request completed",
         {
             "http_route": "/api/tournaments/{tournament_id}/questions/{question_id}/prediction",
@@ -81,8 +81,8 @@ DEFAULT_TRACE = {
                         {
                             "traceId": "AaSyNPOUrMAJPaAjEz7APA==",
                             "name": "PUT /api/tournaments/{tournament_id}/questions/{question_id}/prediction",
-                            "startTimeUnixNano": "1792690670000000000",
-                            "endTimeUnixNano": "1792690670000800000",
+                            "startTimeUnixNano": "1792750460000000000",
+                            "endTimeUnixNano": "1792750460000800000",
                             "attributes": [
                                 {"key": "http.route", "value": {"stringValue": "/api/tournaments/{tournament_id}/questions/{question_id}/prediction"}},
                                 {"key": "http.response.status_code", "value": {"intValue": "500"}},

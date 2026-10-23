@@ -1,5 +1,6 @@
 {
-  "_provisional": "Shape of Grafana's DatasourceError notification; confirm against the Error body #57 records.",
+  "_provisional": "Not captured in full. #57 recorded this notification only in words (docs/alerting.md, Checked once, by hand): alertname DatasourceError, labels datasource_uid=prometheus, ref_id=A, rulename and the rule's own labels, no http_route, an Error annotation with the query error, and the summary 'The 5xx alert could not be evaluated'. The fields around them follow the recorded firing body.",
+  "receiver": "responder-webhook",
   "status": "firing",
   "alerts": [
     {
@@ -7,15 +8,37 @@
       "labels": {
         "alertname": "DatasourceError",
         "datasource_uid": "prometheus",
-        "ref_id": "A",
-        "rulename": "Prediction submit 5xx",
+        "grafana_folder": "Place a prediction",
+        "journey": "place-a-prediction",
         "kind": "http-5xx",
+        "ref_id": "A",
+        "rulename": "5xx on the place-a-prediction journey",
+        "service": "tennis-prediction-game",
         "severity": "page"
       },
-      "annotations": {"Error": "Post \"http://prometheus:9090/api/v1/query_range\": dial tcp: connection refused"},
-      "startsAt": "2026-10-22T18:01:00Z",
+      "annotations": {
+        "Error": "[sse.dataQueryError] failed to execute query [A]: Post \"http://prometheus:9090/api/v1/query\": dial tcp: lookup prometheus: no such host",
+        "description": "The query behind the rule failed, so the 5xx count is unknown. This is not an application incident; see the Runbook.",
+        "runbook_url": "https://github.com/kairosworks-dev/tennis-prediction-game/blob/main/docs/alerting.md#runbook",
+        "summary": "The 5xx alert could not be evaluated",
+        "window": "2m"
+      },
+      "startsAt": "2026-10-23T17:49:10Z",
       "endsAt": "0001-01-01T00:00:00Z",
-      "fingerprint": "0a9e3b5c7d1f2e46"
+      "generatorURL": "http://localhost:3000/alerting/grafana/journey-5xx/view?orgId=1",
+      "fingerprint": "0a9e3b5c7d1f2e46",
+      "ruleUID": "journey-5xx",
+      "values": null,
+      "orgId": 1
     }
-  ]
+  ],
+  "groupLabels": {
+    "alertname": "DatasourceError"
+  },
+  "externalURL": "http://localhost:3000/",
+  "appVersion": "13.2.4",
+  "version": "1",
+  "truncatedAlerts": 0,
+  "orgId": 1,
+  "state": "alerting"
 }
