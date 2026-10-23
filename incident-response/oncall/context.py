@@ -308,12 +308,15 @@ def extract_tracebacks(text: str) -> List[str]:
     blocks: List[List[str]] = []
     current: Optional[List[str]] = None
     previous = ""
+    just_closed = False
     chained = ("During handling of the above exception", "The above exception was the direct cause")
     for line in text.splitlines():
         if line.startswith("Traceback (most recent call last):"):
             if current is None:
                 current = [previous] if previous.startswith("ERROR:") else []
             current.append(line)
+        elif current is None and just_closed and line.startswith(chained):
+            current = blocks.pop() + ["", line]  # a chained exception: one block
         elif current is not None:
             if line.startswith((" ", "\t")) or not line.strip() or line.startswith(chained):
                 current.append(line)
@@ -321,6 +324,11 @@ def extract_tracebacks(text: str) -> List[str]:
                 current.append(line)  # the exception line closes the block
                 blocks.append(current)
                 current = None
+                previous = line
+                just_closed = True
+                continue
+        if line.strip():
+            just_closed = False
         previous = line
     if current:
         blocks.append(current)

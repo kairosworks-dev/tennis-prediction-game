@@ -294,6 +294,28 @@ class TestPrompt(RunCase):
 
 
 class TestTracebacks(unittest.TestCase):
+    def test_a_chained_exception_stays_one_block(self) -> None:
+        """Seen live (23 Oct, Postgres stopped): psycopg's error, then SQLAlchemy's."""
+        text = (
+            "ERROR:    Exception in ASGI application\n"
+            "Traceback (most recent call last):\n"
+            '  File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1969\n'
+            "psycopg.errors.AdminShutdown: terminating connection due to administrator command\n"
+            "\n"
+            "The above exception was the direct cause of the following exception:\n"
+            "\n"
+            "Traceback (most recent call last):\n"
+            '  File "/app/backend/app/services/play.py", line 177, in put_prediction\n'
+            "sqlalchemy.exc.OperationalError: (psycopg.errors.AdminShutdown) terminating connection\n"
+            "INFO:     next line\n"
+        )
+        blocks = extract_tracebacks(text)
+        self.assertEqual(len(blocks), 1)
+        self.assertIn("The above exception was the direct cause", blocks[0])
+        self.assertTrue(blocks[0].startswith("ERROR:    Exception in ASGI application"))
+        self.assertTrue(blocks[0].endswith("terminating connection"))
+        self.assertNotIn("INFO:", blocks[0])
+
     def test_blocks_are_cut_from_stderr(self) -> None:
         text = (
             "INFO: started\nERROR:    Exception in ASGI application\nTraceback (most recent call last):\n"
