@@ -70,3 +70,6 @@ backend/.venv/
 
 # commit gate: the author's private pattern list stays local
 agent-hooks/private-patterns.txt
+
+# on-call responder (#58): incident folders stay on the author's machine
+incident-response/incidents/

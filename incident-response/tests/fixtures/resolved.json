@@ -1,0 +1,18 @@
+{
+  "status": "resolved",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "Prediction submit 5xx",
+        "http_route": "/api/tournaments/{tournament_id}/questions/{question_id}/prediction",
+        "kind": "http-5xx",
+        "severity": "page"
+      },
+      "annotations": {"summary": "Participants get server errors when they submit a prediction", "window": "2m"},
+      "startsAt": "2026-10-22T17:37:50Z",
+      "endsAt": "2026-10-22T17:42:10Z",
+      "fingerprint": "5f0b7c1e9a2d4c33"
+    }
+  ]
+}

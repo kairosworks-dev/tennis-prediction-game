@@ -1,0 +1,21 @@
+{
+  "_provisional": "Shape of Grafana's DatasourceError notification; confirm against the Error body #57 records.",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "DatasourceError",
+        "datasource_uid": "prometheus",
+        "ref_id": "A",
+        "rulename": "Prediction submit 5xx",
+        "kind": "http-5xx",
+        "severity": "page"
+      },
+      "annotations": {"Error": "Post \"http://prometheus:9090/api/v1/query_range\": dial tcp: connection refused"},
+      "startsAt": "2026-10-22T18:01:00Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "fingerprint": "0a9e3b5c7d1f2e46"
+    }
+  ]
+}

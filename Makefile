@@ -149,6 +149,26 @@ telemetry-alert-demo: ## Prove the 5xx alert: 4xx stay quiet, one 5xx fires, it 
 telemetry-demo: ## Drive the six-step journey against the running stack (REPEAT=n to repeat)
 	telemetry/demo-journey.sh
 
+# The on-call responder (#58): a local demo on the author's machine, see
+# incident-response/README.md. Standard-library Python. Only `make responder`
+# can start the coding agent, and only when an alert arrives.
+.PHONY: responder test-responder demo-fault demo-reset demo-trigger
+
+responder: ## Start the on-call responder on 127.0.0.1:${RESPONDER_PORT:-8001} (needs RESPONDER_TOKEN)
+	cd incident-response && python3 -m oncall
+
+test-responder: ## The responder's unit tests (no Docker, no network, no agent CLI, no GitHub)
+	cd incident-response && python3 -m unittest discover -s tests -t .
+
+demo-fault: ## Create the local branch demo/oncall-fault from main with the demo fault committed
+	incident-response/demo/demo-fault.sh
+
+demo-reset: ## Remove demo/oncall-fault, the responder's worktrees and oncall/* branches (local only)
+	incident-response/demo/demo-reset.sh
+
+demo-trigger: ## Send the demo's failing request N times (default 5; BASE_URL or APP_PORT to aim it)
+	python3 incident-response/demo/trigger.py
+
 lint: ## ESLint and ruff
 	cd frontend && npm run lint
 	cd backend && uv run ruff check .
@@ -156,7 +176,7 @@ lint: ## ESLint and ruff
 typecheck: ## tsc --noEmit
 	cd frontend && npm run typecheck
 
-check: lint typecheck test-unit ## Lint, typecheck, unit tests and the commit-gate tests (no Docker)
+check: lint typecheck test-unit test-responder ## Lint, typecheck, unit tests, the responder's and the commit-gate tests (no Docker)
 	agent-hooks/test-hooks.sh
 
 docker-build: ## Build the container image (backend serving the built frontend)
