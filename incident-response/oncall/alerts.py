@@ -153,7 +153,8 @@ def incident_from_alert(
     width = parse_duration(annotations.get("window")) or DEFAULT_WINDOW
     starts_at = parse_time(alert.get("startsAt"))
     end = now + MARGIN
-    start = (starts_at or now) - width - MARGIN
+    # A startsAt later than receipt (clock skew) must not invert the window.
+    start = min(starts_at or now, now) - width - MARGIN
     if end - start > MAX_WINDOW:
         start = end - MAX_WINDOW
 

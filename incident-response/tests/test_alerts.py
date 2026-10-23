@@ -82,6 +82,15 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(facts["annotation.window"], "2m")
         self.assertIn("docs/alerting.md#runbook", facts["annotation.runbook_url"])
 
+    def test_a_start_after_receipt_does_not_invert_the_window(self) -> None:
+        payload = fixture("firing.json")
+        payload["alerts"][0]["startsAt"] = "2026-10-23T10:20:00Z"  # five minutes after FIXED_NOW
+        incident = classify(payload, FIXED_NOW)
+        assert isinstance(incident, Incident)
+        start, end = incident.window
+        self.assertLess(start, end)
+        self.assertEqual(start, FIXED_NOW - timedelta(minutes=3))
+
     def test_an_old_start_is_capped_at_an_hour(self) -> None:
         payload = fixture("firing.json")
         payload["alerts"][0]["startsAt"] = "2026-10-01T00:00:00Z"
