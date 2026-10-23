@@ -22,6 +22,7 @@ when you close something.
 /docs                 spec, status, process, roles, AI usage report, pack docs
 /agent-capabilities   reusable workflows and subagent definitions (tool-agnostic)
 /agent-hooks          guardrail scripts
+/incident-response    the on-call responder: an alert in, a fix pull request out (issue #58; local demo)
 /mcp-server           one scoped MCP tool                       (issue #15; ungraded, done last)
 /custom-agent         headless agent for red CI runs            (issue #16; ungraded, done last)
 /ops                  sanitised operational evidence
