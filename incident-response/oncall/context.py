@@ -317,6 +317,9 @@ def extract_tracebacks(text: str) -> List[str]:
             current.append(line)
         elif current is None and just_closed and line.startswith(chained):
             current = blocks.pop() + ["", line]  # a chained exception: one block
+        elif current is None and just_closed and line.startswith((" ", "\t")):
+            blocks[-1].append(line)  # an indented continuation of the exception's message
+            continue
         elif current is not None:
             if line.startswith((" ", "\t")) or not line.strip() or line.startswith(chained):
                 current.append(line)

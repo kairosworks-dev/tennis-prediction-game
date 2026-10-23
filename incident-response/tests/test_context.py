@@ -316,6 +316,30 @@ class TestTracebacks(unittest.TestCase):
         self.assertTrue(blocks[0].endswith("terminating connection"))
         self.assertNotIn("INFO:", blocks[0])
 
+    def test_an_indented_continuation_of_the_message_keeps_the_chain(self) -> None:
+        """libpq's connection-refused message ends with an indented line."""
+        text = (
+            "ERROR:    Exception in ASGI application\n"
+            "Traceback (most recent call last):\n"
+            '  File "/opt/venv/lib/python3.12/site-packages/psycopg/connection.py", line 130\n'
+            'psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: Connection refused\n'
+            "\tIs the server running on that host and accepting TCP/IP connections?\n"
+            "\n"
+            "The above exception was the direct cause of the following exception:\n"
+            "\n"
+            "Traceback (most recent call last):\n"
+            '  File "/app/backend/app/services/play.py", line 177, in put_prediction\n'
+            "sqlalchemy.exc.OperationalError: (psycopg.OperationalError) connection failed\n"
+            "\tIs the server running on that host and accepting TCP/IP connections?\n"
+            "INFO:     next line\n"
+        )
+        blocks = extract_tracebacks(text)
+        self.assertEqual(len(blocks), 1)
+        self.assertIn("\tIs the server running", blocks[0])
+        self.assertIn("The above exception was the direct cause", blocks[0])
+        self.assertTrue(blocks[0].rstrip().endswith("accepting TCP/IP connections?"))
+        self.assertNotIn("INFO:", blocks[0])
+
     def test_blocks_are_cut_from_stderr(self) -> None:
         text = (
             "INFO: started\nERROR:    Exception in ASGI application\nTraceback (most recent call last):\n"
