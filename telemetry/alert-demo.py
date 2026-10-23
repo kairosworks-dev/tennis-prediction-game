@@ -2,11 +2,19 @@
 """Demo of the alert on user impact (#57): Normal -> Firing -> Normal.
 
 Needs the telemetry stack (`make telemetry-up`) started with the same
-RESPONDER_URL this script sees, because the webhook contact point is
-provisioned from it. Python 3 standard library only.
+RESPONDER_URL and RESPONDER_TOKEN this script sees, because the webhook contact
+point is provisioned from them. Python 3 standard library only.
+
+The token is a local shared value, generated per shell session and held in no
+file; start the stack, and the responder or this script, from that shell:
+
+    export RESPONDER_TOKEN=$(openssl rand -hex 32)
 
 What it does, in order:
-  1. starts a listener on the port of RESPONDER_URL that records every POST;
+  1. starts a listener on the port of RESPONDER_URL that records every POST,
+     answers 401 to one whose `Authorization` is not exactly
+     `Bearer <RESPONDER_TOKEN>` (not counted as a delivery), and proves that
+     with a request of its own with no token and one with a wrong token;
   2. checks the rule is provisioned and Normal, and that Grafana's contact-point
      test reaches the listener;
   3. signs in as the seeded demo participant and sends the 4xx set to the
@@ -24,6 +32,7 @@ Settings (environment):
   RESPONDER_URL           default http://host.docker.internal:8001/alerts (as in
                           docker-compose.telemetry.yml); its port is where the
                           listener binds
+  RESPONDER_TOKEN         required, non-empty; the bearer token Grafana sends
   LISTEN_HOST             default 127.0.0.1; use 0.0.0.0 on a Linux host
   BASE_URL                default http://127.0.0.1:${APP_PORT:-8000}
   GRAFANA_URL             default http://127.0.0.1:3000
@@ -33,6 +42,7 @@ Settings (environment):
 """
 
 import base64
+import hmac
 import json
 import os
 import subprocess
@@ -53,6 +63,7 @@ CONTACT_POINT_UID = "responder-webhook"
 ROUTE = "/api/tournaments/{tournament_id}/questions/{question_id}/prediction"
 
 RESPONDER_URL = os.environ.get("RESPONDER_URL", "http://host.docker.internal:8001/alerts")
+RESPONDER_TOKEN = os.environ.get("RESPONDER_TOKEN", "")
 LISTEN_HOST = os.environ.get("LISTEN_HOST", "127.0.0.1")
 BASE_URL = os.environ.get("BASE_URL", f"http://127.0.0.1:{os.environ.get('APP_PORT', '8000')}")
 GRAFANA_URL = os.environ.get("GRAFANA_URL", "http://127.0.0.1:3000")
@@ -88,14 +99,27 @@ def check(condition, text):
 
 # --- the listener ----------------------------------------------------------
 
-received = []  # (time, path, parsed body)
+received = []  # (time, path, parsed body): deliveries that carried the right token
+rejected = []  # times of requests refused with 401
 received_lock = threading.Lock()
+
+
+def authorized(header):
+    """The responder's rule: exactly `Bearer <token>`, compared in constant time."""
+    expected = f"Bearer {RESPONDER_TOKEN}".encode()
+    return hmac.compare_digest((header or "").encode(), expected)
 
 
 class Receiver(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
         raw = self.rfile.read(length)
+        if not authorized(self.headers.get("Authorization")):
+            with received_lock:
+                rejected.append(now())
+            self.send_response(401)
+            self.end_headers()
+            return
         try:
             body = json.loads(raw)
         except ValueError:
@@ -119,7 +143,21 @@ def start_listener():
         raise Failure(f"cannot listen on {LISTEN_HOST}:{port} ({error}); is the responder already there?")
     threading.Thread(target=server.serve_forever, daemon=True).start()
     say(f"listener on {LISTEN_HOST}:{port} (RESPONDER_URL={RESPONDER_URL})")
-    return server
+    return server, port
+
+
+def check_listener_refuses_a_bad_token(port):
+    """One self-test: no token and a wrong token get 401 and are not deliveries."""
+    url = f"http://127.0.0.1:{port}/alerts"
+    for name, headers in (
+        ("no token", {}),
+        ("a wrong token", {"Authorization": "Bearer " + "0" * len(RESPONDER_TOKEN)}),
+    ):
+        status, _ = request("POST", url, {"status": "firing", "alerts": []}, headers=headers)
+        check(status == 401, f"the listener answers 401 to a request with {name}")
+    check(len(posts()) == 0 and len(rejected) == 2, "and counts neither as a delivery")
+    with received_lock:
+        rejected.clear()
 
 
 def posts(status=None):
@@ -297,24 +335,39 @@ def contact_point_test():
         point["settings"]["url"] == RESPONDER_URL,
         "the contact point posts to RESPONDER_URL (restart the stack with the same RESPONDER_URL if not)",
     )
-    name = urllib.parse.quote(base64.urlsafe_b64encode(CONTACT_POINT_UID.encode()).decode().rstrip("="))
-    status, answer = grafana(
-        "POST",
-        f"/apis/notifications.alerting.grafana.app/v1beta1/namespaces/default/receivers/{name}/test",
-        {"integration": {"type": "webhook", "settings": point["settings"]}},
+    check(
+        point["settings"].get("authorization_scheme") == "Bearer",
+        "the contact point authorizes with the Bearer scheme",
     )
-    check(status == 200 and answer.get("status") == "success", f"Grafana's contact-point test is accepted ({status})")
+    name = urllib.parse.quote(base64.urlsafe_b64encode(CONTACT_POINT_UID.encode()).decode().rstrip("="))
+    base = "/apis/notifications.alerting.grafana.app/v1beta1/namespaces/default/receivers/"
+    status, receiver = grafana("GET", base + name)
+    check(status == 200, f"Grafana returns the stored contact point ({status})")
+    integration = receiver["spec"]["integrations"][0]
+    check(
+        integration.get("secureFields", {}).get("authorization_credentials") is True,
+        "it holds credentials (RESPONDER_TOKEN was set when the stack started)",
+    )
+    # The stored integration, secure fields flagged: Grafana fills in the
+    # credentials it holds, as its Test button does. The token never passes here.
+    status, answer = grafana("POST", base + name + "/test", {"integration": integration})
+    check(
+        status == 200 and answer.get("status") == "success",
+        f"Grafana's contact-point test is accepted ({status}); if not, the stack was probably "
+        "started with another RESPONDER_TOKEN than this shell has",
+    )
     deadline = time.time() + 15
     while time.time() < deadline and not posts():
         time.sleep(0.5)
     tests = [p for p in posts() if p[2].get("alerts", [{}])[0].get("labels", {}).get("alertname") == "TestAlert"]
-    check(len(tests) == 1, "the test notification reached the listener exactly once")
+    check(len(tests) == 1, "the test notification, with the right token, reached the listener exactly once")
     with received_lock:
         received.clear()
 
 
 def run():
-    start_listener()
+    _, port = start_listener()
+    check_listener_refuses_a_bad_token(port)
     contact_point_test()
 
     overall = poll_rule()
@@ -333,7 +386,7 @@ def run():
         if check_overall != "Normal":
             raise Failure(f"a 4xx moved the rule to {check_overall}")
         time.sleep(2)
-    check(len(posts()) == 0, "4xx never fires it: no notification reached the listener")
+    check(len(posts()) == 0 and not rejected, "4xx never fires it: no notification reached the listener")
 
     say("stopping Postgres")
     stopped = compose("stop", "postgres")
@@ -370,6 +423,7 @@ def run():
     firing, resolved = posts("firing"), posts("resolved")
     check(len(firing) == 1, f"exactly one firing notification (got {len(firing)})")
     check(len(resolved) == 1, f"exactly one resolved notification (got {len(resolved)})")
+    check(not rejected, "no request was refused for a wrong or missing token")
     check_notification(firing[0][2])
     return firing[0], resolved[0]
 
@@ -398,6 +452,15 @@ def check_notification(body):
 
 
 def main():
+    if not RESPONDER_TOKEN:
+        print(
+            "RESPONDER_TOKEN is not set. The webhook sends it as a bearer token and this\n"
+            "listener checks it. Generate one for this shell, then start the stack and run\n"
+            "the demo from the same shell:\n\n"
+            "    export RESPONDER_TOKEN=$(openssl rand -hex 32)\n",
+            file=sys.stderr,
+        )
+        sys.exit(2)
     exit_code = 0
     results = None
     try:

@@ -139,10 +139,11 @@ telemetry-reset: docker-check ## Stop the stack and delete the telemetry volumes
 	done
 
 # The alert demo (#57): Normal -> Firing -> Normal, with a stand-in receiver on the
-# port of RESPONDER_URL. Start the stack with the same RESPONDER_URL.
+# port of RESPONDER_URL. Start the stack, and run this, from one shell with the same
+# RESPONDER_URL and RESPONDER_TOKEN exported (docs/alerting.md says how).
 .PHONY: telemetry-alert-demo
 
-telemetry-alert-demo: ## Prove the 5xx alert: 4xx stay quiet, one 5xx fires, it resolves (stack up with the same RESPONDER_URL)
+telemetry-alert-demo: ## Prove the 5xx alert: 4xx stay quiet, one 5xx fires, it resolves (needs RESPONDER_TOKEN, see docs/alerting.md)
 	DOCKER=$(DOCKER) telemetry/alert-demo.py
 
 telemetry-demo: ## Drive the six-step journey against the running stack (REPEAT=n to repeat)
