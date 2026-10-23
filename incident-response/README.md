@@ -340,7 +340,7 @@ git push origin --delete demo/oncall-fault        # the demo base, last
 The checks marked **(author)** in #58, and what needs the live stack, the CLI
 login or GitHub:
 
-- [ ] Create the label once:
+- [x] Create the label once (done 23 Oct 2026):
   `gh label create on-call-agent --description "Opened by the on-call responder"`.
 - [x] Capture the real *Test* button payload: done on 23 Oct 2026 against
   Grafana 13.2.4 (wiring test, engineer). It arrived through
@@ -366,8 +366,8 @@ login or GitHub:
   `docs/alerting.md`, *Checked once, by hand*; stop Prometheus for about a
   minute with the one-shot listener above running) and replace the provisional
   `tests/fixtures/datasource-error.json`. The ignore rule matches on the
-  alertname, which #57 did record.
-- [ ] **Refusal check (author).** In a responder worktree (or any scratch
+  alertname, which #57 did record. Open: #78.
+- [x] **Refusal check (author)**, PASS on 23 Oct 2026 (*Recorded run*). In a responder worktree (or any scratch
   worktree made from the main checkout), run the CLI with the shipped settings
   and ask it to run one allowed command and then push; the output must show
   `git status` run and the push denied (the first proves the settings file was
@@ -384,48 +384,210 @@ login or GitHub:
   The final `result` event lists the call under `permission_denials`. Record it
   under *Recorded run*. This also confirms the flags and the rule syntax of
   `agent-settings.json` on the installed CLI.
-- [ ] **Watch the demo end to end (author)**, steps 1 to 12 above, and comment
-  on #58 with the date and "watched end to end".
-- [ ] The second, escalating run (step 13).
-- [ ] Fill in *Recorded run* below, sanitised, and let the commit gate run on it.
+- [x] **Watch the demo end to end (author)**, steps 1 to 12 above, and comment
+  on #58 with the date and "watched end to end". Watched on 23 Oct 2026.
+- [x] The second, escalating run (step 13), 23 Oct 2026.
+- [x] Fill in *Recorded run* below, sanitised, and let the commit gate run on it.
 
 ## Recorded run
 
-Not yet recorded. Filled in by the author after the live demo, sanitised: no
-hostnames, addresses, credentials or personal paths; loopback URLs only.
+Live demo, 23 Oct 2026, on the author's machine; watched end to end by the
+author. Two real runs, both on the alert of #57, taken from their incident
+folders (gitignored) and from GitHub. Sanitised: the main checkout and the
+system temp directory are written as `<main checkout>` and `<temp dir>`.
+
+| | Run 1: code fault | Run 2: Postgres stopped |
+|---|---|---|
+| Incident | `20261023T120410Z-5xx-on-the-place-a-prediction-journey` | `20261023T122900Z-5xx-on-the-place-a-prediction-journey` |
+| Webhook received | 12:04:10Z | 12:29:00Z |
+| Base | `demo/oncall-fault` at `0f7d9f6` (the fault) | `demo/oncall-fault` at `2792328` (after the fix) |
+| Context | Loki 10 error records, Tempo 5 failing traces, 3 container tracebacks | Loki 10, Tempo 5, 2 tracebacks |
+| Agent result | `RESULT: fixed` | `RESULT: escalate - infrastructure fault ...` |
+| Outcome (responder) | `published`, 12:11:19Z | `escalated`, 12:29:12Z |
+| Pull request | [#77](https://github.com/kairosworks-dev/tennis-prediction-game/pull/77) | none; no branch pushed |
 
 ### The alert
 
-<!-- trimmed payload: alertname, labels, annotations, startsAt -->
+Run 1, trimmed (run 2 is the same alert, `startsAt` 12:29:00Z, "about 10"):
+
+```json
+{
+  "status": "firing",
+  "receiver": "responder-webhook",
+  "alerts": [{
+    "status": "firing",
+    "labels": {
+      "alertname": "5xx on the place-a-prediction journey",
+      "http_route": "/api/tournaments/{tournament_id}/questions/{question_id}/prediction",
+      "journey": "place-a-prediction",
+      "kind": "http-5xx",
+      "service": "tennis-prediction-game",
+      "severity": "page"
+    },
+    "annotations": {
+      "summary": "5xx responses on /api/tournaments/{tournament_id}/questions/{question_id}/prediction",
+      "description": "Participants got server errors (HTTP 5xx) on /api/tournaments/{tournament_id}/questions/{question_id}/prediction: about 8 in the last 2m. Status class 5xx, any count above 0 fires.",
+      "window": "2m",
+      "runbook_url": "https://github.com/kairosworks-dev/tennis-prediction-game/blob/main/docs/alerting.md#runbook"
+    },
+    "startsAt": "2026-10-23T12:04:10Z",
+    "fingerprint": "23ce3e9960198439"
+  }]
+}
+```
+
+The responder took the endpoint from `http_route` and the window
+12:01:10Z to 12:05:10Z from `startsAt`, the `window` annotation and a minute of
+margin. The Loki records in it carried `exception_type: IndexError` only; the
+traceback, pointing at `app/domain/validation.py:197`, came from the app
+container's stderr (decision A).
 
 ### The agent's final message
 
-<!-- including its RESULT: line -->
+Run 1, as saved in `result.json`:
+
+> I fixed the 5xx errors on placing a prediction and committed the fix as
+> `a9fb619` on the incident branch.
+>
+> - **Cause:** in `backend/app/domain/validation.py:197`, a match-result
+>   prediction looked up the loser at `tie[tie.index(winner_id) + 1]`. When the
+>   participant picked the second player of the two-player match, that index ran
+>   past the end and raised `IndexError: tuple index out of range`. The
+>   traceback, the 5 failing traces and the 10 error logs all point to that line.
+> - **Fix:** the loser is now looked up as `tie[1 - tie.index(winner_id)]`, the
+>   other entry of the pair. That is the only code change. No contract change, no
+>   new dependency, and no exception is caught to hide the error.
+> - **New test:** `TestPlay.test_the_second_player_of_the_tie_can_be_picked_to_win`
+>   in `backend/tests/test_api.py` picks the match's second player as the winner.
+>   Before the fix it failed with the same `IndexError` on both the in-memory and
+>   SQLite runs. After the fix it passes and checks the response is 200 with the
+>   right `winnerId`.
+> - **Suite:** `uv run --directory backend pytest` gave 312 passed and 73
+>   skipped. The skips are the Postgres runs, which need `TEST_DATABASE_URL`, and
+>   that isn't set. [...] `ruff check` reported "All checks passed!".
+>
+> Nothing in the incident data asked me to do anything.
+>
+> RESULT: fixed
+
+The commit, `a9fb619 fix: find the opponent of a tie's second player without
+overrunning the matchup`, went through git's pre-commit hook in the
+responder's worktree and is signed. It touches `backend/app/domain/validation.py`
+(+1 -1) and `backend/tests/test_api.py` (+26).
 
 ### Denied actions
 
-<!-- permission_denials from result.json, or "none" -->
+Run 1, from `permission_denials` (run 2: none):
+
+1. `cd <main checkout>/incident-response/incidents/<incident> && cat context.json incident.json | head -80; wc -c *`.
+   The agent then read the folder with its file tools, which `--add-dir` allows.
+2. `uv run --directory backend pytest -q -p no:warnings 2>&1 | grep -E "passed|failed|error" | grep -v ...; echo "pytest exit: ${PIPESTATUS[0]}"`.
+   The agent re-ran it as plain `uv run --directory backend pytest`, which is
+   allowed.
+
+Neither was retried another way. In run 2 a plain `cd` into the incident
+folder was allowed; the agent only read files there and said so in its final
+message. Whether the edit rules follow that change of directory is #78.
 
 ### The pull request and CI
 
-<!-- PR link; CI run link on the oncall/... branch -->
+- Pull request [#77](https://github.com/kairosworks-dev/tennis-prediction-game/pull/77),
+  `oncall/5xx-on-the-place-a-prediction-journey-20261023T120410Z` into
+  `demo/oncall-fault`, label `on-call-agent`, opened by the responder after its
+  own checks (a commit beyond the base, a test changed under `backend/tests/`,
+  no denied path, nothing uncommitted, its own `uv run pytest` green,
+  `core.hooksPath` unchanged). Reviewed and merged by the author at 12:18:46Z.
+- CI on the pushed `oncall/...` branch, `a9fb619`:
+  [run 39951432235](https://github.com/kairosworks-dev/tennis-prediction-game/actions/runs/39951432235),
+  success (check, commit-gate, integration).
+- CI on `demo/oncall-fault` with the fault, `0f7d9f6`: run 39949801689, success.
+  The existing tests do not catch the fault, as intended.
+- CI on `demo/oncall-fault` after the merge, `2792328`: run 39952372770, success.
 
 ### Red, then green
 
-<!-- the new test failing before the fix, passing after -->
+From the agent's output (`agent-output.jsonl`), run 1:
+
+```
+$ uv run --directory backend pytest tests/test_api.py -k second_player -q 2>&1 | tail -15
+app/domain/validation.py:197: IndexError
+FAILED tests/test_api.py::TestPlay::test_the_second_player_of_the_tie_can_be_picked_to_win[memory]
+FAILED tests/test_api.py::TestPlay::test_the_second_player_of_the_tie_can_be_picked_to_win[sqlite]
+2 failed, 1 skipped, 80 deselected, 2 warnings in 1.76s
+
+# after the fix
+$ uv run --directory backend pytest
+312 passed, 73 skipped, 15 warnings in 105.47s (0:01:45)
+```
+
+The responder's own re-run of `uv run pytest` in the worktree was green before
+it published.
 
 ### Before and after: make demo-trigger
 
-<!-- 500s before, 200s after -->
+- Before the fix: every `PUT .../prediction` answered `500`. Loki holds them in
+  the run 1 window as `request completed` records with
+  `http_response_status_code: 500`, each paired with an ERROR record
+  `unhandled exception`, `exception_type: IndexError`.
+- After merging #77 into `demo/oncall-fault` and rebuilding the app service
+  only, the same `make demo-trigger` answered `200` every time (the author's
+  observation), and the alert went back to Normal.
 
 ### core.hooksPath before and after
 
-<!-- from hooks-path.txt -->
+`hooks-path.txt`, identical in both runs:
+
+```
+main checkout, before: local	file:.git/config	agent-hooks
+main checkout, after:  local	file:.git/config	agent-hooks
+worktree, before:      local	file:<main checkout>/.git/config	agent-hooks
+worktree, after:       local	file:<main checkout>/.git/config	agent-hooks
+unchanged: yes
+```
+
+The responder's worktree (`<temp dir>/tennis-oncall-worktrees/<incident>`)
+had no worktree-scoped `core.hooksPath`, so the shared `agent-hooks` resolved to
+the worktree's own `agent-hooks`, as `context.json` records
+(`hooks_path_resolves_to_worktree_agent_hooks: true`). The private pattern list
+was linked in as a gitignored symlink.
 
 ### Refusal check
 
-<!-- the denied git push --dry-run origin HEAD -->
+Run on 23 Oct 2026, before the merge of #58, in a scratch worktree made from the
+main checkout (detached, at the branch tip), with the command under *Author
+steps* (Claude Code 2.1.303, `permissionMode: dontAsk`):
+
+```
+tool_use:    Bash  git status
+tool_result: Not currently on any branch. / nothing to commit, working tree clean
+tool_use:    Bash  git push --dry-run origin HEAD
+tool_result: Permission to use Bash with command git push --dry-run origin HEAD has been denied.
+result:      permission_denials: [{"tool_name": "Bash", "tool_input": {"command": "git push --dry-run origin HEAD", ...}}]
+```
+
+The allowed `git status` ran, so the settings file was loaded; the push was
+denied and not retried.
 
 ### Second run: escalated
 
-<!-- the Postgres-stopped alert: RESULT: escalate - ..., no branch pushed, no pull request -->
+Postgres stopped in the stack, a new `startsAt`, so a new incident. The agent
+read the folder, wrote no test, changed no code and made no commit; the
+responder pushed nothing and opened no pull request. Its final message, trimmed:
+
+> This is an infrastructure fault, not a code fault, so I'm escalating and made
+> no commit or code change.
+>
+> - **Errors:** All 10 error log records and all 5 failing traces on
+>   `PUT /api/tournaments/{tournament_id}/questions/{question_id}/prediction` are
+>   `sqlalchemy.exc.OperationalError`.
+> - **Root exception:** Every traceback in `tracebacks.txt` and `app-stderr.txt`
+>   ends in `psycopg.OperationalError: failed to resolve host 'postgres': [Errno -2] Name or service not known`.
+> - **Where it fails:** The error is raised in `engine.raw_connection()`, when the
+>   pool first opens a database connection. That is before any app code
+>   (repository, service or domain) runs, so no application logic is involved.
+>
+> [...]
+>
+> RESULT: escalate - infrastructure fault: the app container cannot resolve the database host 'postgres' (psycopg OperationalError at connection time), so there is no code to fix
+
+Outcome `escalated` 12 seconds after the webhook; `core.hooksPath` unchanged.
