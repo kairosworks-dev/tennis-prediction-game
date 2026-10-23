@@ -191,6 +191,12 @@ def validate_prediction(payload: object, context: ValidationContext) -> None:
                 raise ValidationError("This question has no match attached to it.")
             if winner_id not in context.question.matchup:
                 raise ValidationError("The winner must be one of the two players in the tie.")
+            # The other player of the tie must be a different entrant: a tie a
+            # player plays against themselves cannot have a winner.
+            tie = context.question.matchup
+            opponent_id = tie[tie.index(winner_id) + 1]
+            if opponent_id == winner_id:
+                raise ValidationError("A player cannot win a tie against themselves.")
             best_of = context.draw.best_of if context.draw is not None else 3
             legal = legal_set_scores(best_of)
             if set_score not in legal:
