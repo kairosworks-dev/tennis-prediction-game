@@ -194,7 +194,7 @@ def validate_prediction(payload: object, context: ValidationContext) -> None:
             # The other player of the tie must be a different entrant: a tie a
             # player plays against themselves cannot have a winner.
             tie = context.question.matchup
-            opponent_id = tie[tie.index(winner_id) + 1]
+            opponent_id = tie[1 - tie.index(winner_id)]
             if opponent_id == winner_id:
                 raise ValidationError("A player cannot win a tie against themselves.")
             best_of = context.draw.best_of if context.draw is not None else 3
