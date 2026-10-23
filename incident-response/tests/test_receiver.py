@@ -275,3 +275,49 @@ class TestStartup(Layout):
             done = self.run_module({"RESPONDER_TOKEN": TEST_BEARER, "RESPONDER_AGENT_CMD": f"claude -p {flag}"})
             self.assertEqual(done.returncode, 2, flag)
             self.assertIn("Refusing to start", done.stderr)
+
+
+class TestSettingsFileCheck(Layout):
+    """14b: a broken agent-settings.json stops the start, loudly."""
+
+    def start_with(self, content: Optional[str]) -> Tuple[int, str]:
+        import io
+        from contextlib import redirect_stderr
+        from unittest import mock
+
+        from oncall import __main__ as entry
+
+        path = self.main / "incident-response" / "agent-settings.json"
+        if content is None:
+            path.unlink()
+        else:
+            path.write_text(content)
+        err = io.StringIO()
+        with mock.patch.object(entry.config, "load", return_value=self.settings()), \
+                mock.patch.object(entry, "make_server", side_effect=AssertionError("must not listen")), \
+                redirect_stderr(err):
+            code = entry.main()
+        return code, err.getvalue()
+
+    def test_a_missing_file_refuses_the_start(self) -> None:
+        code, err = self.start_with(None)
+        self.assertEqual(code, 2)
+        self.assertIn("missing", err)
+
+    def test_invalid_json_refuses_the_start(self) -> None:
+        code, err = self.start_with('{"permissions": {"allow": [}')
+        self.assertEqual(code, 2)
+        self.assertIn("not valid JSON", err)
+
+    def test_missing_rule_lists_refuse_the_start(self) -> None:
+        for content in ("[]", "{}", '{"permissions": {"allow": []}}',
+                        '{"permissions": {"allow": "Read", "deny": []}}',
+                        '{"permissions": {"allow": [], "deny": [1]}}'):
+            code, err = self.start_with(content)
+            self.assertEqual(code, 2, content)
+            self.assertIn("Refusing to start", err)
+
+    def test_the_shipped_file_passes(self) -> None:
+        from oncall import config as cfg
+
+        cfg.check_agent_settings(RESPONDER / "agent-settings.json")

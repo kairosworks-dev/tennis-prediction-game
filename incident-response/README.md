@@ -100,6 +100,12 @@ off, and with them the commit gate's door), `--restricted` (it ignores the
 project settings that wire that door), `--dangerously-skip-permissions`,
 `--allow-dangerously-skip-permissions` and `bypassPermissions`.
 
+At start the responder also checks `agent-settings.json`: it must exist, parse
+as JSON and hold `permissions.allow` and `permissions.deny` as lists of rules.
+Otherwise it refuses to start, with the reason and exit code 2. Claude Code's
+print mode silently ignores a settings file that fails its own validation, so a
+broken file must stop the responder before any agent runs.
+
 The agent's environment is an allow-list: `PATH`, `HOME`, `USER`, `LOGNAME`,
 `LANG`, `TERM`, `TMPDIR`, plus `UV_OFFLINE=1` (uv never downloads), plus the
 names in `RESPONDER_AGENT_ENV_EXTRA`. If your commits are signed and the

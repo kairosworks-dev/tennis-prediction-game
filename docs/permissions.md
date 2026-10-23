@@ -75,7 +75,10 @@ minutes, then the process group is killed). `dontAsk` with `--permission-prompts
 none`: whatever is not allowed is denied, nobody is asked. The responder
 refuses to start with `--bare`, `--safe-mode`, `--restricted` or a permission
 bypass in the command, because each switches the commit gate's door or the
-permission checks off.
+permission checks off. It also refuses to start when `agent-settings.json` is
+missing, is not valid JSON or lacks the `permissions.allow` and
+`permissions.deny` lists: in print mode the CLI would silently ignore a broken
+settings file.
 
 **The settings file** (`incident-response/agent-settings.json`), line by line in groups:
 

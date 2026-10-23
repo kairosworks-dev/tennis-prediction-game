@@ -15,7 +15,12 @@ def main() -> int:
     except config.ConfigError as error:
         print(f"responder: {error}", file=sys.stderr)
         return 2
-    for required in (settings.settings_file, settings.mandate_file, settings.pr_template):
+    try:
+        config.check_agent_settings(settings.settings_file)
+    except config.ConfigError as error:
+        print(f"responder: {error}", file=sys.stderr)
+        return 2
+    for required in (settings.mandate_file, settings.pr_template):
         if not required.is_file():
             print(f"responder: {required.name} is missing next to the responder", file=sys.stderr)
             return 2

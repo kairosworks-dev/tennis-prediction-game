@@ -7,6 +7,7 @@ small, named constants so that each choice is one line to change.
 
 from __future__ import annotations
 
+import json
 import os
 import shlex
 import tempfile
@@ -141,6 +142,30 @@ def check_agent_cmd(cmd: str) -> None:
                     f"RESPONDER_AGENT_CMD names {flag}, which switches a guardrail off "
                     "(hooks, project settings or permission checks). Refusing to start."
                 )
+
+
+def check_agent_settings(path: Path) -> None:
+    """The agent's settings file must exist, parse, and hold the two rule lists.
+
+    Claude Code's print mode silently ignores a settings file that fails its own
+    validation, which would leave the agent without these permissions; so the
+    responder refuses to start on the first sign of a broken file.
+    """
+    if not path.is_file():
+        raise ConfigError(f"{path.name} is missing next to the responder. Refusing to start.")
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError) as error:
+        raise ConfigError(f"{path.name} is not valid JSON ({error}). Refusing to start.") from error
+    permissions = data.get("permissions") if isinstance(data, dict) else None
+    if not isinstance(permissions, dict):
+        raise ConfigError(f"{path.name} has no 'permissions' object. Refusing to start.")
+    for name in ("allow", "deny"):
+        rules = permissions.get(name)
+        if not isinstance(rules, list) or not all(isinstance(r, str) and r for r in rules):
+            raise ConfigError(
+                f"{path.name}: permissions.{name} must be a list of rule strings. Refusing to start."
+            )
 
 
 def load(environ: Optional[Mapping[str, str]] = None) -> Settings:
