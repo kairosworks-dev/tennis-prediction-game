@@ -316,10 +316,18 @@ login or GitHub:
 
 - [ ] Create the label once:
   `gh label create on-call-agent --description "Opened by the on-call responder"`.
-- [ ] Capture the real *Test* button payload and replace the provisional
-  fixture `tests/fixtures/grafana-test-button.json` (trim it to the fields it
-  has; keep `alertname` and the labels). With the responder stopped, run a
-  one-shot listener on the same port, press *Test*, then `make test-responder`:
+- [x] Capture the real *Test* button payload: done on 23 Oct 2026 against
+  Grafana 13.2.4 (wiring test, engineer). It arrived through
+  `host.docker.internal` at the responder bound to `127.0.0.1`, with the Bearer
+  token, and was answered `200 ignored: test notification`; a wrong token was
+  answered 401, which Grafana reports as a failed test. The trimmed body is
+  `tests/fixtures/grafana-test-button.json` (alertname `TestAlert`, label
+  `instance: Grafana`). In 13.2.4 the Test button calls
+  `POST /apis/notifications.alerting.grafana.app/v1beta1/namespaces/default/receivers/-/test`
+  (the old `/api/alertmanager/grafana/config/api/v1/receivers/test` answers 410).
+  After a Grafana upgrade, capture it again: with the responder stopped, run a
+  one-shot listener on the same port, press *Test*, trim the body into the
+  fixture, then `make test-responder`:
   ```bash
   python3 -c 'import http.server as s
   class H(s.BaseHTTPRequestHandler):
@@ -328,8 +336,8 @@ login or GitHub:
           self.send_response(200); self.end_headers()
   s.HTTPServer(("127.0.0.1", 8001), H).handle_request()'
   ```
-  Also compare #57's recorded *Error* (DatasourceError) body with
-  `tests/fixtures/datasource-error.json`.
+- [ ] Compare #57's recorded *Error* (DatasourceError) body with the
+  provisional `tests/fixtures/datasource-error.json`.
 - [ ] **Refusal check (author).** In a responder worktree (or any scratch
   worktree made from the main checkout), run the CLI with the shipped settings
   and ask it to run one allowed command and then push; the output must show
