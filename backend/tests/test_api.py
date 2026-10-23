@@ -142,6 +142,32 @@ class TestPlay:
         mine = participant.get(f"/api/tournaments/{TOURNAMENT_ID}/predictions").json()
         assert len([p for p in mine if p["questionId"] == question["id"]]) == 1
 
+    def test_the_second_player_of_the_tie_can_be_picked_to_win(
+        self, participant: TestClient
+    ) -> None:
+        """On-call incident 2026-10-23: picking the second player of a tie looked
+        up an opponent past the end of the matchup and answered 500."""
+        question = self._open_question(participant)
+        draws = participant.get(f"/api/tournaments/{TOURNAMENT_ID}/draws").json()
+        best_of = next(d["bestOf"] for d in draws if d["id"] == question["drawId"])
+        score = "3-1" if best_of == 5 else "2-1"
+
+        response = participant.put(
+            f"/api/tournaments/{TOURNAMENT_ID}/questions/{question['id']}/prediction",
+            json={
+                "tournamentId": TOURNAMENT_ID,
+                "questionId": question["id"],
+                "payload": {
+                    "kind": "GENERIC_MATCH_RESULT",
+                    "winnerId": question["matchup"][1],
+                    "setScore": score,
+                },
+                "asDraft": False,
+            },
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["payload"]["winnerId"] == question["matchup"][1]
+
     def test_an_illegal_set_score_is_rejected(self, participant: TestClient) -> None:
         question = self._open_question(participant)
         draws = participant.get(f"/api/tournaments/{TOURNAMENT_ID}/draws").json()
