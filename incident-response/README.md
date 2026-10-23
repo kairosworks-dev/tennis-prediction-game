@@ -136,11 +136,15 @@ belongs in this repository.
   check under *Author steps*. Your private pattern list, if your
   checkout has one, is linked into the worktree (a gitignored symlink, gone
   with the worktree), so the gate sees it; the agent's settings deny reading it.
-- #56 (telemetry stack) and #57 (the alert rule and its webhook contact point)
-  on the branch you run the stack from. The contact point calls
-  `http://host.docker.internal:8001/alerts` with Grafana's webhook
-  authorization (scheme `Bearer`, credentials `${RESPONDER_TOKEN}`, from the
-  environment of the shell that started the stack).
+- #56 (telemetry stack) and #57 (the alert rule `5xx on the place-a-prediction
+  journey` and the `responder-webhook` contact point), both on `main`, so on
+  any branch made from it. The contact point posts to `RESPONDER_URL` (default
+  `http://host.docker.internal:8001/alerts`, this responder's default port) with
+  Grafana's webhook authorization (scheme `Bearer`, credentials
+  `${RESPONDER_TOKEN}`, from the environment of the shell that started the
+  stack). How it is wired, what the notification carries and how to change the
+  URL: [`docs/alerting.md`](../docs/alerting.md), *The notification*. If you
+  change `RESPONDER_PORT`, change `RESPONDER_URL` to match.
 - The label `on-call-agent` exists on GitHub (Author steps).
 
 ## Checks that need no stack
@@ -178,7 +182,7 @@ worktree or agent.
 | 415 | Content type is not `application/json` | Nothing |
 | 401 | Missing or wrong bearer token | Nothing |
 | 400 | Body is not JSON, or has no `alerts` list of objects | Nothing |
-| 200 `ignored` | A test notification (label `test` = `"true"`, or alertname `ResponderTest` or `TestAlert`); only `resolved` alerts; only `DatasourceError` / `DatasourceNoData` (or a `grafana_state_reason` label) | Nothing |
+| 200 `ignored` | A test notification (label `test` = `"true"`, or alertname `ResponderTest` or `TestAlert`); only `resolved` alerts; only `DatasourceError` / `DatasourceNoData` (or a `grafana_state_reason` label). These are the "ignore" and "not an application incident" rows of #57's Runbook table (`docs/alerting.md`, *First: is it an application incident?*) | Nothing |
 | 200 `busy` | A run is in progress | Nothing; logged |
 | 200 `duplicate` | The incident (`fingerprint` + `startsAt`) already has a folder | Nothing |
 | 202 `accepted` | Otherwise | The run starts in the background |
@@ -186,11 +190,19 @@ worktree or agent.
 The run, in order:
 
 1. The incident folder `incidents/<UTC time>-<alert name>/` gets the raw body
-   (`alert.json`; never a request header) and `incident.json` (endpoint from the
-   route label, time window from `startsAt` and the `window` annotation, plus a
-   minute either side).
+   (`alert.json`; never a request header) and `incident.json`: the endpoint from
+   the `http_route` label (the route template, for example
+   `/api/tournaments/{tournament_id}/questions/{question_id}/prediction`), the
+   time window from `startsAt` minus the `window` annotation (`2m`), plus a
+   minute either side. The facts kept for the prompt are `alertname`, the
+   labels `journey` (`place-a-prediction`), `service`, `kind`, `severity`,
+   `http_route`, and the annotations `summary`, `description`, `window` and
+   `runbook_url`. For example, the alert's folder is
+   `incidents/20261023T101500Z-5xx-on-the-place-a-prediction-journey/` and its
+   branch `oncall/5xx-on-the-place-a-prediction-journey-20261023T101500Z`.
 2. **Loki**: the window's `unhandled exception` records and 5xx `request
-   completed` records, allow-listed fields only (`logs.json`). **Unreachable
+   completed` records, allow-listed fields only (`logs.json`); the same two
+   queries as the Runbook's *Where to look* (`docs/alerting.md`). **Unreachable
    means the outcome is `escalated`, before any worktree or agent.**
 3. **Tempo**: the failing traces, by the log records' trace ids and a TraceQL
    search, summarised to allow-listed span fields (`traces.json`). Unreachable
@@ -244,54 +256,68 @@ Permissions, credentials and residual risks: [`docs/permissions.md`](../docs/per
 The deliberate bug is never on `main`. `demo/fault.patch` is applied on a local
 branch, `demo/oncall-fault`, and the stack is built from that branch. Run from
 the main checkout, in this order. Port 8000 may be taken on your machine; the
-commands use `APP_PORT=8080`, change it to any free port.
+commands use `APP_PORT=8080`, change it to any free port. What the alert rule
+measures, its timings and its notification are #57's:
+[`docs/alerting.md`](../docs/alerting.md).
 
-1. **Demo branch.** On `main`, clean tree: `make demo-fault` (creates
+Three shells:
+
+- **Shell 1** generates the token, starts the stack and then runs the responder
+  in the foreground. Nothing else is typed there.
+- **Shell 2** runs everything else. It needs no token.
+- **Shell 3** is needed only in step 13, to stop Postgres while shell 2 waits.
+
+1. **Demo branch** (shell 1). On `main`, clean tree: `make demo-fault` (creates
    `demo/oncall-fault`, applies the patch, commits it, so the commit gate
    runs), then `git push origin demo/oncall-fault` (the pull request's base must
    exist on GitHub). CI runs on that push and is green: the existing tests do
    not catch the fault.
 2. **Token** (shell 1): `export RESPONDER_TOKEN=$(openssl rand -hex 32)`. The
-   stack and the responder are both started from this shell.
+   stack and the responder are both started from this shell, so Grafana and
+   the responder hold the same value.
 3. **Stack** (shell 1, on `demo/oncall-fault`): `APP_PORT=8080 make telemetry-up`.
    It returns once the stack is healthy. Grafana on `http://localhost:3000`; the
-   alert rule is **Normal**.
+   rule *5xx on the place-a-prediction journey* is **Normal**. Leave
+   `RESPONDER_URL` at its default (`http://host.docker.internal:8001/alerts`),
+   which is the responder's default port.
 4. **Responder** (shell 1): `git fetch origin`, then
    `RESPONDER_BASE_REF=demo/oncall-fault make responder`. It stays in the
-   foreground; run the remaining commands in a second shell (they need no
-   token).
-5. **Contact point test.** In Grafana, *Alerting > Contact points*, the
-   responder's contact point, *Test*. The responder logs
-   `200 ignored: test notification`; nothing else happens.
-6. **Fault.** `make demo-trigger BASE_URL=http://127.0.0.1:8080`: every answer is
-   `500`.
-7. **Alert.** In Grafana the rule goes from Normal to **Firing** (within about
-   90 seconds).
-8. **Run.** The responder logs `202 accepted`, the sources it reached, the
-   worktree and the agent's start. The agent reads the folder, writes a test
-   that fails, fixes the code, sees the test and the backend suite pass, and
-   commits. The responder checks, pushes `oncall/...` and opens the pull
-   request; the banner prints `ON-CALL RESULT: PUBLISHED` and the link.
+   foreground from here on. (Do not run `make telemetry-alert-demo` while it
+   does: that demo starts its own listener on the same port.)
+5. **Contact point test** (Grafana UI). *Alerting > Contact points*,
+   `responder-webhook`, *Test*. Shell 1 logs `200 ignored: test notification`;
+   nothing else happens.
+6. **Fault** (shell 2): `make demo-trigger BASE_URL=http://127.0.0.1:8080`: every
+   answer is `500`.
+7. **Alert** (Grafana UI). The rule goes from Normal to **Firing**, usually
+   within seconds (docs/alerting.md: within 90 s).
+8. **Run** (watch shell 1). The responder logs `202 accepted`, the sources it
+   reached, the worktree and the agent's start. The agent reads the folder,
+   writes a test that fails, fixes the code, sees the test and the backend
+   suite pass, and commits. The responder checks, pushes `oncall/...` and opens
+   the pull request; the banner prints `ON-CALL RESULT: PUBLISHED` and the link.
 9. **CI** runs on the pushed `oncall/...` branch (the `push` trigger covers every
    branch). Note the run's link.
 10. **Review** the pull request; its base is `demo/oncall-fault`, so the diff is
-    the fix and its test only. Merge it on GitHub, then in shell 1:
+    the fix and its test only. Merge it on GitHub, then in shell 2:
     `git pull --ff-only origin demo/oncall-fault`.
-11. **Rebuild the app only:**
+11. **Rebuild the app only** (shell 2):
     `APP_PORT=8080 docker compose -f docker-compose.yml -f docker-compose.telemetry.yml up -d --build --no-deps app`.
-12. **Fixed.** `make demo-trigger BASE_URL=http://127.0.0.1:8080`: every answer is
-    `200`. About two minutes after the last 500 the rule is **Normal** again;
-    the responder logs the resolved notification as ignored.
-13. **Second run, escalating** (the infrastructure fault of #57): wait until
-    the rule is Normal, then
-    `make demo-trigger BASE_URL=http://127.0.0.1:8080 WAIT=1`; when it pauses
-    after signing in, stop Postgres
-    (`docker compose -f docker-compose.yml -f docker-compose.telemetry.yml stop postgres`)
-    and press Enter. The answers are `500`, the alert fires again (a new
-    `startsAt`, so a new incident), the agent finds `OperationalError` and ends
-    `RESULT: escalate - ...`; no branch is pushed, no pull request. Start
-    Postgres again (`... start postgres`).
-14. **Cleanup** (below).
+    Only the app container is recreated, so Grafana keeps the token it was
+    started with.
+12. **Fixed** (shell 2): `make demo-trigger BASE_URL=http://127.0.0.1:8080`: every
+    answer is `200`. About two minutes after the last 500 the rule is
+    **Normal** again; shell 1 logs the resolved notification as ignored.
+13. **Second run, escalating** (the infrastructure fault #57 demonstrates):
+    wait until the rule is Normal, then in shell 2
+    `make demo-trigger BASE_URL=http://127.0.0.1:8080 WAIT=1`. When it pauses
+    after signing in, in shell 3 stop Postgres
+    (`docker compose -f docker-compose.yml -f docker-compose.telemetry.yml stop postgres`),
+    then press Enter in shell 2. The answers are `500`, the alert fires again
+    (a new `startsAt`, so a new incident), the agent finds `OperationalError`
+    and ends `RESULT: escalate - ...`; no branch is pushed, no pull request.
+    Start Postgres again in shell 3 (`... start postgres`).
+14. **Cleanup** (below; stop the responder in shell 1 with Ctrl-C first).
 
 ## Cleanup
 
@@ -336,8 +362,11 @@ login or GitHub:
           self.send_response(200); self.end_headers()
   s.HTTPServer(("127.0.0.1", 8001), H).handle_request()'
   ```
-- [ ] Compare #57's recorded *Error* (DatasourceError) body with the
-  provisional `tests/fixtures/datasource-error.json`.
+- [ ] Capture one `DatasourceError` body (#57 recorded it only in words:
+  `docs/alerting.md`, *Checked once, by hand*; stop Prometheus for about a
+  minute with the one-shot listener above running) and replace the provisional
+  `tests/fixtures/datasource-error.json`. The ignore rule matches on the
+  alertname, which #57 did record.
 - [ ] **Refusal check (author).** In a responder worktree (or any scratch
   worktree made from the main checkout), run the CLI with the shipped settings
   and ask it to run one allowed command and then push; the output must show
