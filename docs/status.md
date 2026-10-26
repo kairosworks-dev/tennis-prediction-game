@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 20 October 2026
+**Last updated:** 26 October 2026
 
 Where the code stands. This is deliberately a different question from the two
 documents either side of it:
@@ -26,7 +26,7 @@ holds the snapshots.
 | 2 | `openapi.yaml` derived from the service layer | Done |
 | 3 | FastAPI backend, in-memory repositories | Done |
 | 4 | SQLAlchemy and SQLite persistence | Done |
-| 5 | Ship and operate: Postgres, containers, integration tests, CI/CD, deploy, extension pack, hardening, docs | **In progress since 15 Oct** — GitHub Issues #1 to #58; see *Against the course criteria* below |
+| 5 | Ship and operate: Postgres, containers, integration tests, CI/CD, deploy, observability, alert, on-call agent, docs | **Done for every graded criterion on 23 Oct** (24 of 24, see *Against the course criteria* below). Open: the ungraded issues, the by-hand #9 to #11 and the integration coverage #43 to #45, all after the submission |
 
 **It runs.** `make install && make run` migrates, seeds a demo game, starts the
 backend on :8000 and the frontend on :5173 pointed at it. `make run-mock` runs
@@ -36,9 +36,19 @@ joining a game, the tournament-bet cascade, submitting a prediction that
 persists to SQLite, scores, the tied ranking, and the organiser's outcome grid
 and recalculation.
 
-**230 tests.** 95 frontend, 135 backend — the backend suite runs once per
+The same app runs as one image on Postgres: `docker compose up --build` locally,
+and in a dev environment (deployed on every green push to `main`) and a
+production environment (promoted by hand), both over HTTPS. On the author's
+machine, as an optional local demo (D20), `make telemetry-up` adds the telemetry
+stack and the 5xx alert, and `make responder` the on-call responder.
+
+**Tests, as `make check` reports them on 26 October.** 119 frontend (Vitest);
+310 backend results (pytest), because the backend suite runs once per
 repository implementation (memory, SQLite) and, with `TEST_DATABASE_URL` set,
-a third time on Postgres (164 backend results, 29 more).
+a third time on Postgres (72 more results, skipped locally, run in CI); 110 for
+the on-call responder; 128 for the commit gate. The integration suite in
+`tests/integration/` runs against the compose stack with `make test` or
+`make test-integration`.
 
 ---
 
@@ -124,7 +134,15 @@ so the compose stack keeps working over plain HTTP. Parsing is strict: only `tru
 and `false` (or unset or empty, meaning `false`) are accepted, and any other value
 stops start-up. Unset in a deployment is silently insecure; the checks that catch
 it are on the deployed environments (#6 and #55 verify `Secure` on the login
-`Set-Cookie`). CSRF and rate limiting are still open.
+`Set-Cookie`). CSRF and rate limiting are still open, as #64 and #65.
+
+### Smaller defects, tracked as issues
+
+- #46: a locked bet group counts and shows drafts as answers.
+- #47: an unknown `/api/` path answers `{"detail"}` instead of problem details.
+- #62: the framework's own validation errors (422) are not problem details.
+- #61: the contract drift test compares operations and paths only, not
+  schemas, status codes or error responses.
 
 ---
 
@@ -159,13 +177,13 @@ The project is graded on the course's **final** rubric, published on 16 October
 ([`project/README.md`](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp/blob/main/project/README.md)):
 12 criteria, 24 points, pass at 10. Three peer reviews of other projects are
 also required to pass; they happen off-repository and are not a work item here.
-The scores below were checked against the repository on 20 October 2026 and are
+The scores below were checked against the repository on 26 October 2026 and are
 updated when an issue closes. The spec records the switch from
 the earlier 14-criterion version (D18).
 
 | # | Criterion | Today | Target | Closes with |
 |---|---|---|---|---|
-| 1 | Problem description | 1 | 2 | #23 |
+| 1 | Problem description | 2 | 2 | done: #23 (the README rewritten for the final project, PR #73) |
 | 2 | Product specification | 2 | 2 | none |
 | 3 | Agent team specification | 2 | 2 | none |
 | 4 | Context management | 2 | 2 | none |
@@ -174,10 +192,10 @@ the earlier 14-criterion version (D18).
 | 7 | Containerization | 2 | 2 | none |
 | 8 | Deployment | 2 | 2 | done: #6 and #7 (dev deploys on every push to `main`, over HTTPS); #55 (production, and the public URL in README *Try it online*); the evidence in #11 adds depth, not points |
 | 9 | CI/CD | 3 | 3 | done: #6 (every push to `main` deploys dev: 2); #55 (a manual promote to production through a shared deploy action: 3) |
-| 10 | Observability | 1 | 2 | #56 (by hand) |
-| 11 | Alerting on user impact | 0 | 1 | #57 (by hand; #8 feeds it) |
-| 12 | On-call agent | 0 | 2 | #58 (by hand) |
-| | **Total** | **19 of 24** | **24** | |
+| 10 | Observability | 2 | 2 | done: #56 (metrics, traces and structured logs of the key journey sharing a trace ID, viewed in Grafana, PR #72) |
+| 11 | Alerting on user impact | 1 | 1 | done: #57 (a Grafana rule on 5xx of the key journey, with a webhook to the responder, PR #75) |
+| 12 | On-call agent | 2 | 2 | done: #58 (the responder wakes on the alert and opens a checked fix, PR #76; run recorded in `incident-response/README.md`) |
+| | **Total** | **24 of 24** | **24** | |
 
 Criteria 8 and 9 reached 2 and 3 on 20 October with #55: the rubric (v2) gives 2
 for "deployed and reachable at a public URL, or there's a clear demo with the
@@ -189,19 +207,34 @@ the same commit was approved
 
 Criterion 6 reached 2 on 17 October with #54: `make test` runs the frontend
 and backend unit tests and then the integration tests against the compose stack,
-in one command. One judgement call remains. Criterion 10 is a 1 only
-if uvicorn's default access log in the container counts as "emits logs": it is
-unstructured, carries no trace ID, and the application itself logs nothing (the
-email provider prints only when `EMAIL_PROVIDER=console`, which no deployment sets).
+in one command.
 
-Issues #8 to #11 (monitoring, backups, rollback, public `ops/` evidence) and
-#56 to #58 (observability, the alert on user impact, the on-call agent) are all
-`by-hand`: the author does them themself, on their own machine and server, for
-their own operations learning. #8 feeds criterion 11, #10 and #11 add evidence
-to criteria 9 and 8 but no points (both are at their target), #9 earns no
-criterion, and criteria 10, 11 and 12 come from the by-hand issues #56, #57
-and #58. Agents may review their written evidence for leaks and formatting when
-asked, nothing more.
+Criteria 1, 10, 11 and 12 reached their targets between 22 and 23 October.
+Criterion 1 with #23, the README rewritten to describe the problem, what the
+system does and how it behaves. Criterion 10 with #56: the key journey (sign
+in, open a game, submit a prediction; `docs/observability.md`) emits metrics,
+traces and structured JSON request logs that share a trace ID, an allowlist in
+the app and again in the Collector keeps customer data and credentials out
+(D22), and Prometheus, Tempo and Loki store the signals, viewed in Grafana.
+Criterion 11 with #57: one Grafana rule, provisioned as code, fires on 5xx of
+that journey and calls the responder's webhook (`docs/alerting.md`). Criterion
+12 with #58: the responder in `incident-response/` wakes on that alert, saves
+the incident's context, starts a headless coding agent in its own worktree, and
+publishes the fix as a pull request only after its own checks pass. The author
+watched a live run end to end on 23 October (a code fault fixed, PR #77, CI
+green), recorded in `incident-response/README.md`, *Recorded run*.
+
+Criteria 10 to 12 are a **local demo** on the author's machine (D20): nothing
+runs 24/7, the deployed environments send no telemetry, and the responder uses
+the author's logged-in coding agent, not an API key. #56 to #58 were planned as
+`by-hand` and were built by agents with the author reviewing every groomed issue
+and pull request (D21); the checks #58 marks **(author)** were the author's.
+Issues #8 to #11 (monitoring, backups, rollback, public `ops/` evidence) are
+`by-hand`. #8 is done (the uptime check on the deployed app, distinct from the
+alert of #57). #9 to #11 are done after the submission (D21); #10 and #11 add
+evidence to criteria 9 and 8 but no points, and #9 earns no criterion. Agents
+may review their written evidence for leaks and formatting when asked, nothing
+more.
 
 The ungraded issues (#15 to #22, #24) continue after the submission deadline;
 the course grade is tied to the commit submitted, so later commits do not
@@ -209,19 +242,14 @@ change it.
 
 ## Recommended order from here
 
-1. **Graded work first**, in this order: #53 (this context) and #54 (one test
-   command), both done 17 October, as is #59 (the email provider, which had to
-   land before the deploy), and #7 (secure cookie), done 19 October; then #6
-   (deploy to dev: step A, the image job and a deploy started by hand, merged 19
-   October; step B, the deploy on every push to `main`, done), #55 (dev
-   and production: done 20 October, proof run green),
-   #56, #57, #58, then #23 (README), #43 to #45 (integration
-   coverage) and #25
-   (clean-clone run and submission). #12 to #14 (process, workflows, commit
-   gate) are graded evidence for criteria 3 and 4 and belong to this group.
-2. **The by-hand issues** (#8 to #11 and #56 to #58) are the author's, done
-   alongside the above.
-3. **The ungraded issues last**: #15 to #22 and #24 (D18).
+1. **Submission**: #25, the clean-clone run from the README and the submission
+   of that commit.
+2. **After the submission**: the integration coverage #43 to #45 (criterion 6
+   is at its target, so they add depth, not points); the by-hand #9 to #11;
+   the follow-ups of the local demo, #74 (telemetry targets share one Docker
+   project across worktrees) and #78 (on-call agent hardening).
+3. **The ungraded issues last**: #15 to #22 and #24 (D18), and the defects
+   above.
 
 Not on that path, and deliberately left where they are: the seed-placement
 defect above, the generated frontend types and the Playwright paths. None of
