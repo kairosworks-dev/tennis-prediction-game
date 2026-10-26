@@ -189,6 +189,21 @@ Open the dashboard **Place a prediction** (Dashboards; it is provisioned from
 Grafana 13 can open an empty `-- Grafana --` pane on the first derived-field
 click after it starts; a second click works. It is not a configuration error.
 
+What it looks like, taken on 26 Oct 2026 on a local stack after
+`REPEAT=3 make telemetry-demo` (demo data only, light theme). The dashboard,
+with the demo's 401 and 422 under **Errors by class** and the journey's
+`request completed` lines in **Logs**:
+
+![The Place a prediction dashboard after the demo](images/observability-dashboard.png)
+
+One request walked from its log record to its trace: Loki on the left,
+filtered on a `trace_id`, and on the right the Tempo trace that ID opens, the
+journey's `PUT .../prediction` with status 200. The field list shows what the
+allowlist lets through, and nothing else (no `code_*` fields, no client
+address, no user agent):
+
+![A log record and its trace, side by side](images/observability-log-to-trace.png)
+
 ### The three queries for one request
 
 Take the `PUT` of the demo; the demo prints `prediction trace_id: <id>`, and the
