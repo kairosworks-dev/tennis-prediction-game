@@ -276,6 +276,13 @@ registration changes nothing visible beyond a new account.
 | Develop without Docker: [Local development](#local-development-without-docker), `make run`, `make test-unit`, `make check` | **Node 20+** and **[uv](https://docs.astral.sh/uv/)** |
 | Run every test: `make test`, `make test-integration` | Docker, and uv (the integration suite uses the backend's pytest and httpx) |
 
+Get the code; every command below runs from the repository root:
+
+```bash
+git clone https://github.com/kairosworks-dev/tennis-prediction-game.git
+cd tennis-prediction-game
+```
+
 ---
 
 ## Quickest way to try it
@@ -297,7 +304,7 @@ CI built (see [Deploy](#deploy)). The image itself is described in
 **Port 8000 taken?** Publish the app on another host port:
 
 ```bash
-APP_PORT=8001 docker compose up --build   # then open http://localhost:8001
+APP_PORT=18080 docker compose up --build   # then open http://localhost:18080
 ```
 
 Every variable has a development-only default, so a `.env` file is optional;
@@ -314,6 +321,11 @@ itself does not.
   existing volume makes the app exit non-zero within `PGCONNECT_TIMEOUT` with
   the error in `docker compose logs app`; run `docker compose down -v` to change
   it.
+- The compose project is named `tennis-prediction-game` (`name:` in
+  `docker-compose.yml`), so a second clone on the same machine would share the
+  first one's containers and volumes. Give the second clone its own name:
+  `COMPOSE_PROJECT_NAME=tennis-2 docker compose up --build` (the `make
+  telemetry-*` targets honour it too).
 - Postgres is not published to the host. To look inside:
   `docker compose exec postgres psql -U tennis tennis`.
 - There is no restart policy: a failed migration stops the app instead of
@@ -353,7 +365,7 @@ results screen. Password for both: `deuce-demo-password`.
 | `make test-frontend`, `make test-backend` | One half of the unit tests |
 | `make test-integration` | Build the compose stack on a separate project, test it over HTTP, tear it down |
 | `make lint`, `make typecheck` | ESLint and ruff; `tsc --noEmit` |
-| `make check` | Lint, typecheck, every unit test and the commit-gate tests (no Docker) |
+| `make check` | Lint, typecheck, every unit test, the on-call responder's tests and the commit-gate tests (no Docker) |
 | `make docker-build` | Build the container image |
 | `make hooks` | Enable the commit gate (a git pre-commit hook) for this clone; contributors only |
 | `make clean` | Remove build output and the local database |
@@ -363,7 +375,7 @@ results screen. Password for both: `deuce-demo-password`.
 only reaches a backend on 8000, and setting `BACKEND_PORT` alone does not move the
 pair. Use the Docker path above with `APP_PORT`, or `make run-mock` (no backend at all).
 `make run-backend BACKEND_PORT=<port>` starts the backend alone on another port, for
-`curl` or <http://localhost:8001/docs>.
+`curl` or the API docs (`BACKEND_PORT=18080`: <http://localhost:18080/docs>).
 
 ### Running it without make
 
@@ -420,7 +432,7 @@ docker run --rm -p 8000:8000 -e SESSION_SECRET=change-me tennis-prediction-game
 ```
 
 Open <http://localhost:8000> and sign in as `you@example.com` with the demo
-password (use `-p 8001:8000` if 8000 is taken). At start the container migrates its
+password (use `-p 18080:8000` if 8000 is taken). At start the container migrates its
 database, runs the idempotent demo seed (on every start, for now) and then starts
 uvicorn; if the migration fails it exits non-zero. It runs as a non-root user (UID 10001).
 
@@ -441,9 +453,12 @@ the Vitest suite, the backend pytest suite, then the integration tests over
 HTTP against the compose stack, and stops at the first step that fails. It
 needs Docker with the compose plugin; a preflight checks this before anything
 runs and, if Docker is missing or stopped, prints a message and exits non-zero
-(`make test-unit` is the alternative that needs no Docker). Allow about a
-minute for the unit suites, plus the integration run, which is longer on a cold
-image build. The Postgres parameter of the backend suite is skipped locally
+(`make test-unit` is the alternative that needs no Docker). Allow two to three
+minutes for the unit suites, plus the integration run, which is longer on a cold
+image build. The backend suite ends with a few `Transient error ... port=9`
+and `Failed to export` lines: a telemetry test points the exporter at a port
+nobody listens on, on purpose, and its retries finish after pytest's summary.
+They are expected and do not fail the run. The Postgres parameter of the backend suite is skipped locally
 unless `TEST_DATABASE_URL` is set (CI's `check` job sets it); the integration
 phase runs against a real Postgres either way.
 
@@ -455,7 +470,7 @@ There are two suites, and they answer different questions.
 | Talks to | the app in-process (`TestClient`), memory and SQLite repositories; Postgres too when `TEST_DATABASE_URL` is set | the built image and a real Postgres, over HTTP |
 | Needs | Node and uv; no Docker | Docker, and uv for the backend's pytest and httpx |
 | Covers | scoring, validation, repositories, every endpoint's rules, the UI | the key workflows end to end: sign-in, registration, joining, predicting, refusal of locked groups and of non-organisers, organiser results through to score and ranking, recalculation |
-| Takes | about a minute | about 15 seconds once the image is cached, longer on a cold build |
+| Takes | two to three minutes | about 15 seconds once the image is cached, longer on a cold build |
 
 ### Unit
 
@@ -728,7 +743,7 @@ of these values is a secret.
 | `COOKIE_SECURE` | unset, which means `false` | backend, image | `true` marks the session cookie `Secure`, for a deployment behind HTTPS; `false` is for plain HTTP and local use only. Any other value (`True`, `1`, `yes`) stops start-up. Compose leaves it unset. |
 | `EMAIL_PROVIDER` | unset, which means `discard`; compose and `make run` set `console` | backend, image, compose | `discard` writes nothing; `console` prints the verification line (address and token) to stderr, for a machine you control. Neither sends mail. Any other value stops start-up. Neither the image nor the pipeline sets it. |
 | `FRONTEND_DIR` | `/app/static` (set by the image) | image | Where the built frontend lives; served only if it exists. |
-| `APP_PORT` | `8000` | compose | Host port the app is published on (`APP_PORT=8001 docker compose up`). |
+| `APP_PORT` | `8000` | compose | Host port the app is published on (`APP_PORT=18080 docker compose up`). |
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | `tennis` each | compose | Postgres user, password and database name. Applied only when the `pgdata` volume is first created. |
 | `VITE_API_CLIENT` | `mock` | frontend | `mock` (fixtures, no backend) or `http` (the real API). `make run` and the image build use `http`. Set it in `frontend/.env` to make a choice stick. |
 | `PGCONNECT_TIMEOUT` | `10` (set by the image entrypoint) | image | Seconds to wait for an unreachable Postgres before the container exits. |
