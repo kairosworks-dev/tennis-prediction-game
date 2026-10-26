@@ -23,7 +23,7 @@ Two doors, two jobs.
 - **Content gate: git's `pre-commit` hook** (`agent-hooks/commit-gate.sh`, enabled by `make hooks`). Every commit, by any agent or by the author, passes it. It is the only place content is scanned, because it sees exactly what is committed. It scans the **added** lines of the staged diff for:
 
   - files that are never committed: environment files other than the example, private key files
-  - generic patterns: IPv4 addresses outside a short allowlist, 1Password secret references, private key blocks, home-directory paths, GitHub and AWS tokens, inline secret assignments
+  - generic patterns: IPv4 addresses outside a short allowlist, secret-manager references, private key blocks, home-directory paths, GitHub and AWS tokens, inline secret assignments
   - the author's **private pattern list**, a gitignored file next to the script, holding the names of his server, backup storage, private notes and similar. The repository shows that the list exists, never its contents.
 
   IPv4 policy: private infrastructure detail stays out of the public repository, so RFC 1918 private ranges are blocked like public addresses. Allowed are loopback, `0.0.0.0`, the `255.255.255.x` netmask forms and the documentation ranges (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`); examples use those. There is no version-number exemption, so an in-range four-part version still matches.

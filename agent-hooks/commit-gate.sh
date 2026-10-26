@@ -27,7 +27,7 @@ while IFS= read -r f; do
 done < <(git diff --cached --name-only --diff-filter=AM)
 
 # 2. Generic patterns in added lines. name|regex
-generic='1password reference|op://
+generic='secret-manager reference|op://
 private key block|-----BEGIN [A-Z ]*PRIVATE KEY-----
 home directory path|(/Users/|/home/)[A-Za-z0-9_.-]+
 github token|\bgh[pousr]_[A-Za-z0-9]{20,}
