@@ -242,6 +242,10 @@ change it.
 
 ## Recommended order from here
 
+The tracker follows the same split with two milestones (`docs/process.md`):
+**Project 1 — 27 Oct** holds only #25 open, next to the issues closed before
+the submission; **After submission** holds every other open issue.
+
 1. **Submission**: #25, the clean-clone run from the README and the submission
    of that commit.
 2. **After the submission**: the integration coverage #43 to #45 (criterion 6

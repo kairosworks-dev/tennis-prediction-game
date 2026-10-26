@@ -72,7 +72,7 @@ issue → PM grooms → author reviews → engineer builds → QA verifies
 | `by-hand` | Done by the author, not by an agent; see `AGENTS.md` |
 | `ungraded` | Not graded by the final rubric (D18); kept for learning, done last |
 
-The milestone **Project 1 — 27 Oct** holds the open issues to finish before submission, graded or not. The ungraded issues, which are done after submission, are not in it, and closed issues are not in it.
+Two milestones split the work at the submission. **Project 1 — 27 Oct** holds the issues finished before it, closed, and #25, the submission itself. **After submission** holds every other open issue, graded or not: the by-hand #9 to #11, the integration coverage #43 to #45, the ungraded issues (D18) and the follow-ups. A new issue goes into **After submission**.
 
 ## Decisions behind this process
 
