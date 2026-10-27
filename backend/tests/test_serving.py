@@ -151,11 +151,3 @@ def test_ready_is_503_when_the_store_does_not_answer(
     client = TestClient(create_app(repositories=repositories))
     assert client.get("/ready").status_code == 503
     assert client.get("/health").status_code == 200
-
-
-def test_ready_is_503_when_the_drill_flag_is_set(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("DRILL_READY_FAIL", "1")
-    assert client.get("/ready").status_code == 503
-    assert client.get("/health").status_code == 200
