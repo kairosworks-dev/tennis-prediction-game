@@ -59,7 +59,7 @@ Production's and dev's Postgres are dumped every night at 02:00 and uploaded to 
 ## 4. What this does not prove
 
 - **Equal counts are not equal content.** Only three tables were counted, and no values were compared. The 27 Oct dump is 10 bytes smaller than the 26 Oct one with the same counts, so some data changed in between.
-- **Restoring into the production server**, over the running database, was not done here. That path (stop the app, restore with `--clean`, start the app) is in the runbook (#11).
+- ~~**Restoring into the production server**, over the running database, was not done here.~~ Done 28 Oct, section 6.
 - **Rebuilding the server itself** is not covered: this restore needs a running Postgres to restore into.
 
 ## 5. Known gaps
@@ -69,3 +69,22 @@ As of 27 Oct:
 - **Nothing alerts if a backup stops being scheduled.** The platform alerts on a failed backup, but a backup that never runs does not fail. A success heartbeat (an alert when the expected "backup done" signal does not arrive) would catch that; it is planned for when the app holds real user data.
 - **The backup-failure alert is proven by a test message only**, not by a real failure.
 - **The server, its storage keys and the backups are in one account.** Whoever controls the server can delete the backups; object lock (storage that refuses deletes for a set time) is off.
+
+## 6. Restore into the running production database
+
+**Scenario:** data in production is lost or broken, the server is fine. On 28 Oct the newest dump was restored over production's running database by following the written procedure literally, step by step.
+
+| Time | Step |
+|---|---|
+| 10:34 | Safety dump of the current database (41,128 bytes); row counts read |
+| **10:37:10** | App stopped, so nothing writes during the restore |
+| 10:38:44 | Down alert on the phone, **94 s** after the stop |
+| **10:39:48** | `pg_restore --clean --if-exists --exit-on-error` of the 28 Oct 02:00 dump finished without an error |
+| ~10:40 | Schema and counts checked; app started, healthy after 30 s |
+| **10:41:40** | Up alert on the phone |
+
+- **Downtime: about 4 min** (stop to up alert, 4 min 30 s, an upper bound: the up alert lags by up to a minute).
+- **Checked:** `alembic_version` `d2befc9e6a43`; users / tournaments / predictions **15 / 2 / 169**, before and after; `/ready` 200; a demo login works, which `/ready` does not test.
+- **Data lost: none**, because nothing was written after 02:00. The safety dump would have held any later writes.
+- **What went wrong:** only typing. A placeholder left in a command, and a character copied with the container name, made three attempts at the safety dump fail before the fourth worked; a failed dump left an empty file behind. The procedure now prints the bare name and warns about both.
+- **Cleanup:** the downloaded dump, its copy on the server and the safety dump were deleted after the checks.

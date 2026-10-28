@@ -70,6 +70,6 @@ Requests were sent to production's `/ready` every 5 s from the author's machine 
 
 ## 7. Actions
 
-- **Rollback command ready in `RUNBOOK.md`**, with where to read the last good commit (#11).
-- **Approve from the terminal** — GitHub's pending-deployments API keeps the human approval and removes the browser round trip. *To verify before relying on it* (#11).
+- **Rollback command ready in `RUNBOOK.md`**, with where to read the last good commit (#11). **Done 28 Oct.**
+- **Approve from the terminal** — GitHub's pending-deployments API keeps the human approval and removes the browser round trip. **Verified 28 Oct** (#11): a no-op rollback of the commit production already ran, approved from the terminal, took **2 min 56 s** from dispatch to a green job, against 5 min 05 s on 27 Oct with the browser approval.
 - **Candidate, not now:** roll back automatically when `/ready` fails after the swap. Worth it for an app with users and traffic; not for this demo.
